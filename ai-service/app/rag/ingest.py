@@ -37,6 +37,7 @@ def entry_to_chunks(entry: KbEntry, origin: str = "files") -> list[Chunk]:
             "verified_at": entry.verified_at,
             "verified_by": entry.verified_by,
             "ocr": entry.ocr,
+            "notes": entry.notes,
         }
         digest = hashlib.sha256(
             f"{entry.title}|{entry.citation}|{entry.kind}|{entry.jurisdiction}|{entry.status}|{json.dumps(meta, sort_keys=True)}|{part}".encode()

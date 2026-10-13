@@ -101,6 +101,7 @@ class Source(BaseModel):
     verified_by: Optional[str] = None
     status: str = "in_force"
     ocr: bool = False
+    notes: Optional[str] = None  # reviewer caveat, e.g. amounts later changed by Rules
     kb_id: str
     kind: str  # act | rule | notification | judgment | other
     title: str
@@ -146,6 +147,7 @@ class KbEntry(BaseModel):
     verified_at: Optional[str] = None
     verified_by: Optional[str] = None
     ocr: bool = False
+    notes: Optional[str] = None
 
 
 class KbIngestRequest(BaseModel):

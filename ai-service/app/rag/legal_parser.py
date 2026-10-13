@@ -87,3 +87,27 @@ def split_paragraph_groups(text: str, max_chars: int = 1000) -> list[str]:
     if cur:
         groups.append(cur)
     return groups
+
+
+def split_sections_margin_notes(text: str, max_sections: int = 400) -> list[Provision]:
+    """Split a gazette Act whose marginal notes are interleaved with the body ("Limitation 69. (1) The District ...").
+
+    Section numbers are searched for strictly in sequence, optionally preceded by up to ~70 characters of
+    margin-note text on the same line, so a stray "5. " inside a sentence cannot start a section. The text of
+    section N runs from the start of its line to the start of the line of section N+1. Headings are not
+    recoverable reliably from interleaved margin notes, so none is claimed.
+    """
+    starts: list[tuple[int, int]] = []
+    pos = 0
+    for n in range(1, max_sections + 1):
+        m = re.compile(rf"(?m)^(?P<prefix>[A-Za-z0-9 ,.()\'-]{{0,70}}?)\b{n}\.\s+(?=[(\"“A-Z])").search(text, pos)
+        if not m:
+            break
+        starts.append((n, m.start()))
+        pos = m.end()
+    out = []
+    for i, (n, start) in enumerate(starts):
+        end = starts[i + 1][1] if i + 1 < len(starts) else len(text)
+        body = re.sub(r"\n{3,}", "\n\n", text[start:end]).strip()
+        out.append(Provision(n, "", body))
+    return out

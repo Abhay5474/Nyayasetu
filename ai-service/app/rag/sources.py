@@ -12,7 +12,9 @@ import re
 from pathlib import Path
 
 from app.config import Settings
-from app.rag.legal_parser import split_numbered_provisions, split_paragraph_groups, strip_gazette_headers
+from app.rag.legal_parser import (
+    split_numbered_provisions, split_paragraph_groups, split_sections_margin_notes, strip_gazette_headers,
+)
 from app.schemas import KbEntry
 
 log = logging.getLogger(__name__)
@@ -59,6 +61,7 @@ def _provenance(src: dict, ocr: bool) -> dict:
         "verified_at": src.get("verified_at"),
         "verified_by": src.get("verified_by"),
         "ocr": ocr,
+        "notes": src.get("notes"),
     }
 
 
@@ -86,6 +89,17 @@ def entries_from_source(src: dict, kb_dir: Path, settings: Settings) -> list[KbE
             entries.append(KbEntry(id=f"{src['id']}-annexures", citation=f"{short} - Annexures (prescribed forms)",
                                    section_ref="Annexures", text=parsed.annexures, **base))
         return entries
+
+    if parser == "numbered_margin":
+        sections = split_sections_margin_notes(text)
+        expected = src.get("expected_provisions")
+        if expected and len(sections) != expected:
+            raise ValueError(f"{src['id']}: parsed {len(sections)} sections, expected {expected}")
+        return [
+            KbEntry(id=f"{src['id']}-s{p.number}", citation=f"{short} - Section {p.number}", section_ref=f"Section {p.number}",
+                    text=p.text, **base)
+            for p in sections
+        ]
 
     # "paragraphs": noisy scans - whole paragraphs, no section labels (numbers cannot be trusted)
     return [

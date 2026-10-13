@@ -74,7 +74,7 @@ export const strings = {
     prov: {
       official: 'Official text', unverified: 'Unverified summary', asOf: 'Text as of {date}', verified: 'Verified {date}{by}',
       notVerified: 'Not yet verified by a reviewer', ocr: 'Read from a scan – may contain recognition errors', openSource: 'Open official source',
-      gazette: 'Published as', unverifiedNote: 'This is a summary written for this app, not checked against the official text. Confirm it before relying on it.',
+      note: 'Note', gazette: 'Published as', unverifiedNote: 'This is a summary written for this app, not checked against the official text. Confirm it before relying on it.',
     },
     deadlines: {
       title: 'Your deadlines', sub: 'Everything time-bound that we found in your documents.', overdue: 'Overdue', week: 'Next 7 days', later: 'Later',
@@ -162,7 +162,7 @@ export const strings = {
     prov: {
       official: 'अधिकृत मजकूर', unverified: 'अपडताळलेला सारांश', asOf: '{date} रोजीचा मजकूर', verified: 'पडताळले {date}{by}',
       notVerified: 'अजून कोणत्याही तपासनीसाने पडताळलेले नाही', ocr: 'स्कॅनवरून वाचलेला मजकूर – ओळखण्यात चुका असू शकतात', openSource: 'अधिकृत स्रोत उघडा',
-      gazette: 'प्रसिद्धी', unverifiedNote: 'हा या अ‍ॅपसाठी लिहिलेला सारांश आहे, अधिकृत मजकुराशी पडताळलेला नाही. यावर अवलंबून राहण्यापूर्वी खात्री करा.',
+      note: 'टीप', gazette: 'प्रसिद्धी', unverifiedNote: 'हा या अ‍ॅपसाठी लिहिलेला सारांश आहे, अधिकृत मजकुराशी पडताळलेला नाही. यावर अवलंबून राहण्यापूर्वी खात्री करा.',
     },
     deadlines: {
       title: 'तुमच्या मुदती', sub: 'तुमच्या कागदपत्रांतील सर्व कालमर्यादा येथे दिसतात.', overdue: 'मुदत उलटलेल्या', week: 'पुढील 7 दिवस', later: 'नंतरच्या',

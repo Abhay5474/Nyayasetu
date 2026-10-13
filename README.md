@@ -62,9 +62,13 @@ AI service (internal, `X-Internal-Token`): `/v1/extract`, `/v1/simplify`, `/v1/c
 ## Knowledge base
 Two kinds of content, clearly separated and labelled in the UI on every citation:
 
-* **Official texts** (`ai-service/knowledge_base/sources/*.pdf` + `manifest.json`): Acts, Rules and gazette notifications.
-  Currently loaded: Maharashtra RTI Rules, **2026** (English + Marathi, in force from 12 Jun 2026), the Maharashtra RTI Rules,
-  2005 (kept but marked *superseded*, never retrieved), and the authorised Marathi text of the RTI Act 2005 (as in force 1 Dec 2014).
+* **Official texts** (`ai-service/knowledge_base/sources/*.pdf` + `manifest.json`): Acts, Rules and gazette notifications. Currently loaded:
+  * **Maharashtra RTI Rules, 2026 - notification of 7 July 2026** (English + Marathi; *in force*): ₹10 application fee, ₹2 per page,
+    ₹20 appeal fee, first appeal in 30 days, second appeal in 90 days. It supersedes
+  * the Maharashtra RTI Rules, 2026 notified on 12 June 2026 (₹30 / ₹5 / ₹100 - *superseded*), which had in turn replaced
+  * the Maharashtra RTI Rules, 2005 (*superseded*). Superseded texts are kept for history but never retrieved.
+  * The authorised **Marathi text of the RTI Act 2005** as in force on 1 Dec 2014 (OCR excerpts).
+  * The **Consumer Protection Act, 2019** as enacted (107 sections; its *notes* flag that later Rules changed the pecuniary limits).
 * **Seed summaries** (`knowledge_base/*.json`): short paraphrases written for this project (RTI Act sections, a few judgments,
   Consumer Protection, NI Act, BNSS/BNS ...). They are shown as **"Unverified summary"** and are replaced as official PDFs are added.
 
@@ -79,7 +83,7 @@ Two kinds of content, clearly separated and labelled in the UI on every citation
    "Verified <date> · <name>" instead of "Not yet verified".
 
 Superseded/repealed entries are excluded from retrieval. The prompts tell the model to prefer official text over unverified summaries and
-to flag when it relies on a summary. Known gap: the English RTI Act 2005 PDF supplied was corrupted (its page images cannot be decoded);
+to flag when it relies on a summary. Known gaps: the English RTI Act 2005 PDF supplied was corrupted (its page images cannot be decoded);
 until a good copy is loaded the English Act sections come from the unverified seed summaries.
 
 ```bash

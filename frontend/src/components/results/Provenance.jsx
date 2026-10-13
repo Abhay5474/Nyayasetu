@@ -28,6 +28,7 @@ export function ProvenanceDetails({ source }) {
               : t.prov.notVerified}
           </p>
           {source.gazette_ref && <p><span className="font-semibold">{t.prov.gazette}:</span> {source.gazette_ref}</p>}
+          {source.notes && <p className="rounded bg-amber-50 px-2 py-1.5 text-amber-900"><span className="font-semibold">{t.prov.note}:</span> {source.notes}</p>}
           {source.ocr && <p className="flex items-start gap-1.5 text-amber-800"><FileWarning className="mt-0.5 h-3.5 w-3.5 shrink-0" />{t.prov.ocr}</p>}
           {source.source_url && (
             <a href={source.source_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-semibold text-saffron-700 hover:underline">

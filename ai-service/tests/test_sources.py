@@ -42,38 +42,65 @@ def manifest():
     return {s["id"]: s for s in load_manifest(KB)}
 
 
+def _numbered(entries):
+    return [e for e in entries if e.section_ref and e.section_ref.split()[-1].isdigit()]
+
+
 def test_manifest_sources_parse_to_the_expected_provisions(settings, manifest):
-    for sid, n in [("mh-rti-rules-2026-en", 27), ("mh-rti-rules-2026-mr", 27), ("mh-rti-rules-2005", 5)]:
+    expected = {"mh-rti-rules-2026-07-en": 5, "mh-rti-rules-2026-07-mr": 5, "mh-rti-rules-2026-06-en": 27,
+                "mh-rti-rules-2026-06-mr": 27, "mh-rti-rules-2005": 5, "consumer-protection-act-2019": 107}
+    for sid, n in expected.items():
         entries = entries_from_source(manifest[sid], KB, settings)
-        numbered = [e for e in entries if e.section_ref and e.section_ref.split()[-1].isdigit()]
-        assert len(numbered) == n, sid
+        assert len(_numbered(entries)) == n, sid
         assert all(e.source_type == "official_pdf" and e.version_date for e in entries)
-    assert entries_from_source(manifest["mh-rti-rules-2005"], KB, settings)[0].status == "superseded"
 
 
-def test_2026_fee_rules_are_the_current_text(settings, manifest):
-    entries = {e.section_ref: e for e in entries_from_source(manifest["mh-rti-rules-2026-en"], KB, settings)}
-    assert "rupees thirty" in entries["Rule 3"].text
-    assert "rupees five for each page" in entries["Rule 4"].text
-    assert "rupees hundred" in entries["Rule 16"].text  # second-appeal fee
+def test_supersession_chain_is_recorded(manifest):
+    status = {sid: s["status"] for sid, s in manifest.items()}
+    assert status["mh-rti-rules-2026-07-en"] == status["mh-rti-rules-2026-07-mr"] == "in_force"
+    assert status["mh-rti-rules-2026-06-en"] == status["mh-rti-rules-2026-06-mr"] == status["mh-rti-rules-2005"] == "superseded"
 
 
-def test_fee_question_returns_2026_rules_never_the_superseded_2005_text(container):
+def test_july_2026_rules_are_the_current_text(settings, manifest):
+    en = {e.section_ref: e for e in entries_from_source(manifest["mh-rti-rules-2026-07-en"], KB, settings)}
+    assert "rupees ten" in en["Rule 3"].text
+    assert "rupees two for each page" in en["Rule 4"].text
+    assert "thirty days" in en["Rule 5"].text and "ninety days" in en["Rule 5"].text and "rupees twenty" in en["Rule 5"].text
+    mr = {e.section_ref: e for e in entries_from_source(manifest["mh-rti-rules-2026-07-mr"], KB, settings)}
+    assert "रुपये दहा" in mr["नियम 3"].text and "तीस दिवसांच्या" in mr["नियम 5"].text
+    june = {e.section_ref: e for e in entries_from_source(manifest["mh-rti-rules-2026-06-en"], KB, settings)}
+    assert "rupees thirty" in june["Rule 3"].text  # the superseded text differs: kept for history only
+
+
+def test_consumer_protection_act_sections(settings, manifest):
+    secs = {e.section_ref: e for e in entries_from_source(manifest["consumer-protection-act-2019"], KB, settings)}
+    assert "two years from the date on which the cause of action" in secs["Section 69"].text
+    assert secs["Section 34"].text.lstrip().startswith("34.") and "District Commission" in secs["Section 34"].text
+    assert secs["Section 107"].text.rstrip().find("repealed") != -1
+    assert manifest["consumer-protection-act-2019"]["notes"]
+
+
+def test_fee_question_returns_current_rules_never_superseded_ones(container):
     hits = container.retriever.retrieve("What is the application fee for an RTI request in Maharashtra and the fee per page?", top_k=8)
     ids = [h.chunk.kb_id for h in hits]
-    assert any(i.startswith("mh-rti-rules-2026") for i in ids)
-    assert not any(i.startswith("mh-rti-rules-2005") for i in ids)
+    assert any(i.startswith("mh-rti-rules-2026-07") for i in ids)
+    assert not any(i.startswith(("mh-rti-rules-2026-06", "mh-rti-rules-2005")) for i in ids)
     assert all(h.chunk.status == "in_force" for h in hits)
+
+
+def test_limitation_question_finds_consumer_act_section_69(container):
+    ids = [h.chunk.kb_id for h in container.retriever.retrieve("within how many years must a consumer complaint be filed limitation period", top_k=5)]
+    assert "consumer-protection-act-2019-s69" in ids
 
 
 def test_provenance_reaches_the_source_object(container):
     from app.llm.simplifier import hits_to_sources, source_header
 
-    hits = container.retriever.retrieve("fee for providing information rupees per page A-4", top_k=3)
+    hits = container.retriever.retrieve("fee for providing information rupees two for each page copied", top_k=3)
     src = hits_to_sources(hits)[0]
     official = next(s for s in hits_to_sources(hits) if s.source_type == "official_pdf")
-    assert official.version_date == "2026-06-12" and official.gazette_ref and official.verified_at is None
-    assert "official text, current as of 2026-06-12" in source_header(official)
+    assert official.version_date == "2026-07-07" and official.gazette_ref and official.verified_at is None
+    assert "official text, current as of 2026-07-07" in source_header(official)
     assert src.status == "in_force"
 
 
@@ -83,3 +110,11 @@ def test_seed_summaries_are_labelled_unverified(container):
     hits = container.retriever.retrieve("cheque dishonoured notice complaint magistrate section 138", top_k=3)
     seeds = [s for s in hits_to_sources(hits) if s.source_type == "seed_summary"]
     assert seeds and all("unverified summary" in source_header(s) for s in seeds)
+
+
+def test_notes_reach_the_prompt_header(container):
+    from app.llm.simplifier import hits_to_sources, source_header
+
+    hits = container.retriever.retrieve("consumer complaint District Commission jurisdiction value of goods one crore rupees", top_k=6)
+    cp = next(s for s in hits_to_sources(hits) if s.kb_id.startswith("consumer-protection-act-2019"))
+    assert "NOTE:" in source_header(cp) and "Rules, 2021" in source_header(cp)

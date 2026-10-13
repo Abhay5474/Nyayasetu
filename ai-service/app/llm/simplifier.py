@@ -73,7 +73,7 @@ def build_queries(text: str) -> list[str]:
 
 
 _PROVENANCE_KEYS = {"source_type", "source_title", "source_url", "gazette_ref", "section_ref", "version_date",
-                    "verified_at", "verified_by", "ocr"}
+                    "verified_at", "verified_by", "ocr", "notes"}
 
 
 def source_header(s: Source) -> str:
@@ -82,6 +82,8 @@ def source_header(s: Source) -> str:
         tag = f"official text, current as of {s.version_date or 'unknown date'}, {s.status.replace('_', ' ')}"
         if s.ocr:
             tag += ", OCR"
+        if s.notes:
+            tag += f"; NOTE: {s.notes}"
     else:
         tag = "unverified summary"
     return f"[{s.source_id}] {s.citation} ({s.kind}, {s.jurisdiction}; {tag})"
