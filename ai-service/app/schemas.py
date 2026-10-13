@@ -90,6 +90,17 @@ class SimplifiedDocument(BaseModel):
 # --------------------------------------------------------------------------- RAG sources
 class Source(BaseModel):
     source_id: str  # S1, S2 ... (per response)
+    # provenance - shown next to every citation so users can judge how far to trust it
+    source_type: str = "seed_summary"  # official_pdf | seed_summary
+    source_title: Optional[str] = None
+    source_url: Optional[str] = None
+    gazette_ref: Optional[str] = None
+    section_ref: Optional[str] = None
+    version_date: Optional[str] = None  # date the text is current as of
+    verified_at: Optional[str] = None
+    verified_by: Optional[str] = None
+    status: str = "in_force"
+    ocr: bool = False
     kb_id: str
     kind: str  # act | rule | notification | judgment | other
     title: str
@@ -124,6 +135,17 @@ class KbEntry(BaseModel):
     jurisdiction: str = "India"
     language: str = "en"
     text: str = Field(min_length=10)
+    status: Literal["in_force", "superseded", "repealed"] = "in_force"
+    # provenance (all optional; seed entries have none and are shown as unverified summaries)
+    source_type: Literal["official_pdf", "seed_summary"] = "seed_summary"
+    source_title: Optional[str] = None
+    source_url: Optional[str] = None
+    gazette_ref: Optional[str] = None
+    section_ref: Optional[str] = None
+    version_date: Optional[str] = None
+    verified_at: Optional[str] = None
+    verified_by: Optional[str] = None
+    ocr: bool = False
 
 
 class KbIngestRequest(BaseModel):

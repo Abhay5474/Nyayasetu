@@ -9,7 +9,7 @@ def top_ids(container, query, k=3):
 
 
 def test_kb_loaded(container):
-    assert container.store.count() >= 28
+    assert container.store.count() >= 120  # seed summaries + parsed official sources
 
 
 def test_english_questions_hit_right_provisions(container):

@@ -4,6 +4,7 @@ import { errorMessage } from '../api/client';
 import { ChatApi } from '../api/endpoints';
 import { useI18n } from '../context/I18nContext';
 import { Alert, Spinner } from './ui';
+import { ProvenanceBadge, ProvenanceDetails } from './results/Provenance';
 
 const MAX = 1000;
 
@@ -40,7 +41,11 @@ function AssistantExtras({ details, onAsk, isLast, disabled }) {
             ))}
           </div>
           {sources.filter((s) => s.source_id === openSource).map((s) => (
-            <p key={s.source_id} className="mt-2 animate-fade-in whitespace-pre-line rounded-lg bg-ink-50 p-3 text-xs leading-relaxed text-ink-600">{s.snippet}</p>
+            <div key={s.source_id} className="mt-2 animate-fade-in">
+              <div className="mb-1.5"><ProvenanceBadge source={s} /></div>
+              <p className="whitespace-pre-line rounded-lg bg-ink-50 p-3 text-xs leading-relaxed text-ink-600">{s.snippet}</p>
+              <ProvenanceDetails source={s} />
+            </div>
           ))}
         </div>
       )}

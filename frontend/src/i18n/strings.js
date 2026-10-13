@@ -71,6 +71,11 @@ export const strings = {
       notReady: 'The document is still being read. You can ask questions as soon as that finishes.', demo: 'Demo mode',
       hint: 'Enter to send · Shift+Enter for a new line', you: 'You', assistant: 'NyayaSetu', answerIn: 'Answer in',
     },
+    prov: {
+      official: 'Official text', unverified: 'Unverified summary', asOf: 'Text as of {date}', verified: 'Verified {date}{by}',
+      notVerified: 'Not yet verified by a reviewer', ocr: 'Read from a scan – may contain recognition errors', openSource: 'Open official source',
+      gazette: 'Published as', unverifiedNote: 'This is a summary written for this app, not checked against the official text. Confirm it before relying on it.',
+    },
     deadlines: {
       title: 'Your deadlines', sub: 'Everything time-bound that we found in your documents.', overdue: 'Overdue', week: 'Next 7 days', later: 'Later',
       noDate: 'Time limit (no fixed date)', done: 'Completed', empty: 'No deadlines yet. They appear here after a document is processed.', fromDoc: 'From',
@@ -153,6 +158,11 @@ export const strings = {
       fromDoc: 'कागदपत्रातून', notFound: 'कागदपत्रात आढळले नाही', sources: 'कायदेशीर स्रोत', followUps: 'तुम्ही हेही विचारू शकता',
       notReady: 'कागदपत्र अजून वाचले जात आहे. ते पूर्ण होताच तुम्ही प्रश्न विचारू शकता.', demo: 'डेमो मोड',
       hint: 'पाठवण्यासाठी Enter · नवीन ओळीसाठी Shift+Enter', you: 'तुम्ही', assistant: 'न्यायसेतू', answerIn: 'उत्तराची भाषा',
+    },
+    prov: {
+      official: 'अधिकृत मजकूर', unverified: 'अपडताळलेला सारांश', asOf: '{date} रोजीचा मजकूर', verified: 'पडताळले {date}{by}',
+      notVerified: 'अजून कोणत्याही तपासनीसाने पडताळलेले नाही', ocr: 'स्कॅनवरून वाचलेला मजकूर – ओळखण्यात चुका असू शकतात', openSource: 'अधिकृत स्रोत उघडा',
+      gazette: 'प्रसिद्धी', unverifiedNote: 'हा या अ‍ॅपसाठी लिहिलेला सारांश आहे, अधिकृत मजकुराशी पडताळलेला नाही. यावर अवलंबून राहण्यापूर्वी खात्री करा.',
     },
     deadlines: {
       title: 'तुमच्या मुदती', sub: 'तुमच्या कागदपत्रांतील सर्व कालमर्यादा येथे दिसतात.', overdue: 'मुदत उलटलेल्या', week: 'पुढील 7 दिवस', later: 'नंतरच्या',

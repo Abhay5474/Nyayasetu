@@ -37,3 +37,12 @@ def test_chunking_respects_size_and_sentences():
     assert all(len(c) <= 400 for c in chunks)
     marathi = "। ".join(f"वाक्य क्रमांक {i} अपील संदर्भात आहे" for i in range(100))
     assert all(len(c) <= 400 for c in chunk_text(marathi, 400, 50))
+
+
+def test_detects_garbled_devanagari_text_layer():
+    from app.processing.cleaning import looks_garbled
+
+    garbled = "महाारााष्ट्रट शाासन रााजपत्र असाधाारण भााग चाार-अ वर्षष १२ अंंक ७२ शुुक्रवार प्रााधि�कृृत प्रकााशन" * 2
+    clean = "महाराष्ट्र शासन राजपत्र असाधारण भाग चार-अ वर्ष १२ अंक ७२ शुक्रवार प्राधिकृत प्रकाशन" * 2
+    assert looks_garbled(garbled) and not looks_garbled(clean)
+    assert not looks_garbled("Plain English text without any Devanagari at all, just a long sentence." * 3)

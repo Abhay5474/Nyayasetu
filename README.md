@@ -60,12 +60,31 @@ translate or truly simplify, and the UI says so).
 AI service (internal, `X-Internal-Token`): `/v1/extract`, `/v1/simplify`, `/v1/chat`, `/v1/kb/search`, `/v1/kb/ingest`, `/health`.
 
 ## Knowledge base
-`ai-service/knowledge_base/*.json` ships a **small seed corpus** (RTI Act 2005 sections, RTI fee rules, key judgments, Consumer
-Protection Act 2019, Limitation Act, NI Act §138, BNSS/BNS highlights, Marathi summaries). These are paraphrased summaries for
-demonstration — **verify against official gazette text before relying on them** and extend them for production:
+Two kinds of content, clearly separated and labelled in the UI on every citation:
+
+* **Official texts** (`ai-service/knowledge_base/sources/*.pdf` + `manifest.json`): Acts, Rules and gazette notifications.
+  Currently loaded: Maharashtra RTI Rules, **2026** (English + Marathi, in force from 12 Jun 2026), the Maharashtra RTI Rules,
+  2005 (kept but marked *superseded*, never retrieved), and the authorised Marathi text of the RTI Act 2005 (as in force 1 Dec 2014).
+* **Seed summaries** (`knowledge_base/*.json`): short paraphrases written for this project (RTI Act sections, a few judgments,
+  Consumer Protection, NI Act, BNSS/BNS ...). They are shown as **"Unverified summary"** and are replaced as official PDFs are added.
+
+**Adding an official PDF**
+1. Copy the PDF to `knowledge_base/sources/` and add an entry to `sources/manifest.json` (`title`, `kind`, `language`, `jurisdiction`,
+   `version_date`, `status` = `in_force`/`superseded`, `gazette_ref`, `source_url`, `parser` = `numbered` (one entry per section/rule,
+   optional `expected_provisions` check) or `paragraphs` (noisy scans)).
+2. `python -m app.rag.ingest` - text is extracted (PyMuPDF; Tesseract OCR for scans; a corrupted Devanagari text layer is detected and
+   OCR'd instead) and saved to `knowledge_base/extracted/<id>.txt`. **Proofread that file** (OCR can misread digits) - it is what gets
+   ingested. Re-running only re-embeds changed text and removes entries that no longer exist.
+3. After a person has checked the text against the official source, set `verified_at` and `verified_by` in the manifest; the UI then shows
+   "Verified <date> · <name>" instead of "Not yet verified".
+
+Superseded/repealed entries are excluded from retrieval. The prompts tell the model to prefer official text over unverified summaries and
+to flag when it relies on a summary. Known gap: the English RTI Act 2005 PDF supplied was corrupted (its page images cannot be decoded);
+until a good copy is loaded the English Act sections come from the unverified seed summaries.
+
 ```bash
-python -m app.rag.ingest path/to/acts_dir     # .json entries, .md/.txt, or .pdf; idempotent
-curl -H "X-Internal-Token: …" -X POST :8000/v1/kb/ingest -d '{"entries":[…]}'
+python -m app.rag.ingest                     # whole knowledge_base/ (official + seed)
+curl -H "X-Internal-Token: …" -X POST :8000/v1/kb/ingest -d '{"entries":[…]}'   # ad-hoc additive entries
 ```
 
 ## Local development

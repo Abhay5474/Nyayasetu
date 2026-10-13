@@ -15,7 +15,7 @@ from pydantic import ValidationError
 from app.config import Settings
 from app.llm import mock_generator
 from app.llm.prompts import CHAT_HUMAN, CHAT_SCHEMA, CHAT_SYSTEM, LANGUAGE_NAMES, REPAIR_HUMAN
-from app.llm.simplifier import GenerationError, extract_json, hits_to_sources
+from app.llm.simplifier import GenerationError, extract_json, hits_to_sources, source_header
 from app.processing.chunking import chunk_text
 from app.rag.embeddings import Embedder
 from app.rag.reranker import LexicalReranker
@@ -131,7 +131,7 @@ class DocumentChat:
 
     def _messages(self, excerpts: str, sources: list[Source], question: str, language: str,
                   history: list[ChatTurn]) -> list[BaseMessage]:
-        source_block = "\n\n".join(f"[{s.source_id}] {s.citation}\n{s.snippet}" for s in sources) or "(none available)"
+        source_block = "\n\n".join(f"{source_header(s)}\n{s.snippet}" for s in sources) or "(none available)"
         system = CHAT_SYSTEM.format(language_name=LANGUAGE_NAMES[language], today=dt.date.today().isoformat(),
                                     schema=CHAT_SCHEMA)
         messages: list[BaseMessage] = [SystemMessage(content=system)]

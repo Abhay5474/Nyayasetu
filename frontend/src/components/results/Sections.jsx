@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { fmt, useI18n } from '../../context/I18nContext';
 import { daysUntil, formatDate } from '../../utils/format';
 import { Spinner } from '../ui';
+import { ProvenanceBadge, ProvenanceDetails } from './Provenance';
 
 export function SectionHeader({ icon: Icon, children, count }) {
   return (
@@ -217,11 +218,17 @@ export function SourceCitations({ sources }) {
                       <span className={`chip ${KIND_STYLE[s.kind] || KIND_STYLE.other}`}>{KIND[s.kind] || KIND.other}</span>
                       <span className="chip bg-ink-100 text-ink-600">{s.jurisdiction}</span>
                       <span className={`chip ${s.cited ? 'bg-emerald-100 text-emerald-800' : 'bg-ink-100 text-ink-500'}`}>{s.cited ? t.doc.cited : t.doc.related}</span>
+                      <ProvenanceBadge source={s} />
                     </span>
                   </span>
                   <ChevronDown className={`mt-1 h-4 w-4 shrink-0 text-ink-400 transition ${isOpen ? 'rotate-180' : ''}`} />
                 </button>
-                {isOpen && <p className="animate-fade-in whitespace-pre-line border-t border-ink-100 bg-white px-4 py-3.5 text-sm leading-relaxed text-ink-600">{s.snippet}</p>}
+                {isOpen && (
+                  <div className="animate-fade-in border-t border-ink-100 bg-white px-4 py-3.5">
+                    <p className="whitespace-pre-line text-sm leading-relaxed text-ink-600">{s.snippet}</p>
+                    <ProvenanceDetails source={s} />
+                  </div>
+                )}
               </li>
             );
           })}

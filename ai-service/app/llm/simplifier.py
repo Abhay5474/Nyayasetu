@@ -72,6 +72,21 @@ def build_queries(text: str) -> list[str]:
     return queries
 
 
+_PROVENANCE_KEYS = {"source_type", "source_title", "source_url", "gazette_ref", "section_ref", "version_date",
+                    "verified_at", "verified_by", "ocr"}
+
+
+def source_header(s: Source) -> str:
+    """Label shown to the LLM (and used in prompts) so it can weigh official text above unverified summaries."""
+    if s.source_type == "official_pdf":
+        tag = f"official text, current as of {s.version_date or 'unknown date'}, {s.status.replace('_', ' ')}"
+        if s.ocr:
+            tag += ", OCR"
+    else:
+        tag = "unverified summary"
+    return f"[{s.source_id}] {s.citation} ({s.kind}, {s.jurisdiction}; {tag})"
+
+
 def hits_to_sources(hits: list[Hit]) -> list[Source]:
     """Number retrieved chunks S1, S2, ... so the LLM can cite them."""
     return [
@@ -84,6 +99,8 @@ def hits_to_sources(hits: list[Hit]) -> list[Source]:
             jurisdiction=h.chunk.jurisdiction,
             snippet=h.chunk.text,
             score=round(h.score, 4),
+            status=h.chunk.status,
+            **{k: v for k, v in h.chunk.meta.items() if k in _PROVENANCE_KEYS and v is not None},
         )
         for i, h in enumerate(hits, start=1)
     ]
@@ -145,7 +162,7 @@ class Simplifier:
     def _generate(self, document: str, language: str, sources: list[Source]) -> SimplifiedDocument:
         assert self.llm is not None
         source_block = "\n\n".join(
-            f"[{s.source_id}] {s.citation} ({s.kind}, {s.jurisdiction})\n{s.snippet}" for s in sources
+            f"{source_header(s)}\n{s.snippet}" for s in sources
         ) or "(none available)"
         prompt = ChatPromptTemplate.from_messages([("system", SYSTEM_PROMPT), ("human", HUMAN_PROMPT)])
         variables = {

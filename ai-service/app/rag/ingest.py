@@ -22,12 +22,24 @@ KB_CHUNK_SIZE = 1200
 KB_CHUNK_OVERLAP = 150
 
 
-def entry_to_chunks(entry: KbEntry) -> list[Chunk]:
+def entry_to_chunks(entry: KbEntry, origin: str = "files") -> list[Chunk]:
     parts = chunk_text(entry.text, KB_CHUNK_SIZE, KB_CHUNK_OVERLAP) or [entry.text]
     chunks = []
     for i, part in enumerate(parts):
+        meta = {
+            "origin": origin,
+            "source_type": entry.source_type,
+            "source_title": entry.source_title,
+            "source_url": entry.source_url,
+            "gazette_ref": entry.gazette_ref,
+            "section_ref": entry.section_ref,
+            "version_date": entry.version_date,
+            "verified_at": entry.verified_at,
+            "verified_by": entry.verified_by,
+            "ocr": entry.ocr,
+        }
         digest = hashlib.sha256(
-            f"{entry.title}|{entry.citation}|{entry.kind}|{entry.jurisdiction}|{part}".encode()
+            f"{entry.title}|{entry.citation}|{entry.kind}|{entry.jurisdiction}|{entry.status}|{json.dumps(meta, sort_keys=True)}|{part}".encode()
         ).hexdigest()
         chunks.append(
             Chunk(
@@ -40,15 +52,17 @@ def entry_to_chunks(entry: KbEntry) -> list[Chunk]:
                 language=entry.language,
                 text=part,
                 content_hash=digest,
+                status=entry.status,
+                meta=meta,
             )
         )
     return chunks
 
 
-def ingest_entries(entries: list[KbEntry], store: KnowledgeStore, embedder: Embedder) -> tuple[int, int]:
+def ingest_entries(entries: list[KbEntry], store: KnowledgeStore, embedder: Embedder, origin: str = "api") -> tuple[int, int]:
     """Embed and upsert only chunks that are new or changed. Returns (entries, chunks written)."""
     known = store.existing_hashes()
-    pending = [c for e in entries for c in entry_to_chunks(e) if known.get(c.id) != c.content_hash]
+    pending = [c for e in entries for c in entry_to_chunks(e, origin) if known.get(c.id) != c.content_hash]
     for start in range(0, len(pending), 32):
         batch = pending[start : start + 32]
         vectors = embedder.embed_documents([f"{c.title}. {c.citation}. {c.text}" for c in batch])
@@ -75,15 +89,36 @@ def load_entries(path: Path) -> list[KbEntry]:
     return [KbEntry(id=path.stem.lower(), kind="other", title=title, citation=title, text=text)]
 
 
-def ingest_path(path: Path, store: KnowledgeStore, embedder: Embedder) -> tuple[int, int]:
-    files = sorted(p for p in path.rglob("*") if p.is_file()) if path.is_dir() else [path]
+def ingest_path(path: Path, store: KnowledgeStore, embedder: Embedder, prune: bool | None = None) -> tuple[int, int]:
+    """Ingest a knowledge-base directory (or a single file).
+
+    A directory is treated as the source of truth: its JSON entries and the PDFs listed in
+    `sources/manifest.json` are loaded, and previously ingested file-origin entries that no longer exist are removed.
+    """
+    settings = get_settings()
     entries: list[KbEntry] = []
+    if path.is_dir():
+        from app.rag.sources import entries_from_source, load_manifest
+
+        for src in load_manifest(path):
+            try:
+                entries.extend(entries_from_source(src, path, settings))
+            except Exception:
+                log.exception("Could not load official source %s", src.get("id"))
+        files = sorted(p for p in path.glob("*") if p.is_file())  # top-level JSON/MD/TXT only (sources/ is separate)
+    else:
+        files = [path]
     for f in files:
         try:
             entries.extend(load_entries(f))
         except Exception:
             log.exception("Skipping unreadable knowledge-base file %s", f)
-    return ingest_entries(entries, store, embedder)
+    result = ingest_entries(entries, store, embedder, origin="files")
+    if prune if prune is not None else path.is_dir():
+        removed = store.prune("files", {e.id for e in entries})
+        if removed:
+            log.info("Pruned %d stale knowledge-base chunk(s)", removed)
+    return result
 
 
 def main(argv: list[str]) -> int:

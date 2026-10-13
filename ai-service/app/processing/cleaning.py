@@ -31,6 +31,21 @@ def detect_language(text: str) -> str:
     return "hi" if hi > mr else "mr"
 
 
+_DOUBLED_SIGN = re.compile(r"([\u093E-\u094C\u0941\u0942\u0947\u0948])\1")
+
+
+def looks_garbled(text: str) -> bool:
+    """True for a broken Devanagari text layer (common in Maharashtra gazette PDFs).
+
+    Bad font encodings make extraction double vowel signs ("भााग", "शाासन") or emit U+FFFD. Real Marathi never
+    repeats the same dependent vowel sign back to back, so even a small share is a reliable tell.
+    """
+    deva = len(_DEVANAGARI.findall(text))
+    if deva < 30:
+        return False
+    return len(_DOUBLED_SIGN.findall(text)) / deva > 0.015 or text.count("\ufffd") / max(len(text), 1) > 0.01
+
+
 def _normalise_line(line: str) -> str:
     return re.sub(r"\s+", " ", line).strip()
 

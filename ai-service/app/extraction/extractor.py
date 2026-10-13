@@ -11,7 +11,7 @@ from PIL import Image
 
 from app.config import Settings
 from app.extraction.ocr import OcrEngine, build_ocr_engine
-from app.processing.cleaning import clean_pages, detect_language
+from app.processing.cleaning import clean_pages, detect_language, looks_garbled
 
 log = logging.getLogger(__name__)
 
@@ -94,9 +94,9 @@ class DocumentExtractor:
             for index in range(min(total, s.max_pages)):
                 page = doc[index]
                 text = page.get_text("text", sort=True)
-                if len(text.strip()) < s.min_chars_per_page:
+                if len(text.strip()) < s.min_chars_per_page or looks_garbled(text):
                     ocr_text = self._ocr_pdf_page(page, index + 1, warnings)
-                    if len(ocr_text.strip()) > len(text.strip()):
+                    if ocr_text.strip() and (len(ocr_text.strip()) > len(text.strip()) or looks_garbled(text)):
                         text = ocr_text
                         ocr_pages.append(index + 1)
                 pages.append(text)
