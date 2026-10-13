@@ -1,0 +1,24 @@
+# Versions below were tested together; ranges allow patch/minor updates only.
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30,<1
+python-multipart>=0.0.9
+pydantic>=2.8,<3
+pydantic-settings>=2.4,<3
+
+# document processing / OCR
+pymupdf>=1.24.3,<2
+pytesseract>=0.3.10,<0.4
+Pillow>=10.4
+
+# LLM orchestration
+langchain-core>=0.3,<2
+langchain-text-splitters>=0.3,<2
+langchain-anthropic>=0.3,<2
+langchain-openai>=0.2,<2
+langchain-ollama>=0.2,<2
+
+# RAG: pgvector + multilingual embeddings / reranker (ONNX, no PyTorch)
+psycopg[binary,pool]>=3.2,<4
+pgvector>=0.3,<1
+fastembed>=0.5,<1
+numpy>=1.26

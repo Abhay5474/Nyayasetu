@@ -1,0 +1,155 @@
+[
+  {
+    "id": "rti-act-s4-s5",
+    "kind": "act",
+    "title": "Right to Information Act, 2005",
+    "citation": "RTI Act, 2005 - Sections 4 and 5 (proactive disclosure; Public Information Officers)",
+    "jurisdiction": "India",
+    "language": "en",
+    "text": "Section 4(1)(b): every public authority must proactively publish details of its organisation, functions, duties, powers, decision-making procedure, rules, budget, subsidy programmes and the names and designations of its Public Information Officers, so that citizens need to use the Act as little as possible. Section 5: every public authority must designate a Central or State Public Information Officer (PIO) in all administrative units to receive RTI requests, and Assistant PIOs at sub-divisional or sub-district level who forward applications and appeals to the PIO or the appellate authority. A PIO may seek the assistance of any other officer, who is then treated as a PIO for the purpose of contraventions."
+  },
+  {
+    "id": "rti-act-s6",
+    "kind": "act",
+    "title": "Right to Information Act, 2005",
+    "citation": "RTI Act, 2005 - Section 6 (request for obtaining information)",
+    "jurisdiction": "India",
+    "language": "en",
+    "text": "Section 6(1): a person who wants information must apply in writing or through electronic means, in English, Hindi or the official language of the area, to the PIO (or Assistant PIO) of the concerned public authority, specifying the particulars of the information sought and paying the prescribed fee. If the applicant cannot make the request in writing, the PIO must render all reasonable assistance to reduce an oral request to writing. Section 6(2): the applicant is not required to give any reason for requesting the information or any personal details other than those needed to contact them. Section 6(3): if the application concerns information held by another public authority, or is more closely connected with its functions, the PIO must transfer the application (or the relevant part) to that authority within 5 days and inform the applicant immediately."
+  },
+  {
+    "id": "rti-act-s7",
+    "kind": "act",
+    "title": "Right to Information Act, 2005",
+    "citation": "RTI Act, 2005 - Section 7 (disposal of request)",
+    "jurisdiction": "India",
+    "language": "en",
+    "text": "Section 7(1): on receiving a request the PIO must, as expeditiously as possible and in any case within 30 days of receipt, either provide the information on payment of the prescribed fee or reject the request for reasons specified in Sections 8 and 9. Where the information concerns the life or liberty of a person, it must be provided within 48 hours. Section 7(2): if the PIO fails to decide within the period, the PIO is deemed to have refused the request (deemed refusal). Section 7(3): where further fee is payable for the cost of providing information, the PIO must send the applicant written intimation with the calculation of the fee and the right to seek a review of the fee; the period between sending the fee demand and payment is excluded from the 30 days. Section 7(5): no fee is charged to persons who are below the poverty line (BPL) as determined by the appropriate Government. Section 7(6): if the PIO fails to comply with the time limit, the information must be provided to the applicant free of charge. Section 7(8): when a request is rejected, the PIO must communicate the reasons for rejection, the period within which an appeal may be preferred, and the particulars of the appellate authority."
+  },
+  {
+    "id": "rti-act-s8",
+    "kind": "act",
+    "title": "Right to Information Act, 2005",
+    "citation": "RTI Act, 2005 - Section 8 (exemptions from disclosure)",
+    "jurisdiction": "India",
+    "language": "en",
+    "text": "Section 8(1) exempts, among others: (a) information affecting the sovereignty, integrity, security, strategic, scientific or economic interests of the State or relations with a foreign State; (b) information expressly forbidden to be published by a court or tribunal; (c) information causing a breach of privilege of Parliament or a State Legislature; (d) commercial confidence, trade secrets or intellectual property, unless a larger public interest warrants disclosure; (e) information available to a person in a fiduciary relationship, unless a larger public interest warrants disclosure; (f) information received in confidence from a foreign government; (g) information that would endanger the life or physical safety of any person or identify a confidential source; (h) information that would impede the process of investigation, apprehension or prosecution of offenders; (i) Cabinet papers, until the decision is taken and the matter is complete; (j) personal information that has no relationship to any public activity or interest, or would cause unwarranted invasion of privacy, unless the PIO or appellate authority is satisfied that a larger public interest justifies disclosure. Information that cannot be denied to Parliament or a State Legislature cannot be denied to any person. Section 8(2): despite the exemptions or the Official Secrets Act, 1923, access may be allowed if the public interest in disclosure outweighs the harm to the protected interest. Section 8(3): information relating to any occurrence, event or matter that took place 20 years before the request must be provided, subject to certain exceptions (such as Sections 8(1)(a), (c) and (i))."
+  },
+  {
+    "id": "rti-act-s9-s10",
+    "kind": "act",
+    "title": "Right to Information Act, 2005",
+    "citation": "RTI Act, 2005 - Sections 9 and 10 (copyright; severability)",
+    "jurisdiction": "India",
+    "language": "en",
+    "text": "Section 9: a PIO may reject a request where providing access would involve an infringement of copyright subsisting in a person other than the State. Section 10 (severability): where a request is rejected because part of the record is exempt, access must be provided to the part of the record that contains non-exempt information and can reasonably be severed. The PIO must give notice of the decision, the reasons, the name and designation of the person giving the decision, the fee calculation and the right to review."
+  },
+  {
+    "id": "rti-act-s11",
+    "kind": "act",
+    "title": "Right to Information Act, 2005",
+    "citation": "RTI Act, 2005 - Section 11 (third-party information)",
+    "jurisdiction": "India",
+    "language": "en",
+    "text": "Section 11: if the information relates to or was supplied by a third party and that party has treated it as confidential, the PIO must, within 5 days of receiving the request, give the third party written notice and invite them to make a submission on whether it should be disclosed. The third party gets 10 days from receipt of the notice to make a representation. The PIO must decide after considering the representation, and disclosure is allowed if the public interest in disclosure outweighs the possible harm to the third party. The third party may file an appeal against the decision under Section 19."
+  },
+  {
+    "id": "rti-act-s18",
+    "kind": "act",
+    "title": "Right to Information Act, 2005",
+    "citation": "RTI Act, 2005 - Section 18 (complaints to the Information Commission)",
+    "jurisdiction": "India",
+    "language": "en",
+    "text": "Section 18(1): the Central or State Information Commission must receive and inquire into a complaint from any person who has been unable to submit a request because no PIO has been appointed; who was refused information; who received no response within the time limit; who was asked to pay an unreasonable fee; who believes the information given is incomplete, misleading or false; or about any other matter relating to obtaining records under the Act. A complaint under Section 18 is different from an appeal under Section 19 and has no fixed limitation period in the Act."
+  },
+  {
+    "id": "rti-act-s19",
+    "kind": "act",
+    "title": "Right to Information Act, 2005",
+    "citation": "RTI Act, 2005 - Section 19 (appeals)",
+    "jurisdiction": "India",
+    "language": "en",
+    "text": "Section 19(1): a person who has not received a decision within the time limit, or is aggrieved by a PIO's decision, may file a first appeal within 30 days from the expiry of that period or from the receipt of the decision, to the officer who is senior in rank to the PIO in the same public authority. The appellate authority may admit an appeal after 30 days if satisfied that the appellant was prevented by sufficient cause. Section 19(3): a second appeal against the first appellate authority's decision lies to the Central or State Information Commission within 90 days from the date on which the decision was made or should have been received. Section 19(5): in any appeal proceeding, the onus of proving that a denial of a request was justified lies on the PIO who denied it. Section 19(6): the first appeal must be disposed of within 30 days of receipt, extendable to a maximum of 45 days for reasons recorded in writing."
+  },
+  {
+    "id": "rti-act-s20",
+    "kind": "act",
+    "title": "Right to Information Act, 2005",
+    "citation": "RTI Act, 2005 - Section 20 (penalties)",
+    "jurisdiction": "India",
+    "language": "en",
+    "text": "Section 20(1): where the Information Commission finds that a PIO, without reasonable cause, refused to receive an application, did not furnish information within the time specified, malafidely denied the request, knowingly gave incorrect, incomplete or misleading information, or destroyed information that was the subject of the request, it shall impose a penalty of Rs 250 per day until the application is received or information furnished, up to a maximum of Rs 25,000. The PIO must be given a reasonable opportunity of being heard, and the burden of proving that they acted reasonably lies on the PIO. Section 20(2): the Commission can recommend disciplinary action against a PIO who persistently fails without reasonable cause."
+  },
+  {
+    "id": "rti-act-s24",
+    "kind": "act",
+    "title": "Right to Information Act, 2005",
+    "citation": "RTI Act, 2005 - Section 24 (exempt organisations)",
+    "jurisdiction": "India",
+    "language": "en",
+    "text": "Section 24(1): the Act does not apply to the intelligence and security organisations listed in the Second Schedule of the Act (for example the Intelligence Bureau, R&AW and certain paramilitary and security organisations), or to information furnished by them to the Government. However, information pertaining to allegations of corruption and human rights violations is not excluded; for allegations of human rights violations, the Information Commission's approval is needed and the information must be provided within 45 days of the Commission's approval. State Governments may notify similar exempt organisations."
+  },
+  {
+    "id": "rti-rules-2012-central",
+    "kind": "rule",
+    "title": "Right to Information Rules, 2012 (Central Government)",
+    "citation": "Right to Information Rules, 2012 - application fee, copying charges and inspection",
+    "jurisdiction": "India",
+    "language": "en",
+    "text": "For Central Government public authorities, the Right to Information Rules, 2012 prescribe an application fee of Rs 10. Further fee is charged at Rs 2 for each page (in A4 or A3 size paper) created or copied; actual cost or price for larger-size paper; actual cost for samples or models; and the prescribed price for publications. Inspection of records is free for the first hour and costs Rs 5 for each subsequent fifteen minutes (or fraction thereof). Fee may be paid in cash against a receipt, by demand draft, banker's cheque or Indian Postal Order payable to the Accounts Officer of the public authority, or electronically through the RTI Online portal (rtionline.gov.in) for participating Central ministries and departments. Persons below the poverty line are exempt from fees on providing proof."
+  },
+  {
+    "id": "rti-maharashtra-fee",
+    "kind": "rule",
+    "title": "Maharashtra Right to Information Rules",
+    "citation": "Maharashtra Right to Information Rules, 2005 - fees (summary; verify with the current official rules)",
+    "jurisdiction": "India",
+    "language": "en",
+    "text": "Under the Maharashtra Right to Information Rules, an application to a State public authority in Maharashtra carries a fee of Rs 10, payable by court-fee stamp, cash against a receipt, or other modes allowed by the rules. Additional charges apply for photocopies (about Rs 2 per page of A4 size) and for samples, models and publications at actual cost. Applicants below the poverty line are exempt. Second appeals against decisions of Maharashtra authorities lie to the Maharashtra State Information Commission. Maharashtra also operates an online RTI facility for State departments; check the Government of Maharashtra RTI portal for the current list of participating offices."
+  },
+  {
+    "id": "rti-notif-online-portal",
+    "kind": "notification",
+    "title": "Government RTI Online Portal",
+    "citation": "DoPT - RTI Online Portal for Central Government public authorities",
+    "jurisdiction": "India",
+    "language": "en",
+    "text": "The Department of Personnel and Training (DoPT), Government of India, operates the RTI Online portal (rtionline.gov.in) where citizens can file RTI applications and first appeals to Central Government ministries and departments, pay the fee electronically, and track the status. Applications filed through the portal are treated as received on the date they are submitted. The portal does not cover State Government authorities, which use their own State portals or the offline process of writing to the State PIO."
+  },
+  {
+    "id": "judg-cbse-aditya",
+    "kind": "judgment",
+    "title": "CBSE v. Aditya Bandopadhyay",
+    "citation": "Central Board of Secondary Education v. Aditya Bandopadhyay (2011) 8 SCC 497 (Supreme Court)",
+    "jurisdiction": "India",
+    "language": "en",
+    "text": "The Supreme Court held that an examinee has the right under the RTI Act to inspect and obtain copies of his evaluated answer-books, because they are 'information' held by a public authority. The examining body does not hold answer-books in a fiduciary relationship with the examiner, so the exemption in Section 8(1)(e) does not apply to the examinee's request. The Court also stressed that the RTI Act must be applied with a balance that avoids the disproportionate diversion of public resources and does not paralyse the administration, and that transparency must be reconciled with other public interests such as confidentiality of sensitive information."
+  },
+  {
+    "id": "judg-girish-deshpande",
+    "kind": "judgment",
+    "title": "Girish Ramchandra Deshpande v. CIC",
+    "citation": "Girish Ramchandra Deshpande v. Central Information Commissioner (2013) 1 SCC 212 (Supreme Court)",
+    "jurisdiction": "India",
+    "language": "en",
+    "text": "The Supreme Court held that service records of a public employee, such as performance appraisals, assessments, details of promotions, transfers, show-cause notices, orders of censure or punishment, income-tax returns, medical records and similar details are 'personal information' under Section 8(1)(j) of the RTI Act. They are not disclosable unless the applicant shows a larger public interest, and the PIO or appellate authority must be satisfied about that public interest before disclosure."
+  },
+  {
+    "id": "judg-subhash-agarwal",
+    "kind": "judgment",
+    "title": "CPIO, Supreme Court of India v. Subhash Chandra Agarwal",
+    "citation": "Central Public Information Officer, Supreme Court of India v. Subhash Chandra Agarwal (2020) 5 SCC 481 (Supreme Court)",
+    "jurisdiction": "India",
+    "language": "en",
+    "text": "A Constitution Bench of the Supreme Court held that the office of the Chief Justice of India is a 'public authority' under the RTI Act and that information on judges' assets can be disclosed, since declarations of assets are not 'personal information' as such. The Court held that the right to information and the right to privacy are of equal importance and must be balanced by a proportionality test on a case-by-case basis; the 'larger public interest' test under Sections 8(1)(j) and 8(2) must be applied, and judicial independence is not compromised by transparency about administration."
+  },
+  {
+    "id": "judg-rbi-jayantilal",
+    "kind": "judgment",
+    "title": "Reserve Bank of India v. Jayantilal N. Mistry",
+    "citation": "Reserve Bank of India v. Jayantilal N. Mistry (2016) 3 SCC 525 (Supreme Court)",
+    "jurisdiction": "India",
+    "language": "en",
+    "text": "The Supreme Court held that the Reserve Bank of India does not stand in a fiduciary relationship with the banks it supervises and therefore cannot refuse, on the ground of Section 8(1)(e), to disclose information such as inspection reports and related material to an RTI applicant. Disclosure of information is the rule and exemptions must be construed strictly; the RBI's duty is to protect the public interest rather than the interest of individual banks."
+  }
+]

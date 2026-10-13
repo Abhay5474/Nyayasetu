@@ -1,0 +1,97 @@
+spring:
+  application:
+    name: nyayasetu-backend
+  autoconfigure:
+    exclude:
+      # we authenticate with JWT only; do not generate a default in-memory user
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/nyayasetu}
+    username: ${DB_USER:nyayasetu}
+    password: ${DB_PASSWORD:nyayasetu}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  servlet:
+    multipart:
+      max-file-size: ${MAX_UPLOAD_MB:25}MB
+      max-request-size: ${MAX_UPLOAD_MB:25}MB
+  mail:
+    # Leave MAIL_HOST empty to disable e-mail delivery (alerts are then only logged).
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: ${MAIL_SMTP_AUTH:true}
+      mail.smtp.starttls.enable: ${MAIL_STARTTLS:true}
+  task:
+    scheduling:
+      pool:
+        size: 2
+
+server:
+  port: 8080
+  forward-headers-strategy: framework
+  error:
+    include-message: never
+    include-stacktrace: never
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+      group:
+        readiness:
+          include: readinessState,db,aiService
+  health:
+    mail:
+      enabled: false
+
+nyayasetu:
+  jwt:
+    secret: ${JWT_SECRET:}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:720}
+    issuer: nyayasetu
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+  storage:
+    dir: ${STORAGE_DIR:./uploads}
+    max-size-mb: ${MAX_UPLOAD_MB:25}
+  ai:
+    base-url: ${AI_SERVICE_URL:http://localhost:8000}
+    internal-token: ${AI_INTERNAL_TOKEN:change-me-internal-token}
+    connect-timeout-seconds: 5
+    extract-timeout-seconds: ${AI_EXTRACT_TIMEOUT_SECONDS:300}
+    simplify-timeout-seconds: ${AI_SIMPLIFY_TIMEOUT_SECONDS:240}
+  alerts:
+    enabled: ${ALERTS_ENABLED:false}
+    cron: ${ALERTS_CRON:0 0 8 * * *}
+    # reminders are sent when a deadline is this many days away (7, 3, 1 days before and on the day)
+    reminder-days: ${ALERTS_REMINDER_DAYS:7,3,1,0}
+    mail-from: ${ALERTS_MAIL_FROM:no-reply@nyayasetu.local}
+    sms:
+      provider: ${SMS_PROVIDER:none}  # none | twilio
+      twilio-account-sid: ${TWILIO_ACCOUNT_SID:}
+      twilio-auth-token: ${TWILIO_AUTH_TOKEN:}
+      twilio-from-number: ${TWILIO_FROM_NUMBER:}
+
+logging:
+  level:
+    root: INFO
+    com.nyayasetu: ${LOG_LEVEL:INFO}
