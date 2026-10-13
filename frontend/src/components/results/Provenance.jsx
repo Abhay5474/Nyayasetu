@@ -4,11 +4,14 @@ import { formatDate } from '../../utils/format';
 
 /** Where a cited source comes from and how far it can be trusted. Results saved before provenance existed were
  *  all unverified summaries, so a missing source_type is shown as such. */
+const isOfficial = (source) => source.source_type === 'official_pdf' || source.source_type === 'official_reprint';
+
 export function ProvenanceBadge({ source }) {
   const { t } = useI18n();
-  const official = source.source_type === 'official_pdf';
-  return official ? (
-    <span className="chip bg-emerald-100 text-emerald-800"><ShieldCheck className="h-3 w-3" />{t.prov.official}</span>
+  return isOfficial(source) ? (
+    <span className="chip bg-emerald-100 text-emerald-800"><ShieldCheck className="h-3 w-3" />
+      {source.source_type === 'official_reprint' ? t.prov.reprint : t.prov.official}
+    </span>
   ) : (
     <span className="chip bg-amber-100 text-amber-900"><ShieldQuestion className="h-3 w-3" />{t.prov.unverified}</span>
   );
@@ -16,7 +19,7 @@ export function ProvenanceBadge({ source }) {
 
 export function ProvenanceDetails({ source }) {
   const { t, lang } = useI18n();
-  const official = source.source_type === 'official_pdf';
+  const official = isOfficial(source);
   return (
     <div className="mt-3 space-y-1.5 rounded-lg border border-ink-100 bg-white p-3 text-xs text-ink-600">
       {official ? (

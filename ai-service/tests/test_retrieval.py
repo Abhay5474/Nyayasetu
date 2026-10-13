@@ -13,8 +13,8 @@ def test_kb_loaded(container):
 
 
 def test_english_questions_hit_right_provisions(container):
-    assert "rti-act-s19" in top_ids(container, "How many days do I have to file a first appeal after the PIO rejected my RTI application?")
-    assert "rti-act-s20" in top_ids(container, "penalty of Rs 250 per day on the Public Information Officer for delay")
+    assert "rti-act-2005-en-s19" in top_ids(container, "How many days do I have to file a first appeal after the PIO rejected my RTI application?")
+    assert "rti-act-2005-en-s20" in top_ids(container, "penalty of Rs 250 per day on the Public Information Officer for delay")
     assert "ni-act-138-142" in top_ids(container, "cheque dishonoured demand notice within 30 days complaint magistrate")
 
 
@@ -26,7 +26,7 @@ def test_marathi_queries_hit_marathi_entries(container):
 
 def test_multi_query_retrieval_merges_results(container):
     ids = top_ids(container, ["Section 8(1)(j) personal information exemption", "consumer complaint limitation two years"], k=6)
-    assert "rti-act-s8" in ids and "cpa-2019-limitation-jurisdiction" in ids
+    assert "rti-act-2005-en-s8" in ids and "cpa-2019-limitation-jurisdiction" in ids
 
 
 def test_rrf_prefers_documents_ranked_well_in_both_lists():

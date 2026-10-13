@@ -78,8 +78,9 @@ _PROVENANCE_KEYS = {"source_type", "source_title", "source_url", "gazette_ref", 
 
 def source_header(s: Source) -> str:
     """Label shown to the LLM (and used in prompts) so it can weigh official text above unverified summaries."""
-    if s.source_type == "official_pdf":
-        tag = f"official text, current as of {s.version_date or 'unknown date'}, {s.status.replace('_', ' ')}"
+    if s.source_type in ("official_pdf", "official_reprint"):
+        kind = "official text" if s.source_type == "official_pdf" else "government reprint of the official text"
+        tag = f"{kind}, current as of {s.version_date or 'unknown date'}, {s.status.replace('_', ' ')}"
         if s.ocr:
             tag += ", OCR"
         if s.notes:

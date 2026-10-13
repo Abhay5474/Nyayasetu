@@ -53,7 +53,7 @@ def _slice(text: str, src: dict) -> str:
 def _provenance(src: dict, ocr: bool) -> dict:
     return {
         "status": src.get("status", "in_force"),
-        "source_type": "official_pdf",
+        "source_type": src.get("source_type", "official_pdf"),
         "source_title": src["title"],
         "source_url": src.get("source_url"),
         "gazette_ref": src.get("gazette_ref"),
@@ -96,10 +96,14 @@ def entries_from_source(src: dict, kb_dir: Path, settings: Settings) -> list[KbE
         if expected and len(sections) != expected:
             raise ValueError(f"{src['id']}: parsed {len(sections)} sections, expected {expected}")
         return [
-            KbEntry(id=f"{src['id']}-s{p.number}", citation=f"{short} - Section {p.number}", section_ref=f"Section {p.number}",
+            KbEntry(id=f"{src['id']}-{label[0].lower()}{p.number}", citation=f"{short} - {label} {p.number}",
+                    section_ref=f"{label} {p.number}",
                     text=p.text, **base)
             for p in sections
         ]
+
+    if parser == "single":  # a short instrument kept whole (schedule, amendment notification)
+        return [KbEntry(id=src["id"], citation=short, section_ref=src.get("section_ref"), text=text.strip(), **base)]
 
     # "paragraphs": noisy scans - whole paragraphs, no section labels (numbers cannot be trusted)
     return [

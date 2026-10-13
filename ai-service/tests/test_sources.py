@@ -48,11 +48,12 @@ def _numbered(entries):
 
 def test_manifest_sources_parse_to_the_expected_provisions(settings, manifest):
     expected = {"mh-rti-rules-2026-07-en": 5, "mh-rti-rules-2026-07-mr": 5, "mh-rti-rules-2026-06-en": 27,
-                "mh-rti-rules-2026-06-mr": 27, "mh-rti-rules-2005": 5, "consumer-protection-act-2019": 107}
+                "mh-rti-rules-2026-06-mr": 27, "mh-rti-rules-2005": 5, "consumer-protection-act-2019": 107,
+                "rti-act-2005-en": 31, "rti-fee-rules-2005": 5}
     for sid, n in expected.items():
         entries = entries_from_source(manifest[sid], KB, settings)
         assert len(_numbered(entries)) == n, sid
-        assert all(e.source_type == "official_pdf" and e.version_date for e in entries)
+        assert all(e.source_type == manifest[sid].get("source_type", "official_pdf") and e.version_date for e in entries)
 
 
 def test_supersession_chain_is_recorded(manifest):
@@ -118,3 +119,39 @@ def test_notes_reach_the_prompt_header(container):
     hits = container.retriever.retrieve("consumer complaint District Commission jurisdiction value of goods one crore rupees", top_k=6)
     cp = next(s for s in hits_to_sources(hits) if s.kb_id.startswith("consumer-protection-act-2019"))
     assert "NOTE:" in source_header(cp) and "Rules, 2021" in source_header(cp)
+
+
+def test_english_rti_act_reprint_is_labelled_and_in_order(settings, manifest):
+    from app.llm.simplifier import source_header
+    from app.schemas import Source
+
+    entries = entries_from_source(manifest["rti-act-2005-en"], KB, settings)
+    secs = {e.section_ref: e for e in entries}
+    assert [e.section_ref for e in entries] == [f"Section {i}" for i in range(1, 32)]
+    assert all(e.source_type == "official_reprint" and e.verified_at is None for e in entries)
+    assert "thirty days" in secs["Section 19"].text and "two hundred and fifty rupees" in secs["Section 20"].text
+    assert "thirty days" in secs["Section 7"].text and "forty-eight hours" in secs["Section 7"].text
+    assert "Amendment) Act, 2019" in secs["Section 13"].notes  # known staleness is carried with the text
+    e = secs["Section 6"]
+    s = Source(source_id="S1", kb_id=e.id, kind=e.kind, title=e.title, citation=e.citation, jurisdiction=e.jurisdiction,
+               snippet=e.text, score=1, status=e.status, source_type=e.source_type, version_date=e.version_date, notes=e.notes)
+    assert "government reprint of the official text" in source_header(s) and "NOTE:" in source_header(s)
+
+
+def test_second_schedule_is_kept_whole(settings, manifest):
+    (sched,) = entries_from_source(manifest["rti-act-2005-en-sched2"], KB, settings)
+    assert "Intelligence Bureau" in sched.text and sched.section_ref == "Second Schedule"
+
+
+def test_central_fee_rules_carry_the_amended_inspection_fee(settings, manifest):
+    rules = {e.section_ref: e for e in entries_from_source(manifest["rti-fee-rules-2005"], KB, settings)}
+    assert "rupees ten" in rules["Rule 3"].text and "rupees two for each page" in rules["Rule 4"].text
+    assert "Maharashtra" in rules["Rule 4"].notes and "G.S.R. 649(E)" in rules["Rule 4"].notes
+    (amend,) = entries_from_source(manifest["rti-fee-rules-2005-amend"], KB, settings)
+    assert "for each subsequent hour" in amend.text and "Indian Postal Order" in amend.text
+
+
+def test_act_question_retrieves_the_english_reprint_not_a_seed_summary(container):
+    ids = [h.chunk.kb_id for h in container.retriever.retrieve("which organisations are exempt from the RTI Act second schedule intelligence bureau", top_k=4)]
+    assert "rti-act-2005-en-sched2" in ids
+    assert not any(i.startswith("rti-act-s") and not i.startswith("rti-act-2005") for i in ids)

@@ -48,7 +48,7 @@ def test_pgvector_hybrid_retrieval(settings):
 
     retriever = HybridRetriever(store, embedder, LexicalReranker(), RetrievalConfig(20, 16, 4))
     ids = [h.chunk.kb_id for h in retriever.retrieve("first appeal within 30 days against PIO decision")]
-    assert "rti-act-s19" in ids
+    assert "rti-act-2005-en-s19" in ids
     mr_ids = [h.chunk.kb_id for h in retriever.retrieve("प्रथम अपील किती दिवसांत करावे")]
     assert "rti-marathi-s19-s20" in mr_ids
     assert store.keyword_search("दंड 250 रुपये", 5)  # Devanagari tokens survive to_tsvector/to_tsquery

@@ -91,7 +91,7 @@ class SimplifiedDocument(BaseModel):
 class Source(BaseModel):
     source_id: str  # S1, S2 ... (per response)
     # provenance - shown next to every citation so users can judge how far to trust it
-    source_type: str = "seed_summary"  # official_pdf | seed_summary
+    source_type: str = "seed_summary"  # official_pdf | official_reprint | seed_summary
     source_title: Optional[str] = None
     source_url: Optional[str] = None
     gazette_ref: Optional[str] = None
@@ -138,7 +138,7 @@ class KbEntry(BaseModel):
     text: str = Field(min_length=10)
     status: Literal["in_force", "superseded", "repealed"] = "in_force"
     # provenance (all optional; seed entries have none and are shown as unverified summaries)
-    source_type: Literal["official_pdf", "seed_summary"] = "seed_summary"
+    source_type: Literal["official_pdf", "official_reprint", "seed_summary"] = "seed_summary"
     source_title: Optional[str] = None
     source_url: Optional[str] = None
     gazette_ref: Optional[str] = None

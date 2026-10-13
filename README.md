@@ -69,13 +69,20 @@ Two kinds of content, clearly separated and labelled in the UI on every citation
   * the Maharashtra RTI Rules, 2005 (*superseded*). Superseded texts are kept for history but never retrieved.
   * The authorised **Marathi text of the RTI Act 2005** as in force on 1 Dec 2014 (OCR excerpts).
   * The **Consumer Protection Act, 2019** as enacted (107 sections; its *notes* flag that later Rules changed the pecuniary limits).
-* **Seed summaries** (`knowledge_base/*.json`): short paraphrases written for this project (RTI Act sections, a few judgments,
+  * **Government reprints** (shown as "Government reprint"): the **English RTI Act 2005** (sections 1-31 + Second Schedule) and the
+    **Central RTI (Regulation of Fee and Cost) Rules 2005** with the 2005/2006 amendments, taken from Annexures XIII-XIV of the National
+    Archives of India *RTI Handbook* (2008). These are text-only sources (`extracted/*_handbook.txt`, no PDF): the handbook text was
+    column-scrambled, so sections were put back in order by hand. Staleness is flagged in `notes` (no post-2008 amendments, e.g. the 2019
+    Amendment Act; Central rules only - Maharashtra authorities follow the Maharashtra Rules). Replace with the gazette / India Code text.
+* **Seed summaries** (`knowledge_base/*.json`): short paraphrases written for this project (a few judgments,
   Consumer Protection, NI Act, BNSS/BNS ...). They are shown as **"Unverified summary"** and are replaced as official PDFs are added.
 
 **Adding an official PDF**
 1. Copy the PDF to `knowledge_base/sources/` and add an entry to `sources/manifest.json` (`title`, `kind`, `language`, `jurisdiction`,
    `version_date`, `status` = `in_force`/`superseded`, `gazette_ref`, `source_url`, `parser` = `numbered` (one entry per section/rule,
-   optional `expected_provisions` check) or `paragraphs` (noisy scans)).
+   optional `expected_provisions` check), `numbered_margin` (gazette Acts with marginal notes), `single` (keep a short instrument whole) or
+   `paragraphs` (noisy scans); `source_type` defaults to `official_pdf`, use `official_reprint` for non-gazette reprints; `text_file` points
+   at an `extracted/` file when there is no PDF).
 2. `python -m app.rag.ingest` - text is extracted (PyMuPDF; Tesseract OCR for scans; a corrupted Devanagari text layer is detected and
    OCR'd instead) and saved to `knowledge_base/extracted/<id>.txt`. **Proofread that file** (OCR can misread digits) - it is what gets
    ingested. Re-running only re-embeds changed text and removes entries that no longer exist.
@@ -83,8 +90,8 @@ Two kinds of content, clearly separated and labelled in the UI on every citation
    "Verified <date> · <name>" instead of "Not yet verified".
 
 Superseded/repealed entries are excluded from retrieval. The prompts tell the model to prefer official text over unverified summaries and
-to flag when it relies on a summary. Known gaps: the English RTI Act 2005 PDF supplied was corrupted (its page images cannot be decoded);
-until a good copy is loaded the English Act sections come from the unverified seed summaries.
+to flag when it relies on a summary. Known gaps: the English RTI Act PDF supplied was corrupted, so the English Act comes from the
+2008 handbook reprint above (pre-2019 text); the Central RTI Rules 2012 are still an unverified seed summary.
 
 ```bash
 python -m app.rag.ingest                     # whole knowledge_base/ (official + seed)
