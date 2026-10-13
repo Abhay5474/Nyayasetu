@@ -90,12 +90,8 @@ def load_entries(path: Path) -> list[KbEntry]:
     return [KbEntry(id=path.stem.lower(), kind="other", title=title, citation=title, text=text)]
 
 
-def ingest_path(path: Path, store: KnowledgeStore, embedder: Embedder, prune: bool | None = None) -> tuple[int, int]:
-    """Ingest a knowledge-base directory (or a single file).
-
-    A directory is treated as the source of truth: its JSON entries and the PDFs listed in
-    `sources/manifest.json` are loaded, and previously ingested file-origin entries that no longer exist are removed.
-    """
+def collect_entries(path: Path) -> list[KbEntry]:
+    """All entries a knowledge-base directory (or single file) holds: manifest sources + top-level JSON/MD/TXT/PDF files."""
     settings = get_settings()
     entries: list[KbEntry] = []
     if path.is_dir():
@@ -114,6 +110,16 @@ def ingest_path(path: Path, store: KnowledgeStore, embedder: Embedder, prune: bo
             entries.extend(load_entries(f))
         except Exception:
             log.exception("Skipping unreadable knowledge-base file %s", f)
+    return entries
+
+
+def ingest_path(path: Path, store: KnowledgeStore, embedder: Embedder, prune: bool | None = None) -> tuple[int, int]:
+    """Ingest a knowledge-base directory (or a single file).
+
+    A directory is treated as the source of truth: its JSON entries and the PDFs listed in
+    `sources/manifest.json` are loaded, and previously ingested file-origin entries that no longer exist are removed.
+    """
+    entries = collect_entries(path)
     result = ingest_entries(entries, store, embedder, origin="files")
     if prune if prune is not None else path.is_dir():
         removed = store.prune("files", {e.id for e in entries})

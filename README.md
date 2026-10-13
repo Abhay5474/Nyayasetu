@@ -98,6 +98,23 @@ python -m app.rag.ingest                     # whole knowledge_base/ (official +
 curl -H "X-Internal-Token: …" -X POST :8000/v1/kb/ingest -d '{"entries":[…]}'   # ad-hoc additive entries
 ```
 
+## Evaluation (answer quality)
+`ai-service/eval/questions.jsonl` holds 60 labelled questions (40 English, 17 Marathi, 3 out-of-scope). Each lists the knowledge-base
+provisions that contain the answer (chosen by reading the source text), and for some, the facts a correct answer must state. A test
+checks that every label points at a provision that exists and is in force.
+
+```bash
+cd ai-service
+# 1. Retrieval ablation: vector only vs keyword only vs hybrid (RRF) vs hybrid + reranker. Run with the REAL models:
+EMBEDDING_PROVIDER=fastembed VECTOR_STORE=memory python -m app.evaluation retrieval --rerankers lexical,cross-encoder
+# 2. Answer quality (needs a real LLM): fact recall, citation hit/precision, numbers grounded in the cited text, refusal of out-of-scope questions
+LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=... python -m app.evaluation answers
+```
+Output goes to `eval/results/<mode>-<date>.md` (tables with 95% bootstrap intervals, split by language, topic and question style, plus the
+questions the best method missed) and `.json`. The first run downloads the embedding and reranker models (about 1 GB).
+Numbers produced with `EMBEDDING_PROVIDER=hash` only test the harness; do not report them. The string checks (fact recall, number
+grounding) flag likely mistakes but cannot prove an answer correct, so read a sample of the answers in the JSON yourself.
+
 ## Local development
 ```bash
 # DB with pgvector
