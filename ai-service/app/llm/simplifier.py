@@ -72,6 +72,23 @@ def build_queries(text: str) -> list[str]:
     return queries
 
 
+def hits_to_sources(hits: list[Hit]) -> list[Source]:
+    """Number retrieved chunks S1, S2, ... so the LLM can cite them."""
+    return [
+        Source(
+            source_id=f"S{i}",
+            kb_id=h.chunk.kb_id,
+            kind=h.chunk.kind,
+            title=h.chunk.title,
+            citation=h.chunk.citation,
+            jurisdiction=h.chunk.jurisdiction,
+            snippet=h.chunk.text,
+            score=round(h.score, 4),
+        )
+        for i, h in enumerate(hits, start=1)
+    ]
+
+
 class Simplifier:
     def __init__(self, settings: Settings, retriever: HybridRetriever | None, llm: BaseChatModel | None):
         self.settings = settings
@@ -123,19 +140,7 @@ class Simplifier:
         except Exception:
             log.exception("Retrieval failed; continuing without knowledge-base context")
             return []
-        return [
-            Source(
-                source_id=f"S{i}",
-                kb_id=h.chunk.kb_id,
-                kind=h.chunk.kind,
-                title=h.chunk.title,
-                citation=h.chunk.citation,
-                jurisdiction=h.chunk.jurisdiction,
-                snippet=h.chunk.text,
-                score=round(h.score, 4),
-            )
-            for i, h in enumerate(hits, start=1)
-        ]
+        return hits_to_sources(hits)
 
     def _generate(self, document: str, language: str, sources: list[Source]) -> SimplifiedDocument:
         assert self.llm is not None

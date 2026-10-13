@@ -37,3 +37,10 @@ export const DeadlineApi = {
   list: (status) => api.get('/deadlines', { params: status ? { status } : {} }).then((r) => r.data),
   setStatus: (id, status) => api.patch(`/deadlines/${id}`, { status }).then((r) => r.data),
 };
+
+export const ChatApi = {
+  history: (docId) => api.get(`/documents/${docId}/chat`).then((r) => r.data),
+  ask: (docId, question, language) =>
+    api.post(`/documents/${docId}/chat`, { question, language }, { timeout: 3 * 60_000 }).then((r) => r.data),
+  clear: (docId) => api.delete(`/documents/${docId}/chat`),
+};

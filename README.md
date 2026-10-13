@@ -45,15 +45,19 @@ translate or truly simplify, and the UI says so).
 4. **Generate** (`/v1/simplify`): a LangChain prompt gives the LLM the document plus numbered sources `[S1]…`; it must answer as
    JSON in the chosen language. Long documents are condensed map-reduce style first. Output is schema-validated (one automatic repair
    retry) and citations to sources that were never retrieved are dropped.
-5. **Results**: stored per `(document, language)`; switching language reuses the extracted text. Deadlines are captured for tracking.
-6. **Alerts** (`ALERTS_ENABLED=true`): a daily job (08:00 IST) e-mails / SMSes users at 7, 3, 1 days and on the day of each dated
+5. **Ask questions** (`/api/documents/{id}/chat`): a continuous, persisted Q&A conversation per document. Each turn replays recent
+   history to `/v1/chat`; long documents are narrowed to the most relevant excerpts (hybrid search over the document's own chunks),
+   the knowledge base adds legal sources, and quotes the model returns are kept only if they appear verbatim in the document. Questions
+   the document cannot answer are flagged "Not found in the document". Up to 100 questions per document; conversations can be cleared.
+6. **Results**: stored per `(document, language)`; switching language reuses the extracted text. Deadlines are captured for tracking.
+7. **Alerts** (`ALERTS_ENABLED=true`): a daily job (08:00 IST) e-mails / SMSes users at 7, 3, 1 days and on the day of each dated
    deadline. Catches up after downtime; every attempt is logged in `notification_log`. SMTP via `MAIL_*`, SMS via Twilio.
 
 ## API (selected)
 `POST /api/auth/register|login` · `GET|PATCH|DELETE /api/users/me` · `POST /api/documents` (multipart `file`, `language=en|mr`) ·
 `GET /api/documents[/{id}]` · `POST /api/documents/{id}/process?language=mr` · `GET /api/documents/{id}/results/{lang}` ·
-`GET /api/documents/{id}/file` · `GET /api/deadlines` · `PATCH /api/deadlines/{id}`. Health: `/actuator/health`.
-AI service (internal, `X-Internal-Token`): `/v1/extract`, `/v1/simplify`, `/v1/kb/search`, `/v1/kb/ingest`, `/health`.
+`GET /api/documents/{id}/file` · `GET|POST|DELETE /api/documents/{id}/chat` · `GET /api/deadlines` · `PATCH /api/deadlines/{id}`. Health: `/actuator/health`.
+AI service (internal, `X-Internal-Token`): `/v1/extract`, `/v1/simplify`, `/v1/chat`, `/v1/kb/search`, `/v1/kb/ingest`, `/health`.
 
 ## Knowledge base
 `ai-service/knowledge_base/*.json` ships a **small seed corpus** (RTI Act 2005 sections, RTI fee rules, key judgments, Consumer
@@ -87,5 +91,6 @@ AI service (AI service is not published to the host), CSP/security headers in ng
 ## Known limits / next steps
 - Explanations are AI-generated and can be wrong; the UI states this. Not legal advice.
 - The login throttle and alert scheduler are single-instance (in-memory / one scheduler); use Redis and a scheduler lock to scale out.
+- Chat replies are returned whole (no token streaming yet).
 - No refresh tokens (12 h access token); no OCR confidence display; PaddleOCR is wired but optional and untested here.
 - The seed knowledge base is tiny; retrieval quality depends on loading real, current legal texts.

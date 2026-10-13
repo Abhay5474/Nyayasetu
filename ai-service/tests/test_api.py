@@ -56,3 +56,13 @@ def test_kb_search_and_ingest(client):
     r = client.post("/v1/kb/ingest", headers=H, json={"entries": [
         {"id": "api-test", "title": "T", "citation": "Test Act s.1", "text": "Some test legal text about widgets."}]})
     assert r.json() == {"entries": 1, "chunks": 1}
+
+
+def test_chat_endpoint(client):
+    r = client.post("/v1/chat", headers=H, json={"text": TEXT, "question": "How many days to file the first appeal?", "language": "en",
+                    "history": [{"role": "user", "content": "What is this?"}, {"role": "assistant", "content": "An RTI reply."}]})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert "30 days" in body["answer"] and body["model"] == "mock-extractive"
+    assert client.post("/v1/chat", json={"text": TEXT, "question": "x"}).status_code == 401
+    assert client.post("/v1/chat", headers=H, json={"text": TEXT, "question": ""}).status_code == 422

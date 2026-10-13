@@ -61,6 +61,16 @@ export const strings = {
       disclaimer: 'This is an automated explanation to help you understand the document. It is not legal advice and may contain mistakes — check important details against the original.',
       printable: 'Print summary', demoMode: 'Demo mode: output is extracted, not AI-written.',
     },
+    chat: {
+      tab: 'Ask questions', summaryTab: 'Explanation', title: 'Ask about this document',
+      subtitle: 'Ask anything — in English or Marathi. Answers come only from your document and the legal knowledge base.',
+      placeholder: 'Type your question…', send: 'Send', thinking: 'Reading the document…', clear: 'Clear conversation',
+      confirmClear: 'Delete this conversation?', empty: 'Try one of these to get started',
+      starters: ['What do I need to do next?', 'What are the deadlines?', 'Can I appeal against this? How?', 'Explain the legal terms used here in simple words.'],
+      fromDoc: 'From the document', notFound: 'Not found in the document', sources: 'Legal sources', followUps: 'You could also ask',
+      notReady: 'The document is still being read. You can ask questions as soon as that finishes.', demo: 'Demo mode',
+      hint: 'Enter to send · Shift+Enter for a new line', you: 'You', assistant: 'NyayaSetu', answerIn: 'Answer in',
+    },
     deadlines: {
       title: 'Your deadlines', sub: 'Everything time-bound that we found in your documents.', overdue: 'Overdue', week: 'Next 7 days', later: 'Later',
       noDate: 'Time limit (no fixed date)', done: 'Completed', empty: 'No deadlines yet. They appear here after a document is processed.', fromDoc: 'From',
@@ -133,6 +143,16 @@ export const strings = {
       priority: { high: 'उच्च प्राधान्य', medium: 'मध्यम', low: 'कमी' }, fromDoc: 'कागदपत्रातून', download: 'डाउनलोड',
       disclaimer: 'हे कागदपत्र समजून घेण्यासाठी दिलेले स्वयंचलित स्पष्टीकरण आहे. हा कायदेशीर सल्ला नाही आणि यात चुका असू शकतात — महत्त्वाचे तपशील मूळ कागदपत्राशी पडताळा.',
       printable: 'सारांश छापा', demoMode: 'डेमो मोड: हा मजकूर मूळ कागदपत्रातून काढलेला आहे, AI ने लिहिलेला नाही.',
+    },
+    chat: {
+      tab: 'प्रश्न विचारा', summaryTab: 'स्पष्टीकरण', title: 'या कागदपत्राबद्दल विचारा',
+      subtitle: 'इंग्रजी किंवा मराठीत काहीही विचारा. उत्तरे फक्त तुमचे कागदपत्र आणि कायदेशीर ज्ञानसंचातूनच दिली जातात.',
+      placeholder: 'तुमचा प्रश्न लिहा…', send: 'पाठवा', thinking: 'कागदपत्र वाचत आहे…', clear: 'संभाषण पुसा',
+      confirmClear: 'हे संभाषण हटवायचे?', empty: 'सुरुवात करण्यासाठी यापैकी एक वापरून पहा',
+      starters: ['मला पुढे काय करावे लागेल?', 'मुदती कोणत्या आहेत?', 'याविरुद्ध अपील करता येईल का? कसे?', 'यातील कायदेशीर शब्द सोप्या भाषेत समजवा.'],
+      fromDoc: 'कागदपत्रातून', notFound: 'कागदपत्रात आढळले नाही', sources: 'कायदेशीर स्रोत', followUps: 'तुम्ही हेही विचारू शकता',
+      notReady: 'कागदपत्र अजून वाचले जात आहे. ते पूर्ण होताच तुम्ही प्रश्न विचारू शकता.', demo: 'डेमो मोड',
+      hint: 'पाठवण्यासाठी Enter · नवीन ओळीसाठी Shift+Enter', you: 'तुम्ही', assistant: 'न्यायसेतू', answerIn: 'उत्तराची भाषा',
     },
     deadlines: {
       title: 'तुमच्या मुदती', sub: 'तुमच्या कागदपत्रांतील सर्व कालमर्यादा येथे दिसतात.', overdue: 'मुदत उलटलेल्या', week: 'पुढील 7 दिवस', later: 'नंतरच्या',

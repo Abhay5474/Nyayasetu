@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 
 from app.config import Settings
 from app.extraction.extractor import DocumentExtractor
+from app.llm.chat import DocumentChat
 from app.llm.providers import LlmConfigError, build_chat_model
 from app.llm.simplifier import Simplifier
 from app.rag.embeddings import Embedder, build_embedder
@@ -26,6 +27,7 @@ class Container:
     retriever: HybridRetriever
     extractor: DocumentExtractor
     simplifier: Simplifier | None
+    chat: DocumentChat | None
     llm_error: str | None = None
     kb_status: dict = field(default_factory=lambda: {"state": "idle", "error": None})
 
@@ -50,7 +52,8 @@ def build_container(settings: Settings) -> Container:
             llm_error = str(exc)
             log.error("LLM not configured: %s", exc)
     simplifier = None if llm_error else Simplifier(settings, retriever, llm)
-    return Container(settings, embedder, store, retriever, DocumentExtractor(settings), simplifier, llm_error)
+    chat = None if llm_error else DocumentChat(settings, retriever, embedder, llm)
+    return Container(settings, embedder, store, retriever, DocumentExtractor(settings), simplifier, chat, llm_error)
 
 
 def ingest_in_background(container: Container) -> threading.Thread:

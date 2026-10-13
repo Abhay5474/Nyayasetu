@@ -1,8 +1,9 @@
-import { ArrowLeft, ExternalLink, FileText, Printer, RefreshCcw, XCircle } from 'lucide-react';
+import { ArrowLeft, ExternalLink, FileText, MessageSquareText, Printer, RefreshCcw, XCircle } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { errorMessage } from '../api/client';
 import { DeadlineApi, DocumentApi } from '../api/endpoints';
+import ChatPanel from '../components/ChatPanel';
 import ProcessingPanel from '../components/results/ProcessingPanel';
 import {
   ActionChecklist, Caveats, DeadlineTimeline, KeyPoints, LegalReferences, SourceCitations, SummaryCard,
@@ -30,6 +31,8 @@ export default function DocumentDetail() {
   const outLang = params.get('lang') === 'mr' || params.get('lang') === 'en' ? params.get('lang') : null;
   const [fallbackLang, setFallbackLang] = useState(null);
   const lang = outLang || fallbackLang || uiLang;
+  const tab = params.get('tab') === 'ask' ? 'ask' : 'summary';
+  const textReady = doc?.pageCount != null; // text was extracted, so questions can be answered
 
   const loadDoc = useCallback(async () => {
     try {
@@ -69,7 +72,11 @@ export default function DocumentDetail() {
   }, [id, lang, completedAt]);
 
   function pickLang(l) {
-    setParams({ lang: l }, { replace: true });
+    setParams((p) => { const n = new URLSearchParams(p); n.set('lang', l); return n; }, { replace: true });
+  }
+
+  function pickTab(next) {
+    setParams((p) => { const n = new URLSearchParams(p); if (next === 'ask') n.set('tab', 'ask'); else n.delete('tab'); return n; }, { replace: true });
   }
 
   async function generate(force = false) {
@@ -135,9 +142,20 @@ export default function DocumentDetail() {
         </div>
       </div>
 
+      <div className="no-print flex gap-1 border-b border-ink-200" role="tablist">
+        {[['summary', t.chat.summaryTab, FileText], ['ask', t.chat.tab, MessageSquareText]].map(([key, label, Icon]) => (
+          <button key={key} role="tab" aria-selected={tab === key} onClick={() => pickTab(key)}
+            className={`-mb-px inline-flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-semibold transition ${tab === key ? 'border-saffron-500 text-ink-950' : 'border-transparent text-ink-500 hover:text-ink-800'}`}>
+            <Icon className="h-4 w-4" />{label}
+          </button>
+        ))}
+      </div>
+
       {error && <Alert onClose={() => setError(null)}>{error}</Alert>}
 
-      {processing ? (
+      {tab === 'ask' ? (
+        <div className="mx-auto max-w-3xl"><ChatPanel docId={id} lang={lang} ready={textReady} /></div>
+      ) : processing ? (
         <ProcessingPanel />
       ) : langState?.status === 'FAILED' ? (
         <div className="card flex flex-col items-center px-6 py-12 text-center">
@@ -180,7 +198,8 @@ export default function DocumentDetail() {
                 <Row k="Size" v={formatBytes(doc.sizeBytes)} />
                 <Row k={t.doc.model} v={result.model} />
               </dl>
-              <button className="btn-outline mt-5 w-full" onClick={openOriginal}><ExternalLink className="h-4 w-4" />{t.doc.viewOriginal}</button>
+              <button className="btn-primary mt-5 w-full" onClick={() => pickTab('ask')}><MessageSquareText className="h-4 w-4" />{t.chat.tab}</button>
+              <button className="btn-outline mt-3 w-full" onClick={openOriginal}><ExternalLink className="h-4 w-4" />{t.doc.viewOriginal}</button>
               {result.model === 'mock-extractive' && <div className="mt-4"><Alert kind="warn">{t.doc.demoMode}</Alert></div>}
             </div>
           </aside>

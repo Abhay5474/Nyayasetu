@@ -89,3 +89,27 @@ def generate(text: str, language: str, sources: list[Source]) -> SimplifiedDocum
         legal_references=refs,
         caveats=[notice],
     )
+
+
+_STOP = set("the a an of to in is are was were be and or for on at by with what when who how why do does can i my me this that it as from you your".split())
+
+
+def answer(excerpts: str, question: str, language: str):
+    """Extractive Q&A for demo mode: returns the document sentences that best overlap the question."""
+    from app.processing.text import tokenize
+    from app.schemas import ChatAnswer
+
+    q = {t for t in tokenize(question) if t not in _STOP and len(t) > 1}
+    scored = []
+    for sent in _sentences(excerpts):
+        overlap = len(q & set(tokenize(sent)))
+        if overlap:
+            scored.append((overlap, sent))
+    scored.sort(key=lambda p: p[0], reverse=True)
+    notice = ("(डेमो मोड: उत्तर मूळ कागदपत्रातील वाक्यांतून काढले आहे.)" if language == "mr"
+              else "(Demo mode: this answer is extracted from the document, not written by an AI model.)")
+    if not scored:
+        msg = ("हे कागदपत्रात आढळले नाही." if language == "mr" else "I could not find this in the document.")
+        return ChatAnswer(answer=f"{msg} {notice}", answerable=False)
+    top = [s for _, s in scored[:2]]
+    return ChatAnswer(answer=" ".join(top) + f" {notice}", answerable=True, quotes=top)

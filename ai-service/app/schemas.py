@@ -133,3 +133,46 @@ class KbIngestRequest(BaseModel):
 class KbIngestResponse(BaseModel):
     entries: int
     chunks: int
+
+
+# --------------------------------------------------------------------------- document Q&A
+class ChatTurn(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str = Field(max_length=6000)
+
+
+class ChatRequest(BaseModel):
+    text: str = Field(min_length=20)  # the extracted document text
+    question: str = Field(min_length=1, max_length=1000)
+    language: Language = "en"
+    history: list[ChatTurn] = Field(default_factory=list, max_length=30)
+
+
+class ChatAnswer(BaseModel):
+    """What the LLM is asked to return."""
+
+    answer: str
+    answerable: bool = True  # False when the document / sources do not contain the answer
+    quotes: list[str] = Field(default_factory=list)  # short verbatim snippets from the document
+    source_ids: list[str] = Field(default_factory=list)  # S1.. knowledge-base sources used
+    follow_ups: list[str] = Field(default_factory=list)
+
+    @field_validator("quotes", "source_ids", "follow_ups", mode="before")
+    @classmethod
+    def _strs(cls, v):
+        if v is None:
+            return []
+        if isinstance(v, str):
+            return [v]
+        return [str(x) for x in v if str(x).strip()]
+
+
+class ChatResponse(BaseModel):
+    language: Language
+    answer: str
+    answerable: bool
+    quotes: list[str] = Field(default_factory=list)
+    sources: list[Source] = Field(default_factory=list)
+    follow_ups: list[str] = Field(default_factory=list)
+    model: str
+    generated_at: dt.datetime

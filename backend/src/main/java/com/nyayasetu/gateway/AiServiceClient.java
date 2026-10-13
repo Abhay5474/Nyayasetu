@@ -6,6 +6,7 @@ import com.nyayasetu.config.AppProperties;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,6 +76,19 @@ public class AiServiceClient {
                 .onStatus(HttpStatusCode::isError, (req, res) -> { throw toException(res.getStatusCode().value(), res.getBody().readAllBytes()); })
                 .body(JsonNode.class));
     }
+
+    /** One turn of the document Q&A conversation; {@code history} excludes the new question. */
+    public JsonNode chat(String documentText, String question, String language, List<Turn> history) {
+        Map<String, Object> body = Map.of("text", documentText, "question", question, "language", language, "history", history);
+        return call(() -> simplifyClient.post().uri("/v1/chat")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body)
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> { throw toException(res.getStatusCode().value(), res.getBody().readAllBytes()); })
+                .body(JsonNode.class));
+    }
+
+    public record Turn(String role, String content) {}
 
     /** Lightweight liveness probe used by the health indicator. */
     public JsonNode health() {

@@ -13,7 +13,7 @@ from app.extraction.extractor import ExtractionError
 from app.llm.simplifier import GenerationError
 from app.rag.ingest import ingest_entries
 from app.schemas import (
-    ExtractResponse, KbIngestRequest, KbIngestResponse, SimplifyRequest, SimplifyResponse,
+    ChatRequest, ChatResponse, ExtractResponse, KbIngestRequest, KbIngestResponse, SimplifyRequest, SimplifyResponse,
 )
 from app.security import require_internal_token
 
@@ -82,6 +82,13 @@ def simplify(req: SimplifyRequest, c: Container = Depends(get_container)):
     if c.simplifier is None:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, f"LLM is not configured: {c.llm_error}")
     return c.simplifier.simplify(req.text, req.language)
+
+
+@app.post("/v1/chat", response_model=ChatResponse, dependencies=[Depends(require_internal_token)])
+def chat(req: ChatRequest, c: Container = Depends(get_container)):
+    if c.chat is None:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, f"LLM is not configured: {c.llm_error}")
+    return c.chat.answer(req.text, req.question, req.language, req.history)
 
 
 @app.get("/v1/kb/search", dependencies=[Depends(require_internal_token)])

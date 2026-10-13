@@ -233,4 +233,70 @@ class ApiIntegrationTest {
         mvc.perform(delete("/api/users/me").header("Authorization", "Bearer " + token)).andExpect(status().isNoContent());
         mvc.perform(get("/api/users/me").header("Authorization", "Bearer " + token)).andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void documentChatIsContinuousPersistedAndPrivate() throws Exception {
+        String token = register("chat-" + UUID.randomUUID() + "@example.in");
+        String other = register("snoop-" + UUID.randomUUID() + "@example.in");
+        when(ai.extract(any(Path.class))).thenReturn(new AiExtractResponse("Reply text ... appeal within 30 days ...", 1, 40, "digital", List.of(), "en", List.of()));
+        when(ai.simplify(any(), any(), any())).thenReturn(aiPayload("en"));
+        String id = uploadDoc(token, "en");
+        waitForStatus(token, id, "COMPLETED");
+
+        var answer1 = json.readTree("{\"answer\":\"Within 30 days.\",\"answerable\":true,\"quotes\":[\"appeal within 30 days\"],"
+                + "\"sources\":[{\"source_id\":\"S1\",\"citation\":\"RTI Act - Section 19\"}],\"follow_ups\":[\"Who do I appeal to?\"],\"model\":\"m\"}");
+        var answer2 = json.readTree("{\"answer\":\"The senior officer.\",\"answerable\":true,\"quotes\":[],\"sources\":[],\"follow_ups\":[],\"model\":\"m\"}");
+        when(ai.chat(any(), eq("How long do I have to appeal?"), eq("en"), any())).thenReturn(answer1);
+        when(ai.chat(any(), eq("Who do I appeal to?"), eq("en"), any())).thenReturn(answer2);
+
+        mvc.perform(post("/api/documents/" + id + "/chat").contentType("application/json").header("Authorization", "Bearer " + token)
+                        .content("{\"question\":\"How long do I have to appeal?\",\"language\":\"en\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.question.role").value("USER"))
+                .andExpect(jsonPath("$.answer.content").value("Within 30 days."))
+                .andExpect(jsonPath("$.answer.details.quotes[0]").value("appeal within 30 days"))
+                .andExpect(jsonPath("$.answer.details.sources[0].source_id").value("S1"))
+                .andExpect(jsonPath("$.answer.details.follow_ups[0]").value("Who do I appeal to?"));
+        mvc.perform(post("/api/documents/" + id + "/chat").contentType("application/json").header("Authorization", "Bearer " + token)
+                        .content("{\"question\":\"Who do I appeal to?\",\"language\":\"en\"}"))
+                .andExpect(status().isOk());
+
+        // the second turn replayed the first Q+A as history
+        org.mockito.ArgumentCaptor<List<AiServiceClient.Turn>> history = org.mockito.ArgumentCaptor.forClass(List.class);
+        org.mockito.Mockito.verify(ai).chat(any(), eq("Who do I appeal to?"), eq("en"), history.capture());
+        assertThat(history.getValue()).extracting(AiServiceClient.Turn::role).containsExactly("user", "assistant");
+        assertThat(history.getValue().get(1).content()).isEqualTo("Within 30 days.");
+
+        mvc.perform(get("/api/documents/" + id + "/chat").header("Authorization", "Bearer " + token))
+                .andExpect(jsonPath("$.length()").value(4))
+                .andExpect(jsonPath("$[0].role").value("USER")).andExpect(jsonPath("$[3].role").value("ASSISTANT"));
+
+        // privacy + validation
+        mvc.perform(get("/api/documents/" + id + "/chat").header("Authorization", "Bearer " + other)).andExpect(status().isNotFound());
+        mvc.perform(post("/api/documents/" + id + "/chat").contentType("application/json").header("Authorization", "Bearer " + other)
+                .content("{\"question\":\"hi\"}")).andExpect(status().isNotFound());
+        mvc.perform(post("/api/documents/" + id + "/chat").contentType("application/json").header("Authorization", "Bearer " + token)
+                .content("{\"question\":\"   \"}")).andExpect(status().isBadRequest());
+
+        // AI failure is reported and nothing is stored
+        when(ai.chat(any(), eq("Will fail"), any(), any())).thenThrow(new AiServiceException(0, "The AI service is not responding right now.", null));
+        mvc.perform(post("/api/documents/" + id + "/chat").contentType("application/json").header("Authorization", "Bearer " + token)
+                        .content("{\"question\":\"Will fail\",\"language\":\"en\"}"))
+                .andExpect(status().isBadGateway()).andExpect(jsonPath("$.code").value("AI_UNAVAILABLE"));
+        mvc.perform(get("/api/documents/" + id + "/chat").header("Authorization", "Bearer " + token)).andExpect(jsonPath("$.length()").value(4));
+
+        mvc.perform(delete("/api/documents/" + id + "/chat").header("Authorization", "Bearer " + token)).andExpect(status().isNoContent());
+        mvc.perform(get("/api/documents/" + id + "/chat").header("Authorization", "Bearer " + token)).andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void chatRequiresExtractedText() throws Exception {
+        String token = register("early-" + UUID.randomUUID() + "@example.in");
+        when(ai.extract(any(Path.class))).thenThrow(new AiServiceException(422, "No readable text found.", null));
+        String id = uploadDoc(token, "en");
+        waitForStatus(token, id, "FAILED");
+        mvc.perform(post("/api/documents/" + id + "/chat").contentType("application/json").header("Authorization", "Bearer " + token)
+                        .content("{\"question\":\"anything?\"}"))
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("NOT_READY"));
+    }
 }
