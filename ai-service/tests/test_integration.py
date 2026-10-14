@@ -52,3 +52,8 @@ def test_pgvector_hybrid_retrieval(settings):
     mr_ids = [h.chunk.kb_id for h in retriever.retrieve("प्रथम अपील किती दिवसांत करावे")]
     assert "rti-marathi-s19-s20" in mr_ids
     assert store.keyword_search("दंड 250 रुपये", 5)  # Devanagari tokens survive to_tsvector/to_tsquery
+    # Keyword ranking is weighted by rarity: filler words ("is", "free", "person") must not outrank "poverty".
+    poverty = [h.chunk.kb_id for h in store.keyword_search("is information free for a person below the poverty line", 3)]
+    assert poverty[0] == "rti-act-2005-en-s7"
+    penalty = [h.chunk.kb_id for h in store.keyword_search("What is the penalty on a Public Information Officer for delaying information?", 3)]
+    assert penalty[0] == "rti-act-2005-en-s20"

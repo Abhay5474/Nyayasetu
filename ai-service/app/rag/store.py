@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+import math
 from dataclasses import dataclass, field
 from typing import Protocol
 
@@ -116,6 +117,7 @@ class PgVectorStore:
 
         self.dim = dim
         self.pool = ConnectionPool(database_url, min_size=1, max_size=5, open=False, configure=self._configure)
+        self._df: tuple[dict[str, int], int] | None = None  # (document frequency per word, active chunks); reset on writes
 
     @staticmethod
     def _configure(conn) -> None:
@@ -184,6 +186,7 @@ class PgVectorStore:
               status=EXCLUDED.status, meta=EXCLUDED.meta, updated_at=now()"""
         from psycopg.types.json import Jsonb
 
+        self._df = None
         rows = [
             (c.id, c.kb_id, c.kind, c.title, c.citation, c.jurisdiction, c.language, c.text, c.content_hash, c.embedding,
              c.status, Jsonb(c.meta))
@@ -199,21 +202,38 @@ class PgVectorStore:
             rows = conn.execute(sql, (query_vec, query_vec, k)).fetchall()
         return [Hit(self._row_to_chunk(r), float(r[10])) for r in rows]
 
+    def _doc_freq(self) -> tuple[dict[str, int], int]:
+        """In how many active chunks each word occurs (Postgres' own statistics), cached until the next write."""
+        if self._df is None:
+            active = "SELECT tsv FROM kb.kb_chunks WHERE status NOT IN (''superseded'',''repealed'')"
+            with self.pool.connection() as conn:
+                df = dict(conn.execute(f"SELECT word, ndoc FROM ts_stat('{active}')").fetchall())
+                n = conn.execute(f"SELECT count(*) FROM {self.TABLE} WHERE status NOT IN ('superseded','repealed')").fetchone()[0]
+            self._df = (df, max(n, 1))
+        return self._df
+
     def keyword_search(self, query: str, k: int) -> list[Hit]:
-        # OR-semantics over query terms: legal queries are long, AND-ing every word matches nothing.
+        """OR over the query words, scored by IDF: a word found in few chunks ("poverty", "250") counts far more than one
+        found in almost all of them ("days", "the"). Plain ts_rank_cd ignores that and let filler words decide the ranking."""
         terms = list(dict.fromkeys(_tokens(query)))[:40]
         if not terms:
             return []
-        tsq = " | ".join(terms)
+        df, n = self._doc_freq()
+        weighted = [(t, math.log(1 + n / max(df.get(t, 0), 1))) for t in terms]
+        score = " + ".join("(CASE WHEN tsv @@ to_tsquery('simple', %s) THEN %s ELSE 0 END)" for _ in weighted)
+        params: list = [x for t, w in weighted for x in (t, w)]
         sql = f"""
-            SELECT {self._COLS}, ts_rank_cd(tsv, q) AS rank
-            FROM {self.TABLE}, to_tsquery('simple', %s) q
-            WHERE tsv @@ q AND status NOT IN ('superseded','repealed') ORDER BY rank DESC LIMIT %s"""
+            SELECT {self._COLS}, ({score})::float8 AS score
+            FROM {self.TABLE}
+            WHERE tsv @@ to_tsquery('simple', %s) AND status NOT IN ('superseded','repealed')
+            ORDER BY score DESC LIMIT %s"""
+        params += [" | ".join(terms), k]
         with self.pool.connection() as conn:
-            rows = conn.execute(sql, (tsq, k)).fetchall()
+            rows = conn.execute(sql, params).fetchall()
         return [Hit(self._row_to_chunk(r), float(r[10])) for r in rows]
 
     def prune(self, origin: str, keep_kb_ids: set[str]) -> int:
+        self._df = None
         with self.pool.connection() as conn:
             cur = conn.execute(
                 f"DELETE FROM {self.TABLE} WHERE COALESCE(meta->>'origin', 'files') = %s AND NOT (kb_id = ANY(%s))", (origin, list(keep_kb_ids))
