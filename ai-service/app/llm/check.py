@@ -2,23 +2,35 @@
 from __future__ import annotations
 
 import sys
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 
 from app.config import get_settings
 from app.llm.errors import classify
 from app.llm.providers import LlmChain, LlmConfigError, build_llm_chain
 
 
-def probe(chain: LlmChain) -> list[dict]:
-    """One tiny call to every model in the chain (primary first)."""
+def _one(label: str, model) -> dict:
+    try:
+        reply = model.invoke("Reply with the single word: OK")
+        return {"model": label, "ok": True, "reply": str(reply.content)[:50]}
+    except Exception as exc:
+        known = classify(exc)
+        return {"model": label, "ok": False, "detail": str(known) if known else f"{type(exc).__name__}: {str(exc)[:300]}"}
+
+
+def probe(chain: LlmChain, timeout: float = 30.0) -> list[dict]:
+    """One tiny call to every model in the chain, all at once (primary first). A model that does not answer in `timeout`
+    seconds is reported as failed instead of blocking the check."""
+    pool = ThreadPoolExecutor(max_workers=max(1, len(chain.models)))
+    futures = [(label, pool.submit(_one, label, model)) for label, model in chain.models]
     results = []
-    for label, model in chain.models:
+    for label, fut in futures:
         try:
-            reply = model.invoke("Reply with the single word: OK")
-            results.append({"model": label, "ok": True, "reply": str(reply.content)[:50]})
-        except Exception as exc:
-            known = classify(exc)
+            results.append(fut.result(timeout=timeout))
+        except FutureTimeout:
             results.append({"model": label, "ok": False,
-                            "detail": str(known) if known else f"{type(exc).__name__}: {str(exc)[:300]}"})
+                            "detail": f"No answer within {timeout:.0f} s. Check the network, the base URL, and whether the provider is reachable from Docker."})
+    pool.shutdown(wait=False, cancel_futures=True)
     return results
 
 

@@ -1,6 +1,7 @@
 import json
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from socketserver import ThreadingMixIn
 
 import pytest
 
@@ -9,7 +10,8 @@ from app.llm.errors import classify
 from app.llm.providers import build_llm_chain
 
 
-class _Server(HTTPServer):
+class _Server(ThreadingMixIn, HTTPServer):
+    daemon_threads = True
     behaviours: dict = {}
     calls: list = []
 
@@ -25,6 +27,11 @@ class _Handler(BaseHTTPRequestHandler):
         model = body["model"]
         self.server.calls.append(model)
         mode = self.server.behaviours.get(model, "ok")
+        if mode == "hang":
+            import time
+
+            time.sleep(4)
+            mode = "ok"
         if mode == "ok":
             payload = {"id": "x", "object": "chat.completion", "created": 0, "model": model, "usage": {"prompt_tokens": 1, "completion_tokens": 1, "total_tokens": 2},
                        "choices": [{"index": 0, "message": {"role": "assistant", "content": f"answer from {model}"}, "finish_reason": "stop"}]}
@@ -136,3 +143,16 @@ def test_check_probes_every_model_and_reports_failures(server, capsys, monkeypat
     assert check.main() == 0  # one working model is enough for the service to answer
     out = capsys.readouterr().out
     assert "FAILED  openai:primary" in out and "OK      openai:backup" in out and "can answer" in out
+
+
+def test_probe_does_not_hang_on_a_silent_model(server):
+    import time
+
+    from app.llm import check
+
+    server.behaviours = {"primary": "hang"}
+    chain = build_llm_chain(settings_for(server, llm_fallback_models="backup"))
+    started = time.time()
+    results = check.probe(chain, timeout=1.0)
+    assert time.time() - started < 3.5  # models are probed together and the slow one is cut off
+    assert [r["ok"] for r in results] == [False, True] and "No answer within 1 s" in results[0]["detail"]
