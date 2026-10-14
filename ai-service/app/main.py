@@ -4,12 +4,17 @@ from __future__ import annotations
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, File, HTTPException, Query, Request, UploadFile, status
+from fastapi import Body, Depends, FastAPI, File, HTTPException, Query, Request, Response, UploadFile, status
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from app.config import Settings, get_settings
 from app.container import Container, build_container, ingest_in_background
 from app.extraction.extractor import ExtractionError
+from app.drafts import render as draft_render
+from app.drafts import templates as draft_templates
+from app.drafts.schemas import DraftDocument, DraftRequest
 from app.llm.check import probe
 from app.llm.errors import LlmCallError, classify
 from app.llm.simplifier import GenerationError
@@ -67,6 +72,19 @@ def _guard_llm(fn, *args):
         if known is None:
             raise
         raise known from exc
+
+
+@app.exception_handler(RequestValidationError)
+async def _validation_error(request: Request, exc: RequestValidationError):
+    """Draft forms get a readable message ("fee_reference: ..."); every other endpoint keeps FastAPI's default 422 body."""
+    if not request.url.path.startswith("/v1/drafts"):
+        return await request_validation_exception_handler(request, exc)
+    problems = []
+    for err in exc.errors():
+        where = ".".join(str(p) for p in err.get("loc", ()) if p not in ("body", "rti_application", "first_appeal", "fee_payment_reply"))
+        msg = str(err.get("msg", "invalid")).removeprefix("Value error, ")
+        problems.append(f"{where}: {msg}" if where else msg)
+    return JSONResponse(status_code=422, content={"detail": "; ".join(problems[:6]) or "Invalid request", "code": "validation"})
 
 
 @app.get("/health")
@@ -139,3 +157,19 @@ def kb_search(q: str = Query(min_length=2), k: int = Query(5, ge=1, le=20), c: C
 def kb_ingest(req: KbIngestRequest, c: Container = Depends(get_container)):
     entries, chunks = ingest_entries(req.entries, c.store, c.embedder)
     return KbIngestResponse(entries=entries, chunks=chunks)
+
+
+# ----------------------------------------------------------------------------- drafts (RTI application / appeal / fee reply)
+@app.post("/v1/drafts/preview", response_model=DraftDocument, dependencies=[Depends(require_internal_token)])
+def draft_preview(req: DraftRequest = Body(...)):
+    return draft_templates.build(req)
+
+
+@app.post("/v1/drafts/file", dependencies=[Depends(require_internal_token)])
+def draft_file(req: DraftRequest = Body(...), format: str = Query("pdf", pattern="^(pdf|docx)$")):
+    doc = draft_templates.build(req)
+    if format == "docx":
+        data, mime = draft_render.to_docx(doc), draft_render.DOCX_MIME
+    else:
+        data, mime = draft_render.to_pdf(doc), draft_render.PDF_MIME
+    return Response(content=data, media_type=mime, headers={"Content-Disposition": f'attachment; filename="{doc.filename}.{format}"'})
