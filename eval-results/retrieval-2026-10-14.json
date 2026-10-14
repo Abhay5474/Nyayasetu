@@ -1,0 +1,2072 @@
+{
+  "meta": {
+    "date": "2026-10-14",
+    "embedder": "FastEmbedEmbedder (sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2)",
+    "chunks": 467,
+    "partial": false,
+    "questions": 57,
+    "skipped": 3
+  },
+  "overall": {
+    "vector only": {
+      "n": 57,
+      "hit@1": 0.42105263157894735,
+      "hit@3": 0.6666666666666666,
+      "hit@5": 0.7192982456140351,
+      "mrr": 0.559057365636313,
+      "mrr_ci": [
+        0.4551169590643275,
+        0.6645711500974659
+      ],
+      "hit@3_ci": [
+        0.543859649122807,
+        0.7894736842105263
+      ],
+      "stale_rate": 0.0
+    },
+    "keyword only (FTS)": {
+      "n": 57,
+      "hit@1": 0.2631578947368421,
+      "hit@3": 0.43859649122807015,
+      "hit@5": 0.5087719298245614,
+      "mrr": 0.3734126984126984,
+      "mrr_ci": [
+        0.2766081871345029,
+        0.477729044834308
+      ],
+      "hit@3_ci": [
+        0.3157894736842105,
+        0.5614035087719298
+      ],
+      "stale_rate": 0.0
+    },
+    "hybrid (RRF)": {
+      "n": 57,
+      "hit@1": 0.49122807017543857,
+      "hit@3": 0.631578947368421,
+      "hit@5": 0.7368421052631579,
+      "mrr": 0.5891812865497076,
+      "mrr_ci": [
+        0.47748538011695907,
+        0.6980994152046783
+      ],
+      "hit@3_ci": [
+        0.5087719298245614,
+        0.7543859649122807
+      ],
+      "stale_rate": 0.0
+    },
+    "hybrid + rerank (lexical)": {
+      "n": 57,
+      "hit@1": 0.543859649122807,
+      "hit@3": 0.7192982456140351,
+      "hit@5": 0.8070175438596491,
+      "mrr": 0.6478557504873295,
+      "mrr_ci": [
+        0.5368421052631579,
+        0.7511695906432748
+      ],
+      "hit@3_ci": [
+        0.5964912280701754,
+        0.8245614035087719
+      ],
+      "stale_rate": 0.0
+    },
+    "hybrid + rerank (jina-reranker-v2-base-multilingual)": {
+      "n": 57,
+      "hit@1": 0.5964912280701754,
+      "hit@3": 0.8245614035087719,
+      "hit@5": 0.8421052631578947,
+      "mrr": 0.702485380116959,
+      "mrr_ci": [
+        0.5972222222222222,
+        0.7982456140350878
+      ],
+      "hit@3_ci": [
+        0.7192982456140351,
+        0.9122807017543859
+      ],
+      "stale_rate": 0.0
+    }
+  },
+  "by_lang": {
+    "vector only": {
+      "en": {
+        "n": 40,
+        "hit@1": 0.425,
+        "hit@3": 0.675,
+        "hit@5": 0.725,
+        "mrr": 0.5553373015873015,
+        "mrr_ci": [
+          0.428015873015873,
+          0.68
+        ],
+        "hit@3_ci": [
+          0.525,
+          0.8
+        ],
+        "stale_rate": 0.0
+      },
+      "mr": {
+        "n": 17,
+        "hit@1": 0.4117647058823529,
+        "hit@3": 0.6470588235294118,
+        "hit@5": 0.7058823529411765,
+        "mrr": 0.5678104575163399,
+        "mrr_ci": [
+          0.3815359477124183,
+          0.7426470588235294
+        ],
+        "hit@3_ci": [
+          0.4117647058823529,
+          0.8823529411764706
+        ],
+        "stale_rate": 0.0
+      }
+    },
+    "keyword only (FTS)": {
+      "en": {
+        "n": 40,
+        "hit@1": 0.2,
+        "hit@3": 0.425,
+        "hit@5": 0.525,
+        "mrr": 0.3345436507936508,
+        "mrr_ci": [
+          0.22384920634920635,
+          0.4489186507936508
+        ],
+        "hit@3_ci": [
+          0.275,
+          0.575
+        ],
+        "stale_rate": 0.0
+      },
+      "mr": {
+        "n": 17,
+        "hit@1": 0.4117647058823529,
+        "hit@3": 0.47058823529411764,
+        "hit@5": 0.47058823529411764,
+        "mrr": 0.46486928104575165,
+        "mrr_ci": [
+          0.2565359477124183,
+          0.6772875816993464
+        ],
+        "hit@3_ci": [
+          0.23529411764705882,
+          0.7058823529411765
+        ],
+        "stale_rate": 0.0
+      }
+    },
+    "hybrid (RRF)": {
+      "en": {
+        "n": 40,
+        "hit@1": 0.475,
+        "hit@3": 0.65,
+        "hit@5": 0.775,
+        "mrr": 0.5854166666666667,
+        "mrr_ci": [
+          0.45791666666666664,
+          0.715
+        ],
+        "hit@3_ci": [
+          0.5,
+          0.8
+        ],
+        "stale_rate": 0.0
+      },
+      "mr": {
+        "n": 17,
+        "hit@1": 0.5294117647058824,
+        "hit@3": 0.5882352941176471,
+        "hit@5": 0.6470588235294118,
+        "mrr": 0.5980392156862745,
+        "mrr_ci": [
+          0.38480392156862747,
+          0.7990196078431373
+        ],
+        "hit@3_ci": [
+          0.35294117647058826,
+          0.8235294117647058
+        ],
+        "stale_rate": 0.0
+      }
+    },
+    "hybrid + rerank (lexical)": {
+      "en": {
+        "n": 40,
+        "hit@1": 0.575,
+        "hit@3": 0.75,
+        "hit@5": 0.8,
+        "mrr": 0.6736111111111112,
+        "mrr_ci": [
+          0.5527777777777778,
+          0.7902777777777777
+        ],
+        "hit@3_ci": [
+          0.625,
+          0.875
+        ],
+        "stale_rate": 0.0
+      },
+      "mr": {
+        "n": 17,
+        "hit@1": 0.47058823529411764,
+        "hit@3": 0.6470588235294118,
+        "hit@5": 0.8235294117647058,
+        "mrr": 0.5872549019607843,
+        "mrr_ci": [
+          0.3892156862745098,
+          0.7715686274509804
+        ],
+        "hit@3_ci": [
+          0.4117647058823529,
+          0.8235294117647058
+        ],
+        "stale_rate": 0.0
+      }
+    },
+    "hybrid + rerank (jina-reranker-v2-base-multilingual)": {
+      "en": {
+        "n": 40,
+        "hit@1": 0.65,
+        "hit@3": 0.85,
+        "hit@5": 0.875,
+        "mrr": 0.74375,
+        "mrr_ci": [
+          0.6229166666666667,
+          0.8520833333333333
+        ],
+        "hit@3_ci": [
+          0.725,
+          0.95
+        ],
+        "stale_rate": 0.0
+      },
+      "mr": {
+        "n": 17,
+        "hit@1": 0.47058823529411764,
+        "hit@3": 0.7647058823529411,
+        "hit@5": 0.7647058823529411,
+        "mrr": 0.6053921568627451,
+        "mrr_ci": [
+          0.40931372549019607,
+          0.8014705882352942
+        ],
+        "hit@3_ci": [
+          0.5294117647058824,
+          0.9411764705882353
+        ],
+        "stale_rate": 0.0
+      }
+    }
+  },
+  "by_category": {
+    "vector only": {
+      "consumer": {
+        "n": 9,
+        "hit@1": 0.5555555555555556,
+        "hit@3": 0.8888888888888888,
+        "hit@5": 0.8888888888888888,
+        "mrr": 0.6975308641975309,
+        "mrr_ci": [
+          0.4691358024691358,
+          0.9259259259259259
+        ],
+        "hit@3_ci": [
+          0.6666666666666666,
+          1.0
+        ],
+        "stale_rate": 0.0
+      },
+      "other": {
+        "n": 6,
+        "hit@1": 0.8333333333333334,
+        "hit@3": 0.8333333333333334,
+        "hit@5": 0.8333333333333334,
+        "mrr": 0.85,
+        "mrr_ci": [
+          0.55,
+          1.0
+        ],
+        "hit@3_ci": [
+          0.5,
+          1.0
+        ],
+        "stale_rate": 0.0
+      },
+      "rti": {
+        "n": 42,
+        "hit@1": 0.3333333333333333,
+        "hit@3": 0.5952380952380952,
+        "hit@5": 0.6666666666666666,
+        "mrr": 0.4878212396069539,
+        "mrr_ci": [
+          0.36695011337868483,
+          0.6037226001511716
+        ],
+        "hit@3_ci": [
+          0.42857142857142855,
+          0.7380952380952381
+        ],
+        "stale_rate": 0.0
+      }
+    },
+    "keyword only (FTS)": {
+      "consumer": {
+        "n": 9,
+        "hit@1": 0.3333333333333333,
+        "hit@3": 0.5555555555555556,
+        "hit@5": 0.7777777777777778,
+        "mrr": 0.48703703703703705,
+        "mrr_ci": [
+          0.2462962962962963,
+          0.7425925925925926
+        ],
+        "hit@3_ci": [
+          0.2222222222222222,
+          0.8888888888888888
+        ],
+        "stale_rate": 0.0
+      },
+      "other": {
+        "n": 6,
+        "hit@1": 0.3333333333333333,
+        "hit@3": 0.8333333333333334,
+        "hit@5": 0.8333333333333334,
+        "mrr": 0.5277777777777778,
+        "mrr_ci": [
+          0.25,
+          0.8055555555555556
+        ],
+        "hit@3_ci": [
+          0.5,
+          1.0
+        ],
+        "stale_rate": 0.0
+      },
+      "rti": {
+        "n": 42,
+        "hit@1": 0.23809523809523808,
+        "hit@3": 0.35714285714285715,
+        "hit@5": 0.40476190476190477,
+        "mrr": 0.3270124716553288,
+        "mrr_ci": [
+          0.21177248677248678,
+          0.4491024187452759
+        ],
+        "hit@3_ci": [
+          0.21428571428571427,
+          0.5
+        ],
+        "stale_rate": 0.0
+      }
+    },
+    "hybrid (RRF)": {
+      "consumer": {
+        "n": 9,
+        "hit@1": 0.5555555555555556,
+        "hit@3": 0.7777777777777778,
+        "hit@5": 0.8888888888888888,
+        "mrr": 0.6759259259259259,
+        "mrr_ci": [
+          0.42592592592592593,
+          0.9166666666666666
+        ],
+        "hit@3_ci": [
+          0.4444444444444444,
+          1.0
+        ],
+        "stale_rate": 0.0
+      },
+      "other": {
+        "n": 6,
+        "hit@1": 1.0,
+        "hit@3": 1.0,
+        "hit@5": 1.0,
+        "mrr": 1.0,
+        "mrr_ci": [
+          1.0,
+          1.0
+        ],
+        "hit@3_ci": [
+          1.0,
+          1.0
+        ],
+        "stale_rate": 0.0
+      },
+      "rti": {
+        "n": 42,
+        "hit@1": 0.40476190476190477,
+        "hit@3": 0.5476190476190477,
+        "hit@5": 0.6666666666666666,
+        "mrr": 0.5119047619047619,
+        "mrr_ci": [
+          0.3746031746031746,
+          0.6347222222222222
+        ],
+        "hit@3_ci": [
+          0.40476190476190477,
+          0.6904761904761905
+        ],
+        "stale_rate": 0.0
+      }
+    },
+    "hybrid + rerank (lexical)": {
+      "consumer": {
+        "n": 9,
+        "hit@1": 0.3333333333333333,
+        "hit@3": 0.7777777777777778,
+        "hit@5": 0.7777777777777778,
+        "mrr": 0.5555555555555556,
+        "mrr_ci": [
+          0.3333333333333333,
+          0.7962962962962963
+        ],
+        "hit@3_ci": [
+          0.4444444444444444,
+          1.0
+        ],
+        "stale_rate": 0.0
+      },
+      "other": {
+        "n": 6,
+        "hit@1": 1.0,
+        "hit@3": 1.0,
+        "hit@5": 1.0,
+        "mrr": 1.0,
+        "mrr_ci": [
+          1.0,
+          1.0
+        ],
+        "hit@3_ci": [
+          1.0,
+          1.0
+        ],
+        "stale_rate": 0.0
+      },
+      "rti": {
+        "n": 42,
+        "hit@1": 0.5238095238095238,
+        "hit@3": 0.6666666666666666,
+        "hit@5": 0.7857142857142857,
+        "mrr": 0.6173280423280423,
+        "mrr_ci": [
+          0.4843915343915344,
+          0.7375661375661375
+        ],
+        "hit@3_ci": [
+          0.5238095238095238,
+          0.8095238095238095
+        ],
+        "stale_rate": 0.0
+      }
+    },
+    "hybrid + rerank (jina-reranker-v2-base-multilingual)": {
+      "consumer": {
+        "n": 9,
+        "hit@1": 0.5555555555555556,
+        "hit@3": 0.8888888888888888,
+        "hit@5": 0.8888888888888888,
+        "mrr": 0.7037037037037037,
+        "mrr_ci": [
+          0.46296296296296297,
+          0.9259259259259259
+        ],
+        "hit@3_ci": [
+          0.6666666666666666,
+          1.0
+        ],
+        "stale_rate": 0.0
+      },
+      "other": {
+        "n": 6,
+        "hit@1": 0.6666666666666666,
+        "hit@3": 1.0,
+        "hit@5": 1.0,
+        "mrr": 0.8333333333333334,
+        "mrr_ci": [
+          0.6666666666666666,
+          1.0
+        ],
+        "hit@3_ci": [
+          1.0,
+          1.0
+        ],
+        "stale_rate": 0.0
+      },
+      "rti": {
+        "n": 42,
+        "hit@1": 0.5952380952380952,
+        "hit@3": 0.7857142857142857,
+        "hit@5": 0.8095238095238095,
+        "mrr": 0.683531746031746,
+        "mrr_ci": [
+          0.5525793650793651,
+          0.7996031746031746
+        ],
+        "hit@3_ci": [
+          0.6666666666666666,
+          0.9047619047619048
+        ],
+        "stale_rate": 0.0
+      }
+    }
+  },
+  "by_difficulty": {
+    "vector only": {
+      "colloquial": {
+        "n": 12,
+        "hit@1": 0.25,
+        "hit@3": 0.4166666666666667,
+        "hit@5": 0.5,
+        "mrr": 0.40125661375661376,
+        "mrr_ci": [
+          0.20575396825396824,
+          0.6333333333333333
+        ],
+        "hit@3_ci": [
+          0.16666666666666666,
+          0.6666666666666666
+        ],
+        "stale_rate": 0.0
+      },
+      "direct": {
+        "n": 45,
+        "hit@1": 0.4666666666666667,
+        "hit@3": 0.7333333333333333,
+        "hit@5": 0.7777777777777778,
+        "mrr": 0.6011375661375661,
+        "mrr_ci": [
+          0.4867195767195767,
+          0.7175925925925926
+        ],
+        "hit@3_ci": [
+          0.6,
+          0.8444444444444444
+        ],
+        "stale_rate": 0.0
+      }
+    },
+    "keyword only (FTS)": {
+      "colloquial": {
+        "n": 12,
+        "hit@1": 0.08333333333333333,
+        "hit@3": 0.16666666666666666,
+        "hit@5": 0.16666666666666666,
+        "mrr": 0.16574074074074074,
+        "mrr_ci": [
+          0.03518518518518519,
+          0.3509259259259259
+        ],
+        "hit@3_ci": [
+          0.0,
+          0.4166666666666667
+        ],
+        "stale_rate": 0.0
+      },
+      "direct": {
+        "n": 45,
+        "hit@1": 0.3111111111111111,
+        "hit@3": 0.5111111111111111,
+        "hit@5": 0.6,
+        "mrr": 0.4287918871252205,
+        "mrr_ci": [
+          0.3167813051146384,
+          0.5535802469135802
+        ],
+        "hit@3_ci": [
+          0.35555555555555557,
+          0.6666666666666666
+        ],
+        "stale_rate": 0.0
+      }
+    },
+    "hybrid (RRF)": {
+      "colloquial": {
+        "n": 12,
+        "hit@1": 0.3333333333333333,
+        "hit@3": 0.4166666666666667,
+        "hit@5": 0.5,
+        "mrr": 0.4097222222222222,
+        "mrr_ci": [
+          0.1875,
+          0.6666666666666666
+        ],
+        "hit@3_ci": [
+          0.16666666666666666,
+          0.6666666666666666
+        ],
+        "stale_rate": 0.0
+      },
+      "direct": {
+        "n": 45,
+        "hit@1": 0.5333333333333333,
+        "hit@3": 0.6888888888888889,
+        "hit@5": 0.8,
+        "mrr": 0.6370370370370371,
+        "mrr_ci": [
+          0.5175925925925926,
+          0.755
+        ],
+        "hit@3_ci": [
+          0.5555555555555556,
+          0.8222222222222222
+        ],
+        "stale_rate": 0.0
+      }
+    },
+    "hybrid + rerank (lexical)": {
+      "colloquial": {
+        "n": 12,
+        "hit@1": 0.3333333333333333,
+        "hit@3": 0.4166666666666667,
+        "hit@5": 0.5833333333333334,
+        "mrr": 0.42592592592592593,
+        "mrr_ci": [
+          0.20601851851851852,
+          0.6666666666666666
+        ],
+        "hit@3_ci": [
+          0.16666666666666666,
+          0.6666666666666666
+        ],
+        "stale_rate": 0.0
+      },
+      "direct": {
+        "n": 45,
+        "hit@1": 0.6,
+        "hit@3": 0.8,
+        "hit@5": 0.8666666666666667,
+        "mrr": 0.707037037037037,
+        "mrr_ci": [
+          0.597037037037037,
+          0.8162962962962963
+        ],
+        "hit@3_ci": [
+          0.6888888888888889,
+          0.9111111111111111
+        ],
+        "stale_rate": 0.0
+      }
+    },
+    "hybrid + rerank (jina-reranker-v2-base-multilingual)": {
+      "colloquial": {
+        "n": 12,
+        "hit@1": 0.3333333333333333,
+        "hit@3": 0.5833333333333334,
+        "hit@5": 0.6666666666666666,
+        "mrr": 0.4652777777777778,
+        "mrr_ci": [
+          0.24305555555555555,
+          0.7013888888888888
+        ],
+        "hit@3_ci": [
+          0.3333333333333333,
+          0.8333333333333334
+        ],
+        "stale_rate": 0.0
+      },
+      "direct": {
+        "n": 45,
+        "hit@1": 0.6666666666666666,
+        "hit@3": 0.8888888888888888,
+        "hit@5": 0.8888888888888888,
+        "mrr": 0.7657407407407407,
+        "mrr_ci": [
+          0.6657407407407407,
+          0.8657407407407407
+        ],
+        "hit@3_ci": [
+          0.8,
+          0.9777777777777777
+        ],
+        "stale_rate": 0.0
+      }
+    }
+  },
+  "misses": {
+    "vector only": [
+      {
+        "id": "q01",
+        "question": "How many days does a Public Information Officer have to reply to an RTI application?",
+        "expected": [
+          "rti-act-2005-en-s7"
+        ],
+        "top3": [
+          "rti-act-2005-en-s5",
+          "rti-act-2005-en-s19",
+          "rti-act-2005-en-s11"
+        ],
+        "rank": 6
+      },
+      {
+        "id": "q02",
+        "question": "In how many days must information be given if it concerns the life or liberty of a person?",
+        "expected": [
+          "rti-act-2005-en-s7"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p67",
+          "rti-act-2005-mr-p71",
+          "rti-act-2005-mr-p33"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q06",
+        "question": "What is the penalty on a Public Information Officer for delaying information?",
+        "expected": [
+          "rti-act-2005-en-s20"
+        ],
+        "top3": [
+          "rti-act-2005-en-s19",
+          "rti-act-2005-mr-p34",
+          "rti-act-2005-mr-p25"
+        ],
+        "rank": 7
+      },
+      {
+        "id": "q07",
+        "question": "What is the application fee for an RTI in Maharashtra?",
+        "expected": [
+          "mh-rti-rules-2026-07-en-r3"
+        ],
+        "top3": [
+          "mh-rti-rules-2026-07-en-r4",
+          "rti-fee-rules-2005-amend",
+          "mh-rti-rules-2026-07-en-annexures"
+        ],
+        "rank": 5
+      },
+      {
+        "id": "q10",
+        "question": "Can a PIO refuse to give information because it is personal information?",
+        "expected": [
+          "rti-act-2005-en-s8",
+          "judg-girish-deshpande"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p33",
+          "rti-act-2005-en-s9",
+          "rti-marathi-s6-s7"
+        ],
+        "rank": 7
+      },
+      {
+        "id": "q15",
+        "question": "How can I file a complaint with the Information Commission?",
+        "expected": [
+          "rti-act-2005-en-s18"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s38",
+          "consumer-protection-act-2019-s17",
+          "consumer-protection-act-2019-s47"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q16",
+        "question": "Which information must a public authority publish on its own without being asked?",
+        "expected": [
+          "rti-act-2005-en-s4"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p28",
+          "rti-act-2005-mr-p60",
+          "rti-act-2005-mr-p73"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q17",
+        "question": "Who can ask for information under the RTI Act?",
+        "expected": [
+          "rti-act-2005-en-s3",
+          "rti-act-2005-en-s2"
+        ],
+        "top3": [
+          "rti-act-2005-en-s6",
+          "rti-act-2005-en-s18",
+          "rti-act-2005-en-s11"
+        ],
+        "rank": 10
+      },
+      {
+        "id": "q21",
+        "question": "Is information free for a person below the poverty line?",
+        "expected": [
+          "rti-act-2005-en-s7",
+          "rti-rules-2012-central"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p16",
+          "rti-act-2005-mr-p27",
+          "rti-act-2005-mr-p20"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q24",
+        "question": "Is the office of the Chief Justice of India covered by the RTI Act?",
+        "expected": [
+          "judg-subhash-agarwal"
+        ],
+        "top3": [
+          "rti-act-2005-en-s1",
+          "rti-act-2005-en-s11",
+          "rti-act-2005-en-s25"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q28",
+        "question": "What is the maximum number of words allowed in an RTI application in Maharashtra?",
+        "expected": [
+          "mh-rti-rules-2026-07-en-r3"
+        ],
+        "top3": [
+          "mh-rti-rules-2026-07-en-annexures",
+          "mh-rti-rules-2026-07-en-r2",
+          "mh-rti-rules-2026-07-en-r1"
+        ],
+        "rank": 4
+      },
+      {
+        "id": "q33",
+        "question": "The seller gave me a defective mobile phone and refuses a refund. Can I complain?",
+        "expected": [
+          "consumer-protection-act-2019-s2",
+          "consumer-protection-act-2019-s35",
+          "consumer-protection-act-2019-s39"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s87",
+          "consumer-protection-act-2019-s82",
+          "consumer-protection-act-2019-s86"
+        ],
+        "rank": 9
+      },
+      {
+        "id": "q36",
+        "question": "My cheque bounced. What notice must I send and within how many days?",
+        "expected": [
+          "ni-act-138-142"
+        ],
+        "top3": [
+          "ni-act-marathi",
+          "consumer-marathi",
+          "consumer-protection-act-2019-s24"
+        ],
+        "rank": 10
+      },
+      {
+        "id": "m03",
+        "question": "माहितीच्या प्रत्येक पानासाठी किती शुल्क आकारले जाते?",
+        "expected": [
+          "mh-rti-rules-2026-07-mr-न4",
+          "mh-rti-rules-2026-07-en-r4"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p75",
+          "rti-fee-rules-2005-r4",
+          "rti-act-2005-mr-p23"
+        ],
+        "rank": 6
+      },
+      {
+        "id": "m04",
+        "question": "प्रथम अपिलासाठी किती फी भरावी लागते?",
+        "expected": [
+          "mh-rti-rules-2026-07-mr-न5",
+          "mh-rti-rules-2026-07-en-r5"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p75",
+          "rti-fee-rules-2005-r4",
+          "rti-fee-rules-2005-r5"
+        ],
+        "rank": null
+      },
+      {
+        "id": "m05",
+        "question": "जन माहिती अधिकाऱ्याने उशीर केल्यास किती दंड होतो?",
+        "expected": [
+          "rti-marathi-s19-s20",
+          "rti-act-2005-mr-p62",
+          "rti-act-2005-en-s20"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p34",
+          "rti-act-2005-mr-p79",
+          "ni-act-marathi"
+        ],
+        "rank": 8
+      },
+      {
+        "id": "m07",
+        "question": "कोणती माहिती देण्यास नकार देता येतो?",
+        "expected": [
+          "rti-marathi-exemptions",
+          "rti-act-2005-mr-p26",
+          "rti-act-2005-en-s8"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p30",
+          "rti-act-2005-mr-p21",
+          "rti-act-2005-mr-p55"
+        ],
+        "rank": null
+      },
+      {
+        "id": "m12",
+        "question": "तिसऱ्या व्यक्तीशी संबंधित माहिती कधी दिली जाते?",
+        "expected": [
+          "rti-act-2005-mr-p32",
+          "rti-act-2005-mr-p33",
+          "rti-act-2005-mr-p34",
+          "rti-act-2005-en-s11"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p30",
+          "rti-act-2005-mr-p14",
+          "rti-act-2005-mr-p7"
+        ],
+        "rank": 4
+      },
+      {
+        "id": "m16",
+        "question": "दारिद्र्यरेषेखालील व्यक्तींना माहिती मोफत मिळते का?",
+        "expected": [
+          "rti-act-2005-mr-p24",
+          "rti-act-2005-en-s7"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p16",
+          "rti-act-2005-mr-p27",
+          "rti-act-2005-mr-p82"
+        ],
+        "rank": 9
+      }
+    ],
+    "keyword only (FTS)": [
+      {
+        "id": "q01",
+        "question": "How many days does a Public Information Officer have to reply to an RTI application?",
+        "expected": [
+          "rti-act-2005-en-s7"
+        ],
+        "top3": [
+          "rti-act-2005-en-s18",
+          "rti-act-2005-en-s6",
+          "rti-act-2005-en-s19"
+        ],
+        "rank": 8
+      },
+      {
+        "id": "q02",
+        "question": "In how many days must information be given if it concerns the life or liberty of a person?",
+        "expected": [
+          "rti-act-2005-en-s7"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s2",
+          "rti-act-2005-en-s12",
+          "rti-act-2005-en-s11"
+        ],
+        "rank": 5
+      },
+      {
+        "id": "q03",
+        "question": "I filed an RTI and got no reply at all. What can I do now?",
+        "expected": [
+          "rti-act-2005-en-s7",
+          "rti-act-2005-en-s19",
+          "rti-act-2005-en-s18",
+          "mh-rti-rules-2026-07-en-r5"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s26",
+          "rti-act-2005-en-s4",
+          "consumer-protection-act-2019-s102"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q08",
+        "question": "how much do I have to pay per page for photocopies under RTI in Maharashtra",
+        "expected": [
+          "mh-rti-rules-2026-07-en-r4"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s2",
+          "consumer-protection-act-2019-s39",
+          "mh-rti-rules-2026-07-en-r3"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q09",
+        "question": "What fee must be paid with a first appeal under the Maharashtra RTI Rules?",
+        "expected": [
+          "mh-rti-rules-2026-07-en-r5"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s72",
+          "rti-act-2005-en-s19",
+          "rti-act-2005-en-s2"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q10",
+        "question": "Can a PIO refuse to give information because it is personal information?",
+        "expected": [
+          "rti-act-2005-en-s8",
+          "judg-girish-deshpande"
+        ],
+        "top3": [
+          "rti-act-2005-en-s18",
+          "rti-act-2005-en-s10",
+          "rti-act-2005-en-s6"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q13",
+        "question": "What happens if my RTI application is sent to the wrong department?",
+        "expected": [
+          "rti-act-2005-en-s6"
+        ],
+        "top3": [
+          "mh-rti-rules-2026-07-en-r3",
+          "rti-act-2005-en-s10",
+          "consumer-protection-act-2019-s38"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q14",
+        "question": "Which organisations are exempt from the RTI Act?",
+        "expected": [
+          "rti-act-2005-en-s24",
+          "rti-act-2005-en-sched2"
+        ],
+        "top3": [
+          "rti-act-2005-en-s10",
+          "consumer-protection-act-2019-s39",
+          "consumer-protection-act-2019-s47"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q15",
+        "question": "How can I file a complaint with the Information Commission?",
+        "expected": [
+          "rti-act-2005-en-s18"
+        ],
+        "top3": [
+          "rti-act-2005-en-s19",
+          "consumer-protection-act-2019-s72",
+          "rti-act-2005-en-s12"
+        ],
+        "rank": 4
+      },
+      {
+        "id": "q16",
+        "question": "Which information must a public authority publish on its own without being asked?",
+        "expected": [
+          "rti-act-2005-en-s4"
+        ],
+        "top3": [
+          "rti-act-2005-en-s6",
+          "rti-act-2005-en-s11",
+          "rti-act-2005-en-s18"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q17",
+        "question": "Who can ask for information under the RTI Act?",
+        "expected": [
+          "rti-act-2005-en-s3",
+          "rti-act-2005-en-s2"
+        ],
+        "top3": [
+          "rti-act-2005-en-s18",
+          "rti-act-2005-en-s20",
+          "rti-act-2005-en-s12"
+        ],
+        "rank": 9
+      },
+      {
+        "id": "q18",
+        "question": "What is the fee for inspecting records under the central RTI fee rules?",
+        "expected": [
+          "rti-fee-rules-2005-r4",
+          "rti-fee-rules-2005-amend"
+        ],
+        "top3": [
+          "mh-rti-rules-2026-07-en-r3",
+          "rti-act-2005-en-s12",
+          "consumer-protection-act-2019-s102"
+        ],
+        "rank": 8
+      },
+      {
+        "id": "q19",
+        "question": "Can the RTI fee be paid by Indian Postal Order?",
+        "expected": [
+          "rti-fee-rules-2005-amend",
+          "rti-fee-rules-2005-r3",
+          "rti-rules-2012-central"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s65",
+          "rti-act-2005-en-s12",
+          "consumer-protection-act-2019-s72"
+        ],
+        "rank": 7
+      },
+      {
+        "id": "q21",
+        "question": "Is information free for a person below the poverty line?",
+        "expected": [
+          "rti-act-2005-en-s7",
+          "rti-rules-2012-central"
+        ],
+        "top3": [
+          "rti-act-2005-en-s19",
+          "rti-act-2005-en-s10",
+          "rti-act-2005-en-s6"
+        ],
+        "rank": 9
+      },
+      {
+        "id": "q22",
+        "question": "Can I get a copy of my evaluated exam answer-book under RTI?",
+        "expected": [
+          "judg-cbse-aditya"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s102",
+          "consumer-protection-act-2019-s101",
+          "consumer-protection-act-2019-s2"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q24",
+        "question": "Is the office of the Chief Justice of India covered by the RTI Act?",
+        "expected": [
+          "judg-subhash-agarwal"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s102",
+          "rti-act-2005-en-s2",
+          "rti-act-2005-en-s15"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q25",
+        "question": "Can the Reserve Bank refuse to share bank inspection reports by calling it a fiduciary relationship?",
+        "expected": [
+          "judg-rbi-jayantilal"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s2",
+          "consumer-protection-act-2019-s38",
+          "rti-act-2005-en-s12"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q28",
+        "question": "What is the maximum number of words allowed in an RTI application in Maharashtra?",
+        "expected": [
+          "mh-rti-rules-2026-07-en-r3"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s102",
+          "consumer-protection-act-2019-s101",
+          "rti-act-2005-en-s12"
+        ],
+        "rank": 10
+      },
+      {
+        "id": "q29",
+        "question": "What is the time limit to file a consumer complaint?",
+        "expected": [
+          "consumer-protection-act-2019-s69",
+          "cpa-2019-limitation-jurisdiction"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s38",
+          "consumer-protection-act-2019-s39",
+          "consumer-protection-act-2019-s2"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q31",
+        "question": "Where can I appeal against an order of the District Consumer Commission?",
+        "expected": [
+          "consumer-protection-act-2019-s41",
+          "cpa-2019-limitation-jurisdiction"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s102",
+          "consumer-protection-act-2019-s101",
+          "consumer-protection-act-2019-s51"
+        ],
+        "rank": 5
+      },
+      {
+        "id": "q33",
+        "question": "The seller gave me a defective mobile phone and refuses a refund. Can I complain?",
+        "expected": [
+          "consumer-protection-act-2019-s2",
+          "consumer-protection-act-2019-s35",
+          "consumer-protection-act-2019-s39"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s102",
+          "consumer-protection-act-2019-s101",
+          "consumer-protection-act-2019-s47"
+        ],
+        "rank": 10
+      },
+      {
+        "id": "q34",
+        "question": "Can a manufacturer be held liable for harm caused by a defective product?",
+        "expected": [
+          "consumer-protection-act-2019-s84",
+          "consumer-protection-act-2019-s82",
+          "consumer-protection-act-2019-s85"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s2",
+          "consumer-protection-act-2019-s87",
+          "consumer-protection-act-2019-s86"
+        ],
+        "rank": 4
+      },
+      {
+        "id": "q37",
+        "question": "Can a court accept a case filed after the limitation period has expired?",
+        "expected": [
+          "limitation-act-1963"
+        ],
+        "top3": [
+          "rti-act-2005-en-s2",
+          "rti-act-2005-en-s17",
+          "consumer-protection-act-2019-s47"
+        ],
+        "rank": null
+      },
+      {
+        "id": "m02",
+        "question": "महाराष्ट्रात माहिती अधिकार अर्जासाठी किती फी लागते?",
+        "expected": [
+          "mh-rti-rules-2026-07-mr-न3",
+          "mh-rti-rules-2026-07-en-r3"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p3",
+          "rti-act-2005-mr-p63",
+          "rti-act-2005-mr-p62"
+        ],
+        "rank": null
+      },
+      {
+        "id": "m03",
+        "question": "माहितीच्या प्रत्येक पानासाठी किती शुल्क आकारले जाते?",
+        "expected": [
+          "mh-rti-rules-2026-07-mr-न4",
+          "mh-rti-rules-2026-07-en-r4"
+        ],
+        "top3": [
+          "rti-marathi-s6-s7",
+          "rti-act-2005-mr-p67",
+          "rti-act-2005-mr-p68"
+        ],
+        "rank": null
+      },
+      {
+        "id": "m04",
+        "question": "प्रथम अपिलासाठी किती फी भरावी लागते?",
+        "expected": [
+          "mh-rti-rules-2026-07-mr-न5",
+          "mh-rti-rules-2026-07-en-r5"
+        ],
+        "top3": [
+          "mh-rti-rules-2026-07-mr-न4",
+          "rti-marathi-s19-s20",
+          "ni-act-marathi"
+        ],
+        "rank": 9
+      },
+      {
+        "id": "m07",
+        "question": "कोणती माहिती देण्यास नकार देता येतो?",
+        "expected": [
+          "rti-marathi-exemptions",
+          "rti-act-2005-mr-p26",
+          "rti-act-2005-en-s8"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p3",
+          "rti-act-2005-mr-p63",
+          "rti-act-2005-mr-p28"
+        ],
+        "rank": 6
+      },
+      {
+        "id": "m12",
+        "question": "तिसऱ्या व्यक्तीशी संबंधित माहिती कधी दिली जाते?",
+        "expected": [
+          "rti-act-2005-mr-p32",
+          "rti-act-2005-mr-p33",
+          "rti-act-2005-mr-p34",
+          "rti-act-2005-en-s11"
+        ],
+        "top3": [
+          "rti-marathi-s6-s7",
+          "rti-act-2005-mr-p63",
+          "rti-act-2005-mr-p3"
+        ],
+        "rank": 6
+      },
+      {
+        "id": "m13",
+        "question": "केंद्रीय माहिती आयोगात कोणते सदस्य असतात?",
+        "expected": [
+          "rti-act-2005-mr-p35",
+          "rti-act-2005-en-s12"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p63",
+          "rti-act-2005-mr-p3",
+          "rti-act-2005-mr-p62"
+        ],
+        "rank": null
+      },
+      {
+        "id": "m14",
+        "question": "माहिती आयोगाकडे तक्रार कोणाला करता येते?",
+        "expected": [
+          "rti-act-2005-mr-p54",
+          "rti-act-2005-mr-p55",
+          "rti-act-2005-en-s18"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p3",
+          "rti-act-2005-mr-p63",
+          "rti-act-2005-mr-p62"
+        ],
+        "rank": 8
+      },
+      {
+        "id": "m15",
+        "question": "सार्वजनिक प्राधिकरणांनी स्वतःहून कोणती माहिती प्रसिद्ध करावी?",
+        "expected": [
+          "rti-act-2005-mr-p13",
+          "rti-act-2005-mr-p14",
+          "rti-act-2005-mr-p15",
+          "rti-act-2005-en-s4"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p3",
+          "rti-act-2005-mr-p63",
+          "rti-act-2005-mr-p67"
+        ],
+        "rank": null
+      },
+      {
+        "id": "m16",
+        "question": "दारिद्र्यरेषेखालील व्यक्तींना माहिती मोफत मिळते का?",
+        "expected": [
+          "rti-act-2005-mr-p24",
+          "rti-act-2005-en-s7"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p3",
+          "rti-act-2005-mr-p63",
+          "rti-marathi-s6-s7"
+        ],
+        "rank": null
+      }
+    ],
+    "hybrid (RRF)": [
+      {
+        "id": "q01",
+        "question": "How many days does a Public Information Officer have to reply to an RTI application?",
+        "expected": [
+          "rti-act-2005-en-s7"
+        ],
+        "top3": [
+          "rti-act-2005-en-s19",
+          "rti-act-2005-en-s5",
+          "rti-act-2005-en-s11"
+        ],
+        "rank": 4
+      },
+      {
+        "id": "q02",
+        "question": "In how many days must information be given if it concerns the life or liberty of a person?",
+        "expected": [
+          "rti-act-2005-en-s7"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p67",
+          "consumer-protection-act-2019-s2",
+          "rti-act-2005-mr-p71"
+        ],
+        "rank": 10
+      },
+      {
+        "id": "q03",
+        "question": "I filed an RTI and got no reply at all. What can I do now?",
+        "expected": [
+          "rti-act-2005-en-s7",
+          "rti-act-2005-en-s19",
+          "rti-act-2005-en-s18",
+          "mh-rti-rules-2026-07-en-r5"
+        ],
+        "top3": [
+          "rti-act-2005-en-s26",
+          "rti-notif-online-portal",
+          "consumer-protection-act-2019-s26"
+        ],
+        "rank": 4
+      },
+      {
+        "id": "q09",
+        "question": "What fee must be paid with a first appeal under the Maharashtra RTI Rules?",
+        "expected": [
+          "mh-rti-rules-2026-07-en-r5"
+        ],
+        "top3": [
+          "mh-rti-rules-2026-07-en-r3",
+          "rti-act-2005-en-s7",
+          "mh-rti-rules-2026-07-en-r4"
+        ],
+        "rank": 5
+      },
+      {
+        "id": "q10",
+        "question": "Can a PIO refuse to give information because it is personal information?",
+        "expected": [
+          "rti-act-2005-en-s8",
+          "judg-girish-deshpande"
+        ],
+        "top3": [
+          "rti-act-2005-en-s20",
+          "rti-act-2005-en-s11",
+          "rti-act-2005-mr-p33"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q13",
+        "question": "What happens if my RTI application is sent to the wrong department?",
+        "expected": [
+          "rti-act-2005-en-s6"
+        ],
+        "top3": [
+          "rti-act-2005-en-s25",
+          "rti-act-2005-en-s7",
+          "rti-act-2005-en-s11"
+        ],
+        "rank": 6
+      },
+      {
+        "id": "q14",
+        "question": "Which organisations are exempt from the RTI Act?",
+        "expected": [
+          "rti-act-2005-en-s24",
+          "rti-act-2005-en-sched2"
+        ],
+        "top3": [
+          "rti-act-2005-en-s10",
+          "rti-act-2005-en-s25",
+          "rti-act-2005-en-s19"
+        ],
+        "rank": 5
+      },
+      {
+        "id": "q15",
+        "question": "How can I file a complaint with the Information Commission?",
+        "expected": [
+          "rti-act-2005-en-s18"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s38",
+          "rti-act-2005-en-s20",
+          "consumer-protection-act-2019-s65"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q16",
+        "question": "Which information must a public authority publish on its own without being asked?",
+        "expected": [
+          "rti-act-2005-en-s4"
+        ],
+        "top3": [
+          "rti-act-2005-en-s26",
+          "rti-act-2005-en-s8",
+          "rti-act-2005-mr-p28"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q17",
+        "question": "Who can ask for information under the RTI Act?",
+        "expected": [
+          "rti-act-2005-en-s3",
+          "rti-act-2005-en-s2"
+        ],
+        "top3": [
+          "rti-act-2005-en-s6",
+          "rti-act-2005-en-s18",
+          "rti-act-2005-en-s25"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q21",
+        "question": "Is information free for a person below the poverty line?",
+        "expected": [
+          "rti-act-2005-en-s7",
+          "rti-rules-2012-central"
+        ],
+        "top3": [
+          "rti-act-2005-en-s10",
+          "rti-act-2005-mr-p16",
+          "rti-act-2005-en-s19"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q24",
+        "question": "Is the office of the Chief Justice of India covered by the RTI Act?",
+        "expected": [
+          "judg-subhash-agarwal"
+        ],
+        "top3": [
+          "rti-act-2005-en-s12",
+          "rti-act-2005-en-s15",
+          "rti-act-2005-en-s1"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q29",
+        "question": "What is the time limit to file a consumer complaint?",
+        "expected": [
+          "consumer-protection-act-2019-s69",
+          "cpa-2019-limitation-jurisdiction"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s38",
+          "consumer-protection-act-2019-s35",
+          "consumer-protection-act-2019-s65"
+        ],
+        "rank": 4
+      },
+      {
+        "id": "q33",
+        "question": "The seller gave me a defective mobile phone and refuses a refund. Can I complain?",
+        "expected": [
+          "consumer-protection-act-2019-s2",
+          "consumer-protection-act-2019-s35",
+          "consumer-protection-act-2019-s39"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s87",
+          "consumer-protection-act-2019-s102",
+          "consumer-protection-act-2019-s82"
+        ],
+        "rank": null
+      },
+      {
+        "id": "m03",
+        "question": "माहितीच्या प्रत्येक पानासाठी किती शुल्क आकारले जाते?",
+        "expected": [
+          "mh-rti-rules-2026-07-mr-न4",
+          "mh-rti-rules-2026-07-en-r4"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p75",
+          "rti-act-2005-mr-p68",
+          "rti-marathi-s6-s7"
+        ],
+        "rank": 4
+      },
+      {
+        "id": "m04",
+        "question": "प्रथम अपिलासाठी किती फी भरावी लागते?",
+        "expected": [
+          "mh-rti-rules-2026-07-mr-न5",
+          "mh-rti-rules-2026-07-en-r5"
+        ],
+        "top3": [
+          "ni-act-marathi",
+          "rti-act-2005-mr-p23",
+          "mh-rti-rules-2026-07-mr-न4"
+        ],
+        "rank": null
+      },
+      {
+        "id": "m07",
+        "question": "कोणती माहिती देण्यास नकार देता येतो?",
+        "expected": [
+          "rti-marathi-exemptions",
+          "rti-act-2005-mr-p26",
+          "rti-act-2005-en-s8"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p3",
+          "rti-act-2005-mr-p28",
+          "rti-act-2005-mr-p62"
+        ],
+        "rank": null
+      },
+      {
+        "id": "m13",
+        "question": "केंद्रीय माहिती आयोगात कोणते सदस्य असतात?",
+        "expected": [
+          "rti-act-2005-mr-p35",
+          "rti-act-2005-en-s12"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p63",
+          "rti-act-2005-mr-p59",
+          "rti-act-2005-mr-p62"
+        ],
+        "rank": 8
+      },
+      {
+        "id": "m14",
+        "question": "माहिती आयोगाकडे तक्रार कोणाला करता येते?",
+        "expected": [
+          "rti-act-2005-mr-p54",
+          "rti-act-2005-mr-p55",
+          "rti-act-2005-en-s18"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p63",
+          "rti-act-2005-mr-p62",
+          "rti-act-2005-mr-p3"
+        ],
+        "rank": 6
+      },
+      {
+        "id": "m15",
+        "question": "सार्वजनिक प्राधिकरणांनी स्वतःहून कोणती माहिती प्रसिद्ध करावी?",
+        "expected": [
+          "rti-act-2005-mr-p13",
+          "rti-act-2005-mr-p14",
+          "rti-act-2005-mr-p15",
+          "rti-act-2005-en-s4"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p11",
+          "rti-act-2005-mr-p28",
+          "rti-act-2005-mr-p25"
+        ],
+        "rank": 8
+      },
+      {
+        "id": "m16",
+        "question": "दारिद्र्यरेषेखालील व्यक्तींना माहिती मोफत मिळते का?",
+        "expected": [
+          "rti-act-2005-mr-p24",
+          "rti-act-2005-en-s7"
+        ],
+        "top3": [
+          "rti-marathi-exemptions",
+          "rti-act-2005-mr-p28",
+          "rti-act-2005-mr-p26"
+        ],
+        "rank": null
+      }
+    ],
+    "hybrid + rerank (lexical)": [
+      {
+        "id": "q01",
+        "question": "How many days does a Public Information Officer have to reply to an RTI application?",
+        "expected": [
+          "rti-act-2005-en-s7"
+        ],
+        "top3": [
+          "rti-act-2005-en-s19",
+          "rti-act-2005-en-s5",
+          "mh-rti-rules-2026-07-en-r5"
+        ],
+        "rank": 6
+      },
+      {
+        "id": "q03",
+        "question": "I filed an RTI and got no reply at all. What can I do now?",
+        "expected": [
+          "rti-act-2005-en-s7",
+          "rti-act-2005-en-s19",
+          "rti-act-2005-en-s18",
+          "mh-rti-rules-2026-07-en-r5"
+        ],
+        "top3": [
+          "rti-act-2005-en-s26",
+          "rti-act-2005-en-s12",
+          "rti-notif-online-portal"
+        ],
+        "rank": 9
+      },
+      {
+        "id": "q10",
+        "question": "Can a PIO refuse to give information because it is personal information?",
+        "expected": [
+          "rti-act-2005-en-s8",
+          "judg-girish-deshpande"
+        ],
+        "top3": [
+          "rti-act-2005-en-s10",
+          "rti-act-2005-en-s6",
+          "rti-act-2005-en-s18"
+        ],
+        "rank": 4
+      },
+      {
+        "id": "q13",
+        "question": "What happens if my RTI application is sent to the wrong department?",
+        "expected": [
+          "rti-act-2005-en-s6"
+        ],
+        "top3": [
+          "mh-rti-rules-2026-07-en-r3",
+          "rti-act-2005-en-s25",
+          "rti-act-2005-en-s11"
+        ],
+        "rank": 4
+      },
+      {
+        "id": "q16",
+        "question": "Which information must a public authority publish on its own without being asked?",
+        "expected": [
+          "rti-act-2005-en-s4"
+        ],
+        "top3": [
+          "rti-act-2005-en-s26",
+          "rti-act-2005-en-s6",
+          "rti-act-2005-en-s19"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q17",
+        "question": "Who can ask for information under the RTI Act?",
+        "expected": [
+          "rti-act-2005-en-s3",
+          "rti-act-2005-en-s2"
+        ],
+        "top3": [
+          "rti-act-2005-en-s18",
+          "rti-act-2005-en-s6",
+          "rti-act-2005-en-s12"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q21",
+        "question": "Is information free for a person below the poverty line?",
+        "expected": [
+          "rti-act-2005-en-s7",
+          "rti-rules-2012-central"
+        ],
+        "top3": [
+          "rti-act-2005-en-s6",
+          "rti-act-2005-en-s10",
+          "rti-act-2005-en-s12"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q24",
+        "question": "Is the office of the Chief Justice of India covered by the RTI Act?",
+        "expected": [
+          "judg-subhash-agarwal"
+        ],
+        "top3": [
+          "rti-act-2005-en-s2",
+          "rti-act-2005-en-s12",
+          "rti-act-2005-en-s15"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q33",
+        "question": "The seller gave me a defective mobile phone and refuses a refund. Can I complain?",
+        "expected": [
+          "consumer-protection-act-2019-s2",
+          "consumer-protection-act-2019-s35",
+          "consumer-protection-act-2019-s39"
+        ],
+        "top3": [
+          "rti-act-2005-en-s2",
+          "consumer-protection-act-2019-s83",
+          "consumer-protection-act-2019-s87"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q35",
+        "question": "Is mediation available for consumer disputes?",
+        "expected": [
+          "consumer-protection-act-2019-s37",
+          "consumer-protection-act-2019-s74",
+          "consumer-protection-act-2019-s75"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s79",
+          "consumer-protection-act-2019-s101",
+          "consumer-protection-act-2019-s103"
+        ],
+        "rank": 6
+      },
+      {
+        "id": "m03",
+        "question": "माहितीच्या प्रत्येक पानासाठी किती शुल्क आकारले जाते?",
+        "expected": [
+          "mh-rti-rules-2026-07-mr-न4",
+          "mh-rti-rules-2026-07-en-r4"
+        ],
+        "top3": [
+          "rti-marathi-s6-s7",
+          "rti-act-2005-mr-p15",
+          "rti-act-2005-mr-p75"
+        ],
+        "rank": 5
+      },
+      {
+        "id": "m04",
+        "question": "प्रथम अपिलासाठी किती फी भरावी लागते?",
+        "expected": [
+          "mh-rti-rules-2026-07-mr-न5",
+          "mh-rti-rules-2026-07-en-r5"
+        ],
+        "top3": [
+          "ni-act-marathi",
+          "rti-act-2005-mr-p23",
+          "mh-rti-rules-2026-07-mr-न4"
+        ],
+        "rank": null
+      },
+      {
+        "id": "m05",
+        "question": "जन माहिती अधिकाऱ्याने उशीर केल्यास किती दंड होतो?",
+        "expected": [
+          "rti-marathi-s19-s20",
+          "rti-act-2005-mr-p62",
+          "rti-act-2005-en-s20"
+        ],
+        "top3": [
+          "rti-marathi-s6-s7",
+          "rti-act-2005-mr-p58",
+          "rti-act-2005-mr-p63"
+        ],
+        "rank": 5
+      },
+      {
+        "id": "m13",
+        "question": "केंद्रीय माहिती आयोगात कोणते सदस्य असतात?",
+        "expected": [
+          "rti-act-2005-mr-p35",
+          "rti-act-2005-en-s12"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p63",
+          "rti-act-2005-mr-p59",
+          "rti-act-2005-mr-p62"
+        ],
+        "rank": 4
+      },
+      {
+        "id": "m15",
+        "question": "सार्वजनिक प्राधिकरणांनी स्वतःहून कोणती माहिती प्रसिद्ध करावी?",
+        "expected": [
+          "rti-act-2005-mr-p13",
+          "rti-act-2005-mr-p14",
+          "rti-act-2005-mr-p15",
+          "rti-act-2005-en-s4"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p11",
+          "rti-act-2005-mr-p28",
+          "rti-act-2005-mr-p25"
+        ],
+        "rank": null
+      },
+      {
+        "id": "m16",
+        "question": "दारिद्र्यरेषेखालील व्यक्तींना माहिती मोफत मिळते का?",
+        "expected": [
+          "rti-act-2005-mr-p24",
+          "rti-act-2005-en-s7"
+        ],
+        "top3": [
+          "rti-marathi-s6-s7",
+          "rti-act-2005-mr-p16",
+          "rti-marathi-exemptions"
+        ],
+        "rank": null
+      }
+    ],
+    "hybrid + rerank (jina-reranker-v2-base-multilingual)": [
+      {
+        "id": "q10",
+        "question": "Can a PIO refuse to give information because it is personal information?",
+        "expected": [
+          "rti-act-2005-en-s8",
+          "judg-girish-deshpande"
+        ],
+        "top3": [
+          "rti-act-2005-en-s9",
+          "rti-act-2005-en-s20",
+          "rti-act-2005-en-s10"
+        ],
+        "rank": 4
+      },
+      {
+        "id": "q16",
+        "question": "Which information must a public authority publish on its own without being asked?",
+        "expected": [
+          "rti-act-2005-en-s4"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p60",
+          "rti-act-2005-mr-p28",
+          "rti-act-2005-mr-p63"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q17",
+        "question": "Who can ask for information under the RTI Act?",
+        "expected": [
+          "rti-act-2005-en-s3",
+          "rti-act-2005-en-s2"
+        ],
+        "top3": [
+          "rti-act-2005-en-s6",
+          "rti-act-2005-en-s18",
+          "rti-act-2005-en-s7"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q21",
+        "question": "Is information free for a person below the poverty line?",
+        "expected": [
+          "rti-act-2005-en-s7",
+          "rti-rules-2012-central"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p16",
+          "rti-act-2005-en-s20",
+          "rti-act-2005-en-s10"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q24",
+        "question": "Is the office of the Chief Justice of India covered by the RTI Act?",
+        "expected": [
+          "judg-subhash-agarwal"
+        ],
+        "top3": [
+          "rti-act-2005-en-s2",
+          "rti-act-2005-en-s12",
+          "rti-act-2005-en-s1"
+        ],
+        "rank": null
+      },
+      {
+        "id": "q33",
+        "question": "The seller gave me a defective mobile phone and refuses a refund. Can I complain?",
+        "expected": [
+          "consumer-protection-act-2019-s2",
+          "consumer-protection-act-2019-s35",
+          "consumer-protection-act-2019-s39"
+        ],
+        "top3": [
+          "consumer-protection-act-2019-s83",
+          "consumer-protection-act-2019-s82",
+          "consumer-protection-act-2019-s87"
+        ],
+        "rank": null
+      },
+      {
+        "id": "m04",
+        "question": "प्रथम अपिलासाठी किती फी भरावी लागते?",
+        "expected": [
+          "mh-rti-rules-2026-07-mr-न5",
+          "mh-rti-rules-2026-07-en-r5"
+        ],
+        "top3": [
+          "rti-rules-2012-central",
+          "rti-marathi-s19-s20",
+          "rti-fee-rules-2005-r3"
+        ],
+        "rank": null
+      },
+      {
+        "id": "m07",
+        "question": "कोणती माहिती देण्यास नकार देता येतो?",
+        "expected": [
+          "rti-marathi-exemptions",
+          "rti-act-2005-mr-p26",
+          "rti-act-2005-en-s8"
+        ],
+        "top3": [
+          "rti-act-2005-en-s9",
+          "rti-act-2005-mr-p28",
+          "rti-act-2005-mr-p3"
+        ],
+        "rank": 8
+      },
+      {
+        "id": "m15",
+        "question": "सार्वजनिक प्राधिकरणांनी स्वतःहून कोणती माहिती प्रसिद्ध करावी?",
+        "expected": [
+          "rti-act-2005-mr-p13",
+          "rti-act-2005-mr-p14",
+          "rti-act-2005-mr-p15",
+          "rti-act-2005-en-s4"
+        ],
+        "top3": [
+          "rti-act-2005-mr-p28",
+          "rti-act-2005-mr-p17",
+          "rti-act-2005-mr-p67"
+        ],
+        "rank": null
+      },
+      {
+        "id": "m16",
+        "question": "दारिद्र्यरेषेखालील व्यक्तींना माहिती मोफत मिळते का?",
+        "expected": [
+          "rti-act-2005-mr-p24",
+          "rti-act-2005-en-s7"
+        ],
+        "top3": [
+          "rti-marathi-s6-s7",
+          "rti-act-2005-mr-p16",
+          "rti-act-2005-mr-p62"
+        ],
+        "rank": null
+      }
+    ]
+  }
+}
