@@ -98,6 +98,16 @@ python -m app.rag.ingest                     # whole knowledge_base/ (official +
 curl -H "X-Internal-Token: …" -X POST :8000/v1/kb/ingest -d '{"entries":[…]}'   # ad-hoc additive entries
 ```
 
+## Troubleshooting the LLM connection
+If a document ends in "We couldn't finish this document", run a one-call check of the provider, key, base URL and model:
+```bash
+docker compose exec ai-service sh -c 'curl -s -H "X-Internal-Token: $INTERNAL_TOKEN" localhost:8000/v1/llm/check'
+```
+`{"ok": true ...}` means the model answers. Otherwise `detail` says why (rejected key, unknown model, rate limit, unreachable endpoint).
+After editing `.env`, apply it with `docker compose up -d` (a plain `restart` keeps the old values). Keys are trimmed of quotes,
+spaces and a `Bearer ` prefix automatically. For Gemini: `LLM_PROVIDER=openai`, `OPENAI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/`,
+`OPENAI_API_KEY=<key from aistudio.google.com/apikey>`, `LLM_MODEL=<a current Gemini model>`.
+
 ## Evaluation (answer quality)
 `ai-service/eval/questions.jsonl` holds 60 labelled questions (40 English, 17 Marathi, 3 out-of-scope). Each lists the knowledge-base
 provisions that contain the answer (chosen by reading the source text), and for some, the facts a correct answer must state. A test

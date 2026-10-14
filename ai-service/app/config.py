@@ -5,6 +5,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -61,6 +62,18 @@ class Settings(BaseSettings):
     chunk_overlap: int = 200
     max_direct_chars: int = 14000  # longer documents go through map-reduce
     max_map_chunks: int = 24
+
+
+    @field_validator("anthropic_api_key", "openai_api_key", "openai_base_url", mode="before")
+    @classmethod
+    def _clean_secret(cls, v):
+        """Keys pasted into .env often carry quotes, spaces or a 'Bearer ' prefix; none of them belong to the value."""
+        if v is None:
+            return None
+        v = str(v).strip().strip("\"'").strip()
+        if v.lower().startswith("bearer "):
+            v = v[7:].strip()
+        return v or None
 
 
 @lru_cache

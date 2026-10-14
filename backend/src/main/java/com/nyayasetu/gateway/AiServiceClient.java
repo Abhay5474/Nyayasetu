@@ -113,13 +113,16 @@ public class AiServiceClient {
 
     private AiServiceException toException(int status, byte[] body) {
         String detail = null;
+        String code = null;
         try {
             JsonNode n = mapper.readTree(body);
             if (n.path("detail").isTextual()) detail = n.get("detail").asText();
+            if (n.path("code").isTextual()) code = n.get("code").asText();
         } catch (Exception ignored) { /* not JSON */ }
         log.warn("AI service replied {}: {}", status, detail);
         String message;
         if (status == 422 && detail != null) message = detail; // user-actionable (unreadable scan, wrong type, ...)
+        else if (code != null && code.startsWith("llm_") && detail != null) message = detail; // provider problem with a fixable cause (bad key, quota ...)
         else if (status == 503) message = "The AI model is not configured on the server.";
         else message = "The AI service could not process this document (" + status + ").";
         return new AiServiceException(status, message, null);

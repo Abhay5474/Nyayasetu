@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from app.config import Settings, get_settings
 from app.container import Container, build_container, ingest_in_background
 from app.extraction.extractor import ExtractionError
+from app.llm.errors import LlmCallError, classify
 from app.llm.simplifier import GenerationError
 from app.rag.ingest import ingest_entries
 from app.schemas import (
@@ -48,6 +49,25 @@ async def _generation_error(_: Request, exc: GenerationError):
     return JSONResponse(status_code=502, content={"detail": str(exc)})
 
 
+@app.exception_handler(LlmCallError)
+async def _llm_call_error(_: Request, exc: LlmCallError):
+    log.error("LLM call failed (%s): %s", exc.code, exc)
+    return JSONResponse(status_code=exc.http_status, content={"detail": str(exc), "code": exc.code})
+
+
+def _guard_llm(fn, *args):
+    """Run an LLM-backed operation; provider failures become LlmCallError (clear message) instead of a bare 500."""
+    try:
+        return fn(*args)
+    except GenerationError:
+        raise
+    except Exception as exc:
+        known = classify(exc)
+        if known is None:
+            raise
+        raise known from exc
+
+
 @app.get("/health")
 def health(c: Container = Depends(get_container)):
     ping = getattr(c.store, "ping", lambda: True)()
@@ -63,6 +83,22 @@ def health(c: Container = Depends(get_container)):
         "reranker": c.retriever.reranker.name,
         "ocr_engine": c.settings.ocr_engine,
     }
+
+
+@app.get("/v1/llm/check", dependencies=[Depends(require_internal_token)])
+def llm_check(c: Container = Depends(get_container)):
+    """One tiny model call to verify the provider, key, base URL and model name actually work."""
+    if c.settings.llm_provider == "mock":
+        return {"ok": True, "provider": "mock", "detail": "LLM_PROVIDER=mock: no real model is called."}
+    if c.llm_error or c.simplifier is None:
+        return JSONResponse(status_code=503, content={"ok": False, "provider": c.settings.llm_provider, "detail": c.llm_error})
+    try:
+        reply = c.simplifier.llm.invoke("Reply with the single word: OK")
+    except Exception as exc:
+        known = classify(exc)
+        detail = str(known) if known else f"{type(exc).__name__}: {str(exc)[:300]}"
+        return JSONResponse(status_code=502, content={"ok": False, "provider": c.settings.llm_provider, "model": c.settings.llm_model, "detail": detail})
+    return {"ok": True, "provider": c.settings.llm_provider, "model": c.settings.llm_model, "reply": str(reply.content)[:50]}
 
 
 @app.post("/v1/extract", response_model=ExtractResponse, dependencies=[Depends(require_internal_token)])
@@ -81,14 +117,14 @@ def extract(file: UploadFile = File(...), c: Container = Depends(get_container))
 def simplify(req: SimplifyRequest, c: Container = Depends(get_container)):
     if c.simplifier is None:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, f"LLM is not configured: {c.llm_error}")
-    return c.simplifier.simplify(req.text, req.language)
+    return _guard_llm(c.simplifier.simplify, req.text, req.language)
 
 
 @app.post("/v1/chat", response_model=ChatResponse, dependencies=[Depends(require_internal_token)])
 def chat(req: ChatRequest, c: Container = Depends(get_container)):
     if c.chat is None:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, f"LLM is not configured: {c.llm_error}")
-    return c.chat.answer(req.text, req.question, req.language, req.history)
+    return _guard_llm(c.chat.answer, req.text, req.question, req.language, req.history)
 
 
 @app.get("/v1/kb/search", dependencies=[Depends(require_internal_token)])

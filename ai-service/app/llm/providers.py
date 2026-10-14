@@ -1,9 +1,14 @@
 """LangChain chat-model factory (Anthropic, OpenAI-compatible, Ollama)."""
 from __future__ import annotations
 
+import logging
+
 from langchain_core.language_models import BaseChatModel
 
 from app.config import Settings
+
+
+log = logging.getLogger(__name__)
 
 
 class LlmConfigError(RuntimeError):
@@ -29,6 +34,10 @@ def build_chat_model(settings: Settings) -> BaseChatModel:
         if not settings.openai_api_key:
             raise LlmConfigError("OPENAI_API_KEY is not set")
         from langchain_openai import ChatOpenAI
+
+        if "generativelanguage.googleapis.com" in (settings.openai_base_url or "") and not settings.openai_api_key.startswith("AIza"):
+            log.warning("Gemini API keys from Google AI Studio normally start with 'AIza'; if requests fail with 401, "
+                        "create a key at https://aistudio.google.com/apikey")
 
         return ChatOpenAI(
             model=settings.llm_model,
