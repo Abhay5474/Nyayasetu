@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from app.config import Settings, get_settings
 from app.container import Container, build_container, ingest_in_background
 from app.extraction.extractor import ExtractionError
+from app.llm.check import probe
 from app.llm.errors import LlmCallError, classify
 from app.llm.simplifier import GenerationError
 from app.rag.ingest import ingest_entries
@@ -93,14 +94,7 @@ def llm_check(c: Container = Depends(get_container)):
         return {"ok": True, "provider": "mock", "detail": "LLM_PROVIDER=mock: no real model is called."}
     if c.llm_error or c.llm_chain is None:
         return JSONResponse(status_code=503, content={"ok": False, "provider": c.settings.llm_provider, "detail": c.llm_error})
-    results = []
-    for label, model in c.llm_chain.models:
-        try:
-            reply = model.invoke("Reply with the single word: OK")
-            results.append({"model": label, "ok": True, "reply": str(reply.content)[:50]})
-        except Exception as exc:
-            known = classify(exc)
-            results.append({"model": label, "ok": False, "detail": str(known) if known else f"{type(exc).__name__}: {str(exc)[:300]}"})
+    results = probe(c.llm_chain)
     ok = any(r["ok"] for r in results)  # the service works as long as one model in the chain answers
     return JSONResponse(status_code=200 if ok else 502, content={"ok": ok, "primary_ok": results[0]["ok"], "models": results})
 

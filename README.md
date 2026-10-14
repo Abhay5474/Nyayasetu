@@ -101,7 +101,7 @@ curl -H "X-Internal-Token: …" -X POST :8000/v1/kb/ingest -d '{"entries":[…]}
 ## Troubleshooting the LLM connection
 If a document ends in "We couldn't finish this document", run a one-call check of the provider, key, base URL and model:
 ```bash
-docker compose exec ai-service sh -c 'curl -s -H "X-Internal-Token: $INTERNAL_TOKEN" localhost:8000/v1/llm/check'
+docker compose exec ai-service python -m app.llm.check
 ```
 `{"ok": true ...}` means the model answers. Otherwise `detail` says why (rejected key, unknown model, rate limit, unreachable endpoint).
 After editing `.env`, apply it with `docker compose up -d` (a plain `restart` keeps the old values). Keys are trimmed of quotes,

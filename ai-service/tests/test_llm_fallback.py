@@ -122,3 +122,17 @@ def test_overloaded_error_message_mentions_the_fix():
 
     err = classify(E("high demand"))
     assert err.code == "llm_overloaded" and err.http_status == 503 and "LLM_FALLBACK_MODELS" in str(err)
+
+
+def test_check_probes_every_model_and_reports_failures(server, capsys, monkeypatch):
+    from app.llm import check
+
+    server.behaviours = {"primary": "503"}
+    s = settings_for(server, llm_fallback_models="backup")
+    results = check.probe(build_llm_chain(s))
+    assert [r["ok"] for r in results] == [False, True] and "overloaded" in results[0]["detail"]
+
+    monkeypatch.setattr(check, "get_settings", lambda: s)
+    assert check.main() == 0  # one working model is enough for the service to answer
+    out = capsys.readouterr().out
+    assert "FAILED  openai:primary" in out and "OK      openai:backup" in out and "can answer" in out
