@@ -22,6 +22,15 @@ class _Handler(BaseHTTPRequestHandler):
     def log_message(self, *a):
         pass
 
+    def do_GET(self):
+        data = json.dumps({"object": "list", "data": [{"id": "models/big-model"}, {"id": "small-model"}]}).encode()
+        self.server.calls.append("GET " + self.path)
+        self.send_response(200 if self.headers.get("Authorization") == "Bearer secret" else 401)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
     def do_POST(self):
         body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
         model = body["model"]
@@ -156,3 +165,17 @@ def test_probe_does_not_hang_on_a_silent_model(server):
     results = check.probe(chain, timeout=1.0)
     assert time.time() - started < 3.5  # models are probed together and the slow one is cut off
     assert [r["ok"] for r in results] == [False, True] and "No answer within 1 s" in results[0]["detail"]
+
+
+def test_list_models_prints_names_for_primary_and_fallback(server, capsys, monkeypatch):
+    from app.llm import check
+
+    base = f"http://127.0.0.1:{server.server_port}/v1"
+    s = settings_for(server, openai_api_key="secret", fallback_llm_provider="openai", fallback_llm_model="x",
+                     fallback_api_key="wrong-key", fallback_base_url=base)
+    monkeypatch.setattr(check, "get_settings", lambda: s)
+    monkeypatch.setattr(check.sys, "argv", ["check", "--list-models"])
+    assert check.main() == 0
+    out = capsys.readouterr().out
+    assert "PRIMARY" in out and "big-model" in out and "small-model" in out and "models/" not in out
+    assert "FALLBACK" in out and "could not list models" in out  # a wrong key is reported, not hidden
