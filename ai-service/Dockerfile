@@ -28,6 +28,7 @@ TextCrossEncoder('${RERANKER_MODEL}')"; fi
 
 COPY app ./app
 COPY knowledge_base ./knowledge_base
+COPY eval ./eval
 
 RUN useradd --create-home --uid 10001 appuser && chown -R appuser /app /opt/models
 USER appuser
