@@ -1,9 +1,12 @@
+import { draftsEn, draftsMr } from './drafts';
+
 // UI strings. The *content* of results (summary, key points…) comes from the AI in the language the user chose.
 export const strings = {
   en: {
     appName: 'NyayaSetu',
+    drafts: draftsEn,
     tagline: 'Legal documents, made simple',
-    nav: { dashboard: 'Dashboard', deadlines: 'Deadlines', settings: 'Settings', signIn: 'Sign in', getStarted: 'Get started', signOut: 'Sign out' },
+    nav: { dashboard: 'Dashboard', drafts: 'Drafts', deadlines: 'Deadlines', settings: 'Settings', signIn: 'Sign in', getStarted: 'Get started', signOut: 'Sign out' },
     landing: {
       badge: 'RTI • Court orders • Government notices',
       title: 'Understand any legal document in your own language.',
@@ -90,8 +93,9 @@ export const strings = {
 
   mr: {
     appName: 'न्यायसेतू',
+    drafts: draftsMr,
     tagline: 'कायदेशीर कागदपत्रे, सोप्या भाषेत',
-    nav: { dashboard: 'डॅशबोर्ड', deadlines: 'मुदती', settings: 'सेटिंग्ज', signIn: 'साइन इन', getStarted: 'सुरू करा', signOut: 'साइन आउट' },
+    nav: { dashboard: 'डॅशबोर्ड', drafts: 'मसुदे', deadlines: 'मुदती', settings: 'सेटिंग्ज', signIn: 'साइन इन', getStarted: 'सुरू करा', signOut: 'साइन आउट' },
     landing: {
       badge: 'माहितीचा अधिकार • न्यायालयीन आदेश • शासकीय सूचना',
       title: 'कोणतेही कायदेशीर कागदपत्र आपल्या भाषेत समजून घ्या.',

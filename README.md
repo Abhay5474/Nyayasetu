@@ -98,6 +98,21 @@ python -m app.rag.ingest                     # whole knowledge_base/ (official +
 curl -H "X-Internal-Token: …" -X POST :8000/v1/kb/ingest -d '{"entries":[…]}'   # ad-hoc additive entries
 ```
 
+## Draft generator
+`/app/drafts` turns a short form into a ready-to-file document in **English or Marathi**, downloadable as **PDF or Word**:
+* **RTI application** (Annexure "A" of the Maharashtra RTI Rules): office, subject, period, numbered items, post/in-person, BPL, fee mode.
+  Warns when the request is longer than the 150 words the rules ordinarily allow.
+* **First appeal** (Annexure "B", section 19(1)): computes the last date to file (30 days from the decision, or 30 + 30 days from the
+  application when there was no reply), warns if the PIO still has time to reply or the appeal is already late and adds a request to
+  condone the delay. Grounds are chosen from a list (no reply, refused under section 8/9, incomplete, wrong fee, misleading, other) and each
+  one is written out citing its section. A penalty (section 20) is deliberately *not* asked for: only the Information Commission imposes one.
+* **Reply to a fee demand** (section 7(3)): confirms payment, asks for the information and, if you give the page count, checks the demanded amount
+  against Rs. 2 per page and asks the PIO for the calculation when it does not match.
+
+The text is deterministic templates, not LLM output, so a form says exactly what was entered; every paragraph rests on a provision of the Act or Rules.
+Nothing typed into the form is stored. Code: `ai-service/app/drafts/` (templates, schemas, PDF via PyMuPDF, Word via python-docx),
+`backend/.../draft/DraftController.java`, `frontend/src/pages/Drafts.jsx`. The Marathi wording should be read by a Marathi speaker before real use.
+
 ## Troubleshooting the LLM connection
 If a document ends in "We couldn't finish this document", run a one-call check of the provider, key, base URL and model:
 ```bash

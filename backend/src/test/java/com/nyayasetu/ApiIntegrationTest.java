@@ -299,4 +299,46 @@ class ApiIntegrationTest {
                         .content("{\"question\":\"anything?\"}"))
                 .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("NOT_READY"));
     }
+
+    // ------------------------------------------------------------------ drafts (stateless proxy to the AI service)
+    private static final String DRAFT = "{\"kind\":\"rti_application\",\"language\":\"en\",\"full_name\":\"Ramesh\",\"address\":\"Pune\","
+            + "\"place\":\"Pune\",\"authority\":\"PMC\",\"subject\":\"Roads\",\"items\":[\"Work orders\"]}";
+
+    @Test
+    void draftsRequireLoginAndForwardTheForm() throws Exception {
+        mvc.perform(post("/api/drafts/preview").contentType("application/json").content(DRAFT)).andExpect(status().isUnauthorized());
+
+        String token = register("drafts-" + UUID.randomUUID() + "@example.com");
+        when(ai.draftPreview(any())).thenReturn(json.readTree("{\"title\":\"RTI application\",\"blocks\":[],\"warnings\":[],\"notes\":[]}"));
+        mvc.perform(post("/api/drafts/preview").header("Authorization", "Bearer " + token).contentType("application/json").content(DRAFT))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.title").value("RTI application"));
+
+        byte[] pdf = "%PDF-1.4 draft".getBytes(StandardCharsets.US_ASCII);
+        when(ai.draftFile(any(), eq("pdf"))).thenReturn(new AiServiceClient.DraftFile(pdf, "application/pdf",
+                "attachment; filename=\"RTI-application-2026-10-14.pdf\""));
+        MvcResult res = mvc.perform(post("/api/drafts/file?format=pdf").header("Authorization", "Bearer " + token)
+                        .contentType("application/json").content(DRAFT))
+                .andExpect(status().isOk()).andExpect(header().string("Content-Type", "application/pdf"))
+                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("RTI-application"))).andReturn();
+        assertThat(res.getResponse().getContentAsByteArray()).isEqualTo(pdf);
+    }
+
+    @Test
+    void draftsRejectBadInputAndExplainFieldProblems() throws Exception {
+        String token = register("drafts2-" + UUID.randomUUID() + "@example.com");
+        mvc.perform(post("/api/drafts/preview").header("Authorization", "Bearer " + token).contentType("application/json")
+                        .content("{\"kind\":\"evil\"}")).andExpect(status().isBadRequest());
+        mvc.perform(post("/api/drafts/file?format=exe").header("Authorization", "Bearer " + token).contentType("application/json")
+                        .content(DRAFT)).andExpect(status().isBadRequest());
+        mvc.perform(post("/api/drafts/preview").header("Authorization", "Bearer " + token).contentType("application/json")
+                        .content("[1,2]")).andExpect(status().isBadRequest());
+
+        org.mockito.Mockito.doThrow(new AiServiceException(422, "fee_reference is required when the fee is paid by cash", null)).when(ai).draftPreview(any());
+        mvc.perform(post("/api/drafts/preview").header("Authorization", "Bearer " + token).contentType("application/json").content(DRAFT))
+                .andExpect(status().isUnprocessableEntity()).andExpect(jsonPath("$.message").value("fee_reference is required when the fee is paid by cash"));
+
+        org.mockito.Mockito.doThrow(new AiServiceException(0, "The AI service is not responding right now.", null)).when(ai).draftPreview(any());
+        mvc.perform(post("/api/drafts/preview").header("Authorization", "Bearer " + token).contentType("application/json").content(DRAFT))
+                .andExpect(status().isBadGateway());
+    }
 }

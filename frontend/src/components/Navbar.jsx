@@ -1,4 +1,4 @@
-import { CalendarClock, LayoutDashboard, LogOut, Menu, Settings, X } from 'lucide-react';
+import { CalendarClock, FilePenLine, LayoutDashboard, LogOut, Menu, Settings, X } from 'lucide-react';
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +14,7 @@ export default function Navbar() {
 
   const links = [
     { to: '/app', label: t.nav.dashboard, icon: LayoutDashboard, end: true },
+    { to: '/app/drafts', label: t.nav.drafts, icon: FilePenLine },
     { to: '/app/deadlines', label: t.nav.deadlines, icon: CalendarClock },
     { to: '/app/settings', label: t.nav.settings, icon: Settings },
   ];

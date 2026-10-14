@@ -44,3 +44,13 @@ export const ChatApi = {
     api.post(`/documents/${docId}/chat`, { question, language }, { timeout: 3 * 60_000 }).then((r) => r.data),
   clear: (docId) => api.delete(`/documents/${docId}/chat`),
 };
+
+export const DraftApi = {
+  preview: (form) => api.post('/drafts/preview', form, { timeout: 60_000 }).then((r) => r.data),
+  /** The finished PDF / Word file as a blob plus the server's suggested filename. */
+  file: (form, format) =>
+    api.post('/drafts/file', form, { params: { format }, responseType: 'blob', timeout: 90_000 }).then((r) => ({
+      blob: r.data,
+      disposition: r.headers['content-disposition'],
+    })),
+};

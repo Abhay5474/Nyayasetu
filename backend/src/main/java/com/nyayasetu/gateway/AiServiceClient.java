@@ -90,6 +90,33 @@ public class AiServiceClient {
 
     public record Turn(String role, String content) {}
 
+    /** Builds the readable preview (blocks, warnings, notes) of an RTI application / appeal / fee reply. */
+    public JsonNode draftPreview(JsonNode form) {
+        return call(() -> simplifyClient.post().uri("/v1/drafts/preview")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(form)
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> { throw toException(res.getStatusCode().value(), res.getBody().readAllBytes()); })
+                .body(JsonNode.class));
+    }
+
+    /** The finished draft as a PDF or Word file. */
+    public DraftFile draftFile(JsonNode form, String format) {
+        var entity = call(() -> simplifyClient.post().uri(u -> u.path("/v1/drafts/file").queryParam("format", format).build())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(form)
+                .retrieve()
+                .onStatus(HttpStatusCode::isError, (req, res) -> { throw toException(res.getStatusCode().value(), res.getBody().readAllBytes()); })
+                .toEntity(byte[].class));
+        byte[] bytes = entity.getBody();
+        if (bytes == null || bytes.length == 0) throw new AiServiceException(502, "The AI service returned an empty file", null);
+        MediaType type = entity.getHeaders().getContentType();
+        return new DraftFile(bytes, type == null ? "application/octet-stream" : type.toString(),
+                entity.getHeaders().getFirst("Content-Disposition"));
+    }
+
+    public record DraftFile(byte[] bytes, String contentType, String contentDisposition) {}
+
     /** Lightweight liveness probe used by the health indicator. */
     public JsonNode health() {
         return healthClient.get().uri("/health").retrieve().body(JsonNode.class);

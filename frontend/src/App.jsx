@@ -5,6 +5,7 @@ import { LoginPage, RegisterPage } from './pages/AuthPages';
 import Dashboard from './pages/Dashboard';
 import Deadlines from './pages/Deadlines';
 import DocumentDetail from './pages/DocumentDetail';
+import Drafts from './pages/Drafts';
 import Landing from './pages/Landing';
 import SettingsPage from './pages/SettingsPage';
 
@@ -30,6 +31,7 @@ export default function App() {
       <Route path="/app" element={<ProtectedLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="documents/:id" element={<DocumentDetail />} />
+        <Route path="drafts" element={<Drafts />} />
         <Route path="deadlines" element={<Deadlines />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
