@@ -75,3 +75,26 @@ def test_answer_report_scores_facts_citations_and_abstention():
     assert s["fact_recall"] == 1.0 and s["citation_hit"] == 1.0 and s["citation_precision"] == 1.0
     assert s["numbers_grounded"] == 1.0 and s["correct_abstention"] == 1.0
     assert "Answer evaluation" in runner.render_answers_markdown(report, {"date": "d", "model": "m"})
+
+
+def test_partial_results_survive_an_interruption(container):
+    from app.evaluation.runner import build_report, evaluate_all, render_retrieval_markdown
+
+    questions = [q for q in load_questions() if q.id in {"q04", "q06"}]
+    variants = runner.build_variants(container.retriever, {"lexical": LexicalReranker()})
+    done: dict = {}
+    seen = []
+
+    def boom(name, i, n, secs):
+        seen.append(name)
+        if name == "hybrid (RRF)":
+            raise KeyboardInterrupt  # the user pressed Ctrl+C part-way through the third method
+
+    try:
+        evaluate_all(questions, variants, done, progress=boom)
+    except KeyboardInterrupt:
+        pass
+    assert list(done) == ["vector only", "keyword only (FTS)"]  # finished methods are kept
+    md = render_retrieval_markdown(build_report(done), {"date": "d", "embedder": "e", "chunks": 1, "questions": 2, "skipped": 0, "partial": True})
+    assert "Partial result" in md and "| vector only |" in md
+    assert render_retrieval_markdown(build_report({}), {"date": "d", "embedder": "e", "chunks": 1, "questions": 0, "skipped": 0}).startswith("# Retrieval")

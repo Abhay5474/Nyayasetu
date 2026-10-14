@@ -12,6 +12,7 @@ import argparse
 import json
 import logging
 import sys
+import time
 from pathlib import Path
 
 from app.config import get_settings
@@ -54,7 +55,9 @@ def main(argv: list[str]) -> int:
     ap = argparse.ArgumentParser(prog="python -m app.evaluation")
     ap.add_argument("mode", choices=["retrieval", "answers"])
     ap.add_argument("--questions", type=Path, default=DEFAULT_PATH)
-    ap.add_argument("--rerankers", default="lexical,cross-encoder", help="comma list for the retrieval ablation")
+    ap.add_argument("--rerankers", default="lexical,cross-encoder",
+                    help="comma list for the retrieval ablation. 'lexical' alone is fast; 'cross-encoder' loads a large model and "
+                         "takes minutes on a laptop CPU")
     ap.add_argument("--limit", type=int, default=0, help="answers: only the first N questions (cost control)")
     ap.add_argument("--tag", default="", help="suffix for the result file names")
     args = ap.parse_args(argv)
@@ -75,10 +78,28 @@ def main(argv: list[str]) -> int:
 
     if args.mode == "retrieval":
         variants = runner.build_variants(container.retriever, _rerankers(args.rerankers, settings))
-        report = runner.retrieval_report(questions, variants)
-        meta = {"date": runner.now(), "embedder": embedder, "chunks": container.store.count(),
+        per_variant: dict = {}
+        marks = {"last": 0.0}
+
+        def on_start(name: str) -> None:
+            print(f"\n[{len(per_variant) + 1}/{len(variants)}] {name}", flush=True)
+
+        def progress(name: str, i: int, n: int, secs: float) -> None:
+            if i == n or time.time() - marks["last"] > 10:  # at most one line every 10 s, plus the last question
+                marks["last"] = time.time()
+                eta = secs / i * (n - i)
+                print(f"    {i}/{n} questions · {secs:.0f}s elapsed · about {eta:.0f}s left", flush=True)
+
+        partial = False
+        try:
+            runner.evaluate_all(questions, variants, per_variant, on_start, progress)
+        except KeyboardInterrupt:
+            partial = True
+            print("\nStopped: writing the methods that finished.", flush=True)
+        report = runner.build_report(per_variant)
+        meta = {"date": runner.now(), "embedder": embedder, "chunks": container.store.count(), "partial": partial,
                 "questions": sum(q.answerable for q in questions), "skipped": sum(not q.answerable for q in questions)}
-        _write(stem, runner.render_retrieval_markdown(report, meta), {"meta": meta, **report})
+        _write(stem + ("-partial" if partial else ""), runner.render_retrieval_markdown(report, meta), {"meta": meta, **report})
         return 0
 
     if container.chat is None or settings.llm_provider == "mock":

@@ -136,7 +136,9 @@ EMBEDDING_PROVIDER=fastembed VECTOR_STORE=memory python -m app.evaluation retrie
 # 2. Answer quality (needs a real LLM): fact recall, citation hit/precision, numbers grounded in the cited text, refusal of out-of-scope questions
 LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=... python -m app.evaluation answers
 ```
-In Docker: `docker compose exec ai-service python -m app.evaluation retrieval`, then copy the results out with
+In Docker: `docker compose exec ai-service python -m app.evaluation retrieval` (add `--rerankers lexical` for a quick run; the
+cross-encoder step scores 16 passages per question with a large model and can take 10-30 minutes on a laptop CPU; it prints progress,
+and Ctrl+C still writes the methods that finished), then copy the results out with
 `docker compose cp ai-service:/app/eval/results ./eval-results`.
 Output goes to `eval/results/<mode>-<date>.md` (tables with 95% bootstrap intervals, split by language, topic and question style, plus the
 questions the best method missed) and `.json`. The first run downloads the embedding and reranker models (about 1 GB).

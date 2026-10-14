@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import datetime as dt
+import time
+from functools import lru_cache
 from dataclasses import dataclass
 from statistics import mean
 from typing import Callable
@@ -23,12 +25,15 @@ def build_variants(retriever: HybridRetriever, rerankers: dict[str, Reranker]) -
     """The ablation: each variant adds one component to the previous one."""
     store, embedder = retriever.store, retriever.embedder
 
+    @lru_cache(maxsize=None)  # the same question is searched by several variants: do the work once
     def vector(q: str) -> list[Hit]:
         return store.vector_search(embedder.embed_query(q), CANDIDATES)
 
+    @lru_cache(maxsize=None)
     def keyword(q: str) -> list[Hit]:
         return store.keyword_search(q, CANDIDATES)
 
+    @lru_cache(maxsize=None)
     def hybrid(q: str) -> list[Hit]:
         return rrf_fuse([r for r in (vector(q), keyword(q)) if r])
 
@@ -49,13 +54,17 @@ class QuestionResult:
     stale: bool  # any returned chunk that is superseded/repealed
 
 
-def evaluate_ranker(ranker: Ranker, questions: list[Question]) -> list[QuestionResult]:
+def evaluate_ranker(ranker: Ranker, questions: list[Question], progress: Callable[[int, int, float], None] | None = None) -> list[QuestionResult]:
     results = []
-    for q in (x for x in questions if x.answerable):
+    scored = [x for x in questions if x.answerable]
+    started = time.time()
+    for i, q in enumerate(scored, start=1):
         hits = ranker(q.question)
         ids = M.dedupe_ids([h.chunk.kb_id for h in hits])[:DEPTH]
         stale = any(h.chunk.status != "in_force" for h in hits)
         results.append(QuestionResult(q, ids, M.first_rank(ids, set(q.relevant)), stale))
+        if progress:
+            progress(i, len(scored), time.time() - started)
     return results
 
 
@@ -72,8 +81,17 @@ def summarise(results: list[QuestionResult]) -> dict:
     return out
 
 
-def retrieval_report(questions: list[Question], variants: dict[str, Ranker]) -> dict:
-    per_variant = {name: evaluate_ranker(ranker, questions) for name, ranker in variants.items()}
+def evaluate_all(questions: list[Question], variants: dict[str, Ranker], per_variant: dict[str, list[QuestionResult]],
+                 on_start: Callable[[str], None] | None = None,
+                 progress: Callable[[str, int, int, float], None] | None = None) -> None:
+    """Fill `per_variant` one variant at a time, so the caller still has the finished ones if the run is interrupted."""
+    for name, ranker in variants.items():
+        if on_start:
+            on_start(name)
+        per_variant[name] = evaluate_ranker(ranker, questions, (lambda i, n, t, name=name: progress(name, i, n, t)) if progress else None)
+
+
+def build_report(per_variant: dict[str, list[QuestionResult]]) -> dict:
     report: dict = {"overall": {}, "by_lang": {}, "by_category": {}, "by_difficulty": {}, "misses": {}}
     for name, results in per_variant.items():
         report["overall"][name] = summarise(results)
@@ -87,6 +105,12 @@ def retrieval_report(questions: list[Question], variants: dict[str, Ranker]) -> 
             for r in results if r.rank is None or r.rank > 3
         ]
     return report
+
+
+def retrieval_report(questions: list[Question], variants: dict[str, Ranker]) -> dict:
+    per_variant: dict[str, list[QuestionResult]] = {}
+    evaluate_all(questions, variants, per_variant)
+    return build_report(per_variant)
 
 
 # ----------------------------------------------------------------------------- answers
@@ -145,6 +169,7 @@ _HEAD = "| Method | n | Hit@1 | Hit@3 | Hit@5 | MRR (95% CI) | Superseded text r
 def render_retrieval_markdown(report: dict, meta: dict) -> str:
     lines = [
         "# Retrieval evaluation", "",
+        *(["> **Partial result: the run was stopped before every method finished.**", ""] if meta.get("partial") else []),
         f"*{meta['date']} · embedder `{meta['embedder']}` · knowledge base {meta['chunks']} chunks · {meta['questions']} labelled questions "
         f"(+{meta['skipped']} out-of-scope, not scored here)*", "",
         "Hit@k = a provision that contains the answer is among the top k results. MRR = mean reciprocal rank (depth 10). "
@@ -156,6 +181,8 @@ def render_retrieval_markdown(report: dict, meta: dict) -> str:
         lines += ["", f"## {title}", "", _HEAD.replace("| Method |", "| Method / group |")]
         for name, groups in report[key].items():
             lines += [_row(f"{name} — **{g}**", s) for g, s in groups.items()]
+    if not report["overall"]:
+        return "# Retrieval evaluation\n\nNo method finished.\n"
     best = max(report["overall"], key=lambda n: report["overall"][n]["mrr"])
     lines += ["", f"## Misses of the best method ({best}): not in top 3", ""]
     misses = report["misses"][best]
