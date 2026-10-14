@@ -12,8 +12,10 @@ RUN apt-get update \
 
 RUN mkdir -p /opt/models
 WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+
+# Heaviest, rarely-changing layers first, so editing requirements.txt or the code never re-downloads ~1 GB of models:
+# 1) the ML libraries (keep these two lines in sync with requirements.txt), 2) the models, 3) everything else.
+RUN pip install "fastembed>=0.5,<1" "numpy>=1.26"
 
 # Bake the multilingual embedding + reranker models into the image so start-up is fast and offline-safe.
 # Build with --build-arg PRELOAD_MODELS=false to skip (models are then downloaded on first start).
@@ -25,6 +27,9 @@ from fastembed import TextEmbedding; \
 from fastembed.rerank.cross_encoder import TextCrossEncoder; \
 TextEmbedding('${EMBEDDING_MODEL}'); \
 TextCrossEncoder('${RERANKER_MODEL}')"; fi
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
 COPY app ./app
 COPY knowledge_base ./knowledge_base

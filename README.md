@@ -113,6 +113,15 @@ The text is deterministic templates, not LLM output, so a form says exactly what
 Nothing typed into the form is stored. Code: `ai-service/app/drafts/` (templates, schemas, PDF via PyMuPDF, Word via python-docx),
 `backend/.../draft/DraftController.java`, `frontend/src/pages/Drafts.jsx`. The Marathi wording should be read by a Marathi speaker before real use.
 
+## Disk space (Docker)
+A full set of images is roughly 8-10 GB (the AI service holds the language models), so every *extra* copy left behind by a rebuild adds that much.
+* Normal start: `docker compose up -d` (no `--build`). Rebuild only what changed: `docker compose up -d --build ai-service`.
+* After rebuilding, delete the old images and cache: `docker image prune -f` and `docker builder prune -f`.
+* See where the space is: `docker system df`.
+* **Never** run `docker volume prune` or `docker system prune --volumes`: they delete the database (`pgdata`) and uploaded files.
+* On Windows (WSL2) freed space only returns to drive C: after the Docker disk file is compacted, or if Docker Desktop's disk image is moved
+  to another drive (Settings > Resources > Advanced > Disk image location).
+
 ## Troubleshooting the LLM connection
 If a document ends in "We couldn't finish this document", run a one-call check of the provider, key, base URL and model:
 ```bash
