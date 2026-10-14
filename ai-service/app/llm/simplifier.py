@@ -7,6 +7,7 @@ import logging
 import re
 
 from langchain_core.language_models import BaseChatModel
+from langchain_core.runnables import Runnable
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
@@ -110,14 +111,15 @@ def hits_to_sources(hits: list[Hit]) -> list[Source]:
 
 
 class Simplifier:
-    def __init__(self, settings: Settings, retriever: HybridRetriever | None, llm: BaseChatModel | None):
+    def __init__(self, settings: Settings, retriever: HybridRetriever | None, llm: Runnable | BaseChatModel | None, used=None):
         self.settings = settings
         self.retriever = retriever
         self.llm = llm  # None => extractive mock mode
+        self.used = used  # providers.UsedModel: the model that really answered (differs from settings after a failover)
 
     @property
     def model_name(self) -> str:
-        return "mock-extractive" if self.llm is None else self.settings.llm_model
+        return "mock-extractive" if self.llm is None else (self.used.get() if self.used else self.settings.llm_model)
 
     # ------------------------------------------------------------------ public
     def simplify(self, text: str, language: str) -> SimplifyResponse:

@@ -108,6 +108,18 @@ After editing `.env`, apply it with `docker compose up -d` (a plain `restart` ke
 spaces and a `Bearer ` prefix automatically. For Gemini: `LLM_PROVIDER=openai`, `OPENAI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/`,
 `OPENAI_API_KEY=<key from aistudio.google.com/apikey>`, `LLM_MODEL=<a current Gemini model>`.
 
+### Fallback models
+Hosted models sometimes answer "503 high demand" or hit a quota. Set a fallback in `.env` and the service switches automatically
+(the failure and the model that finally answered are logged; the result records the model that really answered):
+```
+LLM_FALLBACK_MODELS=gemini-3.1-flash-lite     # same provider and key, tried first
+FALLBACK_LLM_PROVIDER=openai                  # then a different service (Groq/OpenRouter/another Gemini key, or ollama/anthropic)
+FALLBACK_LLM_MODEL=<model name at that service>
+FALLBACK_API_KEY=<its key>
+FALLBACK_BASE_URL=<its OpenAI-compatible URL>
+```
+`/v1/llm/check` tests every model in the chain separately and reports which ones work.
+
 ## Evaluation (answer quality)
 `ai-service/eval/questions.jsonl` holds 60 labelled questions (40 English, 17 Marathi, 3 out-of-scope). Each lists the knowledge-base
 provisions that contain the answer (chosen by reading the source text), and for some, the facts a correct answer must state. A test

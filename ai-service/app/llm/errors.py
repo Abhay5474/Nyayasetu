@@ -31,6 +31,11 @@ def classify(exc: BaseException) -> LlmCallError | None:
                 "(no quotes or spaces around the key), then run `docker compose up -d` to apply the change.")
         if status == 404 or "NotFound" in name:
             return LlmCallError("llm_model", "The AI provider does not know this model name. Check LLM_MODEL in .env.")
+        if status in (500, 502, 503, 504) or "InternalServer" in name or "ServiceUnavailable" in name or "Overloaded" in name:
+            return LlmCallError(
+                "llm_overloaded",
+                "The AI model is overloaded or temporarily unavailable. Wait a minute and try again, or configure a "
+                "fallback model (LLM_FALLBACK_MODELS / FALLBACK_LLM_* in .env).", 503)
         if status == 429 or "RateLimit" in name:
             return LlmCallError("llm_rate_limit", "The AI model's rate limit or quota was reached. Wait a minute and try again, or check your plan.", 429)
         if status == 400 or "BadRequest" in name:

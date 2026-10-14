@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from app.config import Settings
 from app.extraction.extractor import DocumentExtractor
 from app.llm.chat import DocumentChat
-from app.llm.providers import LlmConfigError, build_chat_model
+from app.llm.providers import LlmChain, LlmConfigError, build_llm_chain
 from app.llm.simplifier import Simplifier
 from app.rag.embeddings import Embedder, build_embedder
 from app.rag.ingest import ingest_path
@@ -29,6 +29,7 @@ class Container:
     simplifier: Simplifier | None
     chat: DocumentChat | None
     llm_error: str | None = None
+    llm_chain: LlmChain | None = None
     kb_status: dict = field(default_factory=lambda: {"state": "idle", "error": None})
 
 
@@ -44,16 +45,18 @@ def build_container(settings: Settings) -> Container:
         build_reranker(settings),
         RetrievalConfig(settings.retrieval_candidates, settings.rerank_candidates, settings.retrieval_top_k),
     )
-    llm, llm_error = None, None
+    llm, llm_error, chain = None, None, None
     if settings.llm_provider != "mock":
         try:
-            llm = build_chat_model(settings)
+            chain = build_llm_chain(settings)
+            llm = chain.runnable
         except LlmConfigError as exc:
             llm_error = str(exc)
             log.error("LLM not configured: %s", exc)
-    simplifier = None if llm_error else Simplifier(settings, retriever, llm)
-    chat = None if llm_error else DocumentChat(settings, retriever, embedder, llm)
-    return Container(settings, embedder, store, retriever, DocumentExtractor(settings), simplifier, chat, llm_error)
+    used = chain.used if chain else None
+    simplifier = None if llm_error else Simplifier(settings, retriever, llm, used)
+    chat = None if llm_error else DocumentChat(settings, retriever, embedder, llm, used)
+    return Container(settings, embedder, store, retriever, DocumentExtractor(settings), simplifier, chat, llm_error, chain)
 
 
 def ingest_in_background(container: Container) -> threading.Thread:

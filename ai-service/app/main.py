@@ -77,6 +77,7 @@ def health(c: Container = Depends(get_container)):
         "llm_provider": c.settings.llm_provider,
         "llm_model": c.simplifier.model_name if c.simplifier else None,
         "llm_error": c.llm_error,
+        "llm_chain": [label for label, _ in c.llm_chain.models] if c.llm_chain else [],
         "database": ping,
         "knowledge_base": {"chunks": c.store.count() if ping else None, **c.kb_status},
         "embedding_model": c.embedder.name,
@@ -87,18 +88,21 @@ def health(c: Container = Depends(get_container)):
 
 @app.get("/v1/llm/check", dependencies=[Depends(require_internal_token)])
 def llm_check(c: Container = Depends(get_container)):
-    """One tiny model call to verify the provider, key, base URL and model name actually work."""
+    """One tiny call to EACH configured model (primary and fallbacks): verifies provider, key, base URL and model name."""
     if c.settings.llm_provider == "mock":
         return {"ok": True, "provider": "mock", "detail": "LLM_PROVIDER=mock: no real model is called."}
-    if c.llm_error or c.simplifier is None:
+    if c.llm_error or c.llm_chain is None:
         return JSONResponse(status_code=503, content={"ok": False, "provider": c.settings.llm_provider, "detail": c.llm_error})
-    try:
-        reply = c.simplifier.llm.invoke("Reply with the single word: OK")
-    except Exception as exc:
-        known = classify(exc)
-        detail = str(known) if known else f"{type(exc).__name__}: {str(exc)[:300]}"
-        return JSONResponse(status_code=502, content={"ok": False, "provider": c.settings.llm_provider, "model": c.settings.llm_model, "detail": detail})
-    return {"ok": True, "provider": c.settings.llm_provider, "model": c.settings.llm_model, "reply": str(reply.content)[:50]}
+    results = []
+    for label, model in c.llm_chain.models:
+        try:
+            reply = model.invoke("Reply with the single word: OK")
+            results.append({"model": label, "ok": True, "reply": str(reply.content)[:50]})
+        except Exception as exc:
+            known = classify(exc)
+            results.append({"model": label, "ok": False, "detail": str(known) if known else f"{type(exc).__name__}: {str(exc)[:300]}"})
+    ok = any(r["ok"] for r in results)  # the service works as long as one model in the chain answers
+    return JSONResponse(status_code=200 if ok else 502, content={"ok": ok, "primary_ok": results[0]["ok"], "models": results})
 
 
 @app.post("/v1/extract", response_model=ExtractResponse, dependencies=[Depends(require_internal_token)])

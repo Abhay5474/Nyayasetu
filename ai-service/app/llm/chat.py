@@ -77,13 +77,15 @@ class _IndexCache:
 
 
 class DocumentChat:
-    def __init__(self, settings: Settings, retriever: HybridRetriever | None, embedder: Embedder, llm: BaseChatModel | None):
+    def __init__(self, settings: Settings, retriever: HybridRetriever | None, embedder: Embedder, llm: BaseChatModel | None,
+                 used=None):
         self.settings, self.retriever, self.embedder, self.llm = settings, retriever, embedder, llm
+        self.used = used  # providers.UsedModel: the model that really answered
         self._indexes = _IndexCache()
 
     @property
     def model_name(self) -> str:
-        return "mock-extractive" if self.llm is None else self.settings.llm_model
+        return "mock-extractive" if self.llm is None else (self.used.get() if self.used else self.settings.llm_model)
 
     # ------------------------------------------------------------------ public
     def answer(self, text: str, question: str, language: str, history: list[ChatTurn]) -> ChatResponse:

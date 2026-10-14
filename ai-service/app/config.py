@@ -35,6 +35,13 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
     openai_base_url: str | None = None
     ollama_base_url: str = "http://localhost:11434"
+    llm_max_retries: int = 2  # per model, for transient errors; lowered to 1 when a fallback exists so failover is quick
+    # --- fallbacks, tried in this order when the primary model fails (overloaded 503, rate limit, bad key, retired model ...)
+    llm_fallback_models: str = ""  # comma-separated model names on the SAME provider/key, e.g. "gemini-3.1-flash-lite"
+    fallback_llm_provider: Literal["anthropic", "openai", "ollama", "none"] = "none"  # a second provider/service
+    fallback_llm_model: str = ""
+    fallback_api_key: str | None = None  # defaults to ANTHROPIC_API_KEY / OPENAI_API_KEY of that provider
+    fallback_base_url: str | None = None  # OpenAI-compatible endpoint (Groq, OpenRouter ...) or Ollama URL
 
     # --- embeddings / retrieval --------------------------------------------
     # "hash" is an offline, dependency-free embedder (weaker); use "fastembed" in production.
@@ -64,7 +71,7 @@ class Settings(BaseSettings):
     max_map_chunks: int = 24
 
 
-    @field_validator("anthropic_api_key", "openai_api_key", "openai_base_url", mode="before")
+    @field_validator("anthropic_api_key", "openai_api_key", "openai_base_url", "fallback_api_key", "fallback_base_url", mode="before")
     @classmethod
     def _clean_secret(cls, v):
         """Keys pasted into .env often carry quotes, spaces or a 'Bearer ' prefix; none of them belong to the value."""
