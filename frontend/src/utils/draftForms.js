@@ -85,18 +85,35 @@ export function initialValues(kind) {
 const isRequired = (f, v) => (typeof f.required === 'function' ? f.required(v) : !!f.required);
 const visible = (f, v) => !f.showIf || f.showIf(v);
 
-/** Field name -> true for each visible required field that is empty. */
+/** A date later than tomorrow (one day of slack for time zones) is almost always a day/month mix-up. */
+export const isFutureDate = (iso) => !!iso && iso > new Date(Date.now() + 86_400_000).toLocaleDateString('en-CA');
+
+/** Field name -> 'required' | 'future' for each visible field that needs fixing. */
 export function missingFields(kind, v) {
   const out = {};
   for (const sec of FORMS[kind]) {
     for (const f of sec.fields) {
-      if (!visible(f, v) || !isRequired(f, v)) continue;
+      if (!visible(f, v)) continue;
       const val = v[f.name];
-      const empty = f.type === 'checks' ? !(val || []).length : f.type === 'checkbox' ? false : val == null || String(val).trim() === '';
-      if (empty) out[f.name] = true;
+      if (isRequired(f, v)) {
+        const empty = f.type === 'checks' ? !(val || []).length : f.type === 'checkbox' ? false : val == null || String(val).trim() === '';
+        if (empty) { out[f.name] = 'required'; continue; }
+      }
+      if (f.type === 'date' && f.name !== 'date' && isFutureDate(val)) out[f.name] = 'future';
     }
   }
   return out;
+}
+
+/** The server names fields ("application_date: is required; ..."): show the labels the person sees on the form instead. */
+export function friendlyError(message, fieldLabels = {}) {
+  return String(message)
+    .split('; ')
+    .map((part) => {
+      const m = /^(\w+): (.*)$/.exec(part);
+      return m && fieldLabels[m[1]] ? `${fieldLabels[m[1]]}: ${m[2]}` : part;
+    })
+    .join('\n');
 }
 
 /** The JSON the server expects: hidden / blank fields are left out, "lines" become a list, numbers become numbers. */

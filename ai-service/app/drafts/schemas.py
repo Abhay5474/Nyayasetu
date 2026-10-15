@@ -12,6 +12,14 @@ Text = Annotated[str, Field(min_length=1, max_length=400)]
 LongText = Annotated[str, Field(min_length=1, max_length=2000)]
 
 
+def _in_future(d: dt.date) -> bool:
+    """True for a date after today. One day of slack: the server clock is usually UTC and the user may be several hours ahead."""
+    return d > dt.date.today() + dt.timedelta(days=1)
+
+
+_FUTURE = "is in the future - check that the day and month are the right way round"
+
+
 def _clean(v):
     """Trim, drop control characters (they break PDF/Word output), keep line breaks."""
     if isinstance(v, str):
@@ -45,7 +53,7 @@ class _Base(BaseModel):
     @classmethod
     def _not_far_future(cls, v: dt.date) -> dt.date:
         if v > dt.date.today() + dt.timedelta(days=30):
-            raise ValueError("date is too far in the future")
+            raise ValueError("is too far in the future")
         return v
 
 
@@ -71,7 +79,7 @@ class RtiApplication(_Base):
         if self.delivery != "post":
             self.post_mode = None
         if not self.below_poverty_line and self.fee_mode != "court_fee_stamp" and not self.fee_reference:
-            raise ValueError("fee_reference is required when the fee is paid by cash, demand draft or banker's cheque")
+            raise ValueError("fee_reference: is required when the fee is paid by cash, demand draft or banker's cheque")
         return self
 
 
@@ -98,17 +106,16 @@ class FirstAppeal(_Base):
 
     @model_validator(mode="after")
     def _check(self):
-        today = dt.date.today()
-        if self.application_date > today:
-            raise ValueError("application_date is in the future")
-        if self.order_received_date and self.order_received_date > today:
-            raise ValueError("order_received_date is in the future")
+        if _in_future(self.application_date):
+            raise ValueError(f"application_date: {_FUTURE}")
+        if self.order_received_date and _in_future(self.order_received_date):
+            raise ValueError(f"order_received_date: {_FUTURE}")
         if self.order_received_date and self.order_received_date < self.application_date:
-            raise ValueError("the order cannot be received before the application was made")
+            raise ValueError("order_received_date: the decision cannot be dated before your application")
         if "other" in self.grounds and not self.grounds_other:
-            raise ValueError("grounds_other is required when the ground 'other' is selected")
+            raise ValueError("grounds_other: is required when the reason 'another reason' is selected")
         if self.fee_mode != "court_fee_stamp" and not self.fee_reference:
-            raise ValueError("fee_reference is required when the fee is paid by cash, demand draft or banker's cheque")
+            raise ValueError("fee_reference: is required when the fee is paid by cash, demand draft or banker's cheque")
         return self
 
 
@@ -130,14 +137,13 @@ class FeePaymentReply(_Base):
 
     @model_validator(mode="after")
     def _check(self):
-        today = dt.date.today()
-        for name in ("pio_letter_date", "application_date", "payment_date"):
-            if getattr(self, name) > today:
-                raise ValueError(f"{name} is in the future")
+        for name in ("application_date", "pio_letter_date", "payment_date"):
+            if _in_future(getattr(self, name)):
+                raise ValueError(f"{name}: {_FUTURE}")
         if self.pio_letter_date < self.application_date:
-            raise ValueError("the PIO's letter cannot be older than the application")
+            raise ValueError("pio_letter_date: the PIO's letter cannot be dated before your application")
         if self.payment_date < self.pio_letter_date:
-            raise ValueError("payment_date cannot be before the PIO's letter")
+            raise ValueError("payment_date: the payment cannot be dated before the PIO's letter")
         return self
 
 

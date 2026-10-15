@@ -5,7 +5,7 @@ import { DraftApi } from '../api/endpoints';
 import DraftPaper from '../components/drafts/DraftPaper';
 import { Alert, Field, Segmented, Spinner } from '../components/ui';
 import { fmt, useI18n } from '../context/I18nContext';
-import { FORMS, buildPayload, filenameFrom, initialValues, missingFields } from '../utils/draftForms';
+import { FORMS, buildPayload, filenameFrom, friendlyError, initialValues, missingFields, today } from '../utils/draftForms';
 import { formatDate } from '../utils/format';
 
 const KIND_ICONS = { rti_application: FileText, first_appeal: Gavel, fee_payment_reply: Receipt };
@@ -61,7 +61,7 @@ export default function Drafts() {
       setStale(false);
       setTimeout(() => previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
     } catch (e) {
-      setError(errorMessage(e));
+      setError(friendlyError(errorMessage(e), d.fields));
     } finally {
       setBusy(null);
     }
@@ -84,7 +84,7 @@ export default function Drafts() {
       // an error body arrives as a Blob: read the message out of it
       let message = errorMessage(e);
       try { message = JSON.parse(await e.response.data.text()).message || message; } catch { /* keep the generic text */ }
-      setError(message);
+      setError(friendlyError(message, d.fields));
     } finally {
       setBusy(null);
     }
@@ -129,7 +129,7 @@ export default function Drafts() {
         </div>
       </div>
 
-      {error && <Alert onClose={() => setError(null)}>{error}</Alert>}
+      {error && <Alert onClose={() => setError(null)}><span className="whitespace-pre-line">{error}</span></Alert>}
 
       <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
         <form className="card-pad space-y-7" onSubmit={(e) => { e.preventDefault(); makePreview(); }} noValidate>
@@ -137,7 +137,7 @@ export default function Drafts() {
             <fieldset key={sec.section} className="space-y-4">
               <legend className="section-title mb-3 !text-base">{d.sections[sec.section]}</legend>
               {sec.fields.filter((f) => !f.showIf || f.showIf(values)).map((f) => (
-                <FormField key={f.name} f={f} d={d} value={values[f.name]} error={errors[f.name]} onChange={(val) => set(f.name, val)} />
+                <FormField key={f.name} f={f} d={d} lang={lang} value={values[f.name]} error={errors[f.name]} onChange={(val) => set(f.name, val)} />
               ))}
             </fieldset>
           ))}
@@ -184,10 +184,10 @@ export default function Drafts() {
   );
 }
 
-function FormField({ f, d, value, error, onChange }) {
+function FormField({ f, d, lang, value, error, onChange }) {
   const label = d.fields[f.name];
   const hint = f.hint ? d.fields[`${f.name}Hint`] : undefined;
-  const err = error ? d.required : undefined;
+  const err = error ? (error === 'future' ? d.futureDate : d.required) : undefined;
   const star = f.required ? ' *' : '';
 
   if (f.type === 'checkbox') {
@@ -234,11 +234,14 @@ function FormField({ f, d, value, error, onChange }) {
       </Field>
     );
   }
+  // A date input shows the browser's own day/month order; spelling the chosen date out makes a mix-up visible at once.
+  const dateHint = f.type === 'date' && value ? fmt(d.dateIs, { date: formatDate(value, lang) }) : undefined;
   return (
-    <Field label={label + star} hint={hint} error={err}>
+    <Field label={label + star} hint={dateHint || hint} error={err}>
       <input
         className="input"
         type={f.type === 'date' ? 'date' : f.type === 'number' ? 'number' : 'text'}
+        {...(f.type === 'date' && f.name !== 'date' ? { max: today() } : {})}
         {...(f.type === 'number' ? { min: 0, step: '0.01', inputMode: 'decimal' } : {})}
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value)}

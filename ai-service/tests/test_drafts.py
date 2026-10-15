@@ -129,7 +129,7 @@ def test_appeal_premature_and_inconsistent_grounds_are_flagged():
 def test_appeal_validation():
     with pytest.raises(ValidationError, match="grounds_other"):
         appeal(grounds=["other"])
-    with pytest.raises(ValidationError, match="before the application"):
+    with pytest.raises(ValidationError, match="before your application"):
         appeal(order_received_date=TODAY - dt.timedelta(days=90))
     with pytest.raises(ValidationError):
         appeal(application_date=TODAY + dt.timedelta(days=2))
@@ -213,7 +213,8 @@ def test_draft_preview_and_files(client):
 def test_draft_validation_errors_are_readable(client):
     bad = {**PAYLOAD, "fee_mode": "cash"}
     r = client.post("/v1/drafts/preview", json=bad, headers=H)
-    assert r.status_code == 422 and "fee_reference is required" in r.json()["detail"] and r.json()["code"] == "validation"
+    assert r.status_code == 422 and r.json()["detail"] == "fee_reference: is required when the fee is paid by cash, demand draft or banker's cheque"
+    assert r.json()["code"] == "validation"
     r = client.post("/v1/drafts/preview", json={**PAYLOAD, "items": []}, headers=H)
     assert r.status_code == 422 and "items" in r.json()["detail"]
     assert client.post("/v1/drafts/preview", json={"kind": "nonsense"}, headers=H).status_code == 422
@@ -224,3 +225,52 @@ def test_draft_validation_errors_are_readable(client):
 def test_draft_request_union_picks_the_model_by_kind():
     ta = TypeAdapter(DraftRequest)
     assert isinstance(ta.validate_python({**PAYLOAD}), RtiApplication)
+
+
+def appeal_payload(**kw):
+    return {"kind": "first_appeal", "language": "en", "full_name": "R", "address": "Pune", "place": "Pune", "appellate_authority": "FAA",
+            "pio_details": "PIO", "application_date": (TODAY - dt.timedelta(days=45)).isoformat(), "grounds": ["no_reply"],
+            "info_subject": "x", "info_office": "y", **kw}
+
+
+def fee_payload(**kw):
+    return {"kind": "fee_payment_reply", "language": "mr", "full_name": "R", "address": "Pune", "place": "Pune", "pio_office": "PMC",
+            "pio_letter_date": (TODAY - dt.timedelta(days=10)).isoformat(), "application_date": (TODAY - dt.timedelta(days=30)).isoformat(),
+            "amount_demanded": 148, "pages": 74, "amount_paid": 148, "payment_mode": "demand_draft", "payment_reference": "DD1",
+            "payment_date": (TODAY - dt.timedelta(days=5)).isoformat(), **kw}
+
+
+def test_every_draft_kind_works_through_the_api_in_both_languages(client):
+    for payload in (PAYLOAD, appeal_payload(), appeal_payload(language="mr", order_received_date=(TODAY - dt.timedelta(days=3)).isoformat(), grounds=["incomplete"]),
+                    fee_payload(), fee_payload(language="en", amount_demanded=300, amount_paid=300)):
+        r = client.post("/v1/drafts/preview", json=payload, headers=H)
+        assert r.status_code == 200, (payload["kind"], r.text)
+        for fmt in ("pdf", "docx"):
+            f = client.post(f"/v1/drafts/file?format={fmt}", json=payload, headers=H)
+            assert f.status_code == 200 and len(f.content) > 1000, (payload["kind"], fmt)
+
+
+def test_validation_errors_mention_only_the_chosen_kind(client):
+    """A form of one kind must not be reported against the other kinds (no 'RtiApplication.authority: Field required')."""
+    r = client.post("/v1/drafts/preview", json=appeal_payload(application_date=(TODAY + dt.timedelta(days=40)).isoformat()), headers=H)
+    assert r.status_code == 422
+    assert r.json()["detail"] == "application_date: is in the future - check that the day and month are the right way round"
+    r = client.post("/v1/drafts/preview", json={"kind": "fee_payment_reply", "language": "en", "full_name": "R", "address": "Pune", "place": "Pune"}, headers=H)
+    detail = r.json()["detail"]
+    assert "pio_office: is required" in detail and "amount_paid: is required" in detail
+    assert "authority" not in detail.replace("pio_office", "") and "function-after" not in detail and "Field required" not in detail
+    assert client.post("/v1/drafts/preview", json={**appeal_payload(), "application_date": "31/12/2026"}, headers=H).json()["detail"] == "application_date: is not a valid date"
+    assert "kind:" in client.post("/v1/drafts/preview", json={"kind": "nope"}, headers=H).json()["detail"]
+
+
+def test_dates_up_to_tomorrow_are_accepted_for_time_zone_differences(client):
+    tomorrow = (TODAY + dt.timedelta(days=1)).isoformat()
+    assert client.post("/v1/drafts/preview", json=appeal_payload(application_date=tomorrow), headers=H).status_code == 200
+    assert client.post("/v1/drafts/preview", json=fee_payload(payment_date=tomorrow), headers=H).status_code == 200
+
+
+def test_fee_reply_date_order_messages_are_plain(client):
+    r = client.post("/v1/drafts/preview", json=fee_payload(payment_date=(TODAY - dt.timedelta(days=20)).isoformat()), headers=H)
+    assert r.json()["detail"] == "payment_date: the payment cannot be dated before the PIO's letter"
+    r = client.post("/v1/drafts/preview", json=fee_payload(pio_letter_date=(TODAY - dt.timedelta(days=40)).isoformat(), payment_date=(TODAY - dt.timedelta(days=39)).isoformat()), headers=H)
+    assert r.json()["detail"] == "pio_letter_date: the PIO's letter cannot be dated before your application"

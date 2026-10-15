@@ -8,13 +8,14 @@ from fastapi import Body, Depends, FastAPI, File, HTTPException, Query, Request,
 from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from pydantic import ValidationError
 
 from app.config import Settings, get_settings
 from app.container import Container, build_container, ingest_in_background
 from app.extraction.extractor import ExtractionError
 from app.drafts import render as draft_render
 from app.drafts import templates as draft_templates
-from app.drafts.schemas import DraftDocument, DraftRequest
+from app.drafts.schemas import DraftDocument, FeePaymentReply, FirstAppeal, RtiApplication
 from app.llm.check import probe
 from app.llm.errors import LlmCallError, classify
 from app.llm.simplifier import GenerationError
@@ -74,17 +75,41 @@ def _guard_llm(fn, *args):
         raise known from exc
 
 
+class DraftInputError(Exception):
+    """The draft form has a problem the person can fix; the message names each field in plain words."""
+
+
+_PLAIN = {
+    "missing": "is required", "string_too_short": "is required", "string_too_long": "is too long", "too_short": "needs at least one entry",
+    "too_long": "has too many entries", "literal_error": "has a choice that is not allowed", "date_parsing": "is not a valid date",
+    "date_from_datetime_parsing": "is not a valid date", "decimal_parsing": "must be a number", "int_parsing": "must be a whole number",
+    "decimal_max_digits": "is too large", "greater_than": "must be more than zero", "greater_than_equal": "is too small", "less_than_equal": "is too large",
+}
+
+
+def _format_draft_errors(errors) -> str:
+    """One readable "field: problem" per error, without pydantic's internal paths."""
+    out: list[str] = []
+    for err in errors:
+        where = ".".join(str(p) for p in err.get("loc", ()) if not isinstance(p, int) and p not in ("body",))
+        msg = _PLAIN.get(err.get("type", ""), str(err.get("msg", "is not valid")).removeprefix("Value error, "))
+        text = msg if (not where or msg.startswith(where + ":")) else f"{where}: {msg}"
+        if text not in out:
+            out.append(text)
+    return "; ".join(out[:6]) or "Invalid request"
+
+
+@app.exception_handler(DraftInputError)
+async def _draft_input_error(_: Request, exc: DraftInputError):
+    return JSONResponse(status_code=422, content={"detail": str(exc), "code": "validation"})
+
+
 @app.exception_handler(RequestValidationError)
 async def _validation_error(request: Request, exc: RequestValidationError):
-    """Draft forms get a readable message ("fee_reference: ..."); every other endpoint keeps FastAPI's default 422 body."""
+    """Draft forms get a readable message; every other endpoint keeps FastAPI's default 422 body."""
     if not request.url.path.startswith("/v1/drafts"):
         return await request_validation_exception_handler(request, exc)
-    problems = []
-    for err in exc.errors():
-        where = ".".join(str(p) for p in err.get("loc", ()) if p not in ("body", "rti_application", "first_appeal", "fee_payment_reply"))
-        msg = str(err.get("msg", "invalid")).removeprefix("Value error, ")
-        problems.append(f"{where}: {msg}" if where else msg)
-    return JSONResponse(status_code=422, content={"detail": "; ".join(problems[:6]) or "Invalid request", "code": "validation"})
+    return JSONResponse(status_code=422, content={"detail": _format_draft_errors(exc.errors()), "code": "validation"})
 
 
 @app.get("/health")
@@ -160,14 +185,28 @@ def kb_ingest(req: KbIngestRequest, c: Container = Depends(get_container)):
 
 
 # ----------------------------------------------------------------------------- drafts (RTI application / appeal / fee reply)
+_DRAFT_MODELS = {"rti_application": RtiApplication, "first_appeal": FirstAppeal, "fee_payment_reply": FeePaymentReply}
+
+
+def _parse_draft(payload: dict):
+    """Pick the model by `kind` ourselves (a framework-level union would report errors for every document type at once)."""
+    model = _DRAFT_MODELS.get(str(payload.get("kind")))
+    if model is None:
+        raise DraftInputError("kind: choose rti_application, first_appeal or fee_payment_reply")
+    try:
+        return model.model_validate(payload)
+    except ValidationError as exc:
+        raise DraftInputError(_format_draft_errors(exc.errors())) from exc
+
+
 @app.post("/v1/drafts/preview", response_model=DraftDocument, dependencies=[Depends(require_internal_token)])
-def draft_preview(req: DraftRequest = Body(...)):
-    return draft_templates.build(req)
+def draft_preview(payload: dict = Body(...)):
+    return draft_templates.build(_parse_draft(payload))
 
 
 @app.post("/v1/drafts/file", dependencies=[Depends(require_internal_token)])
-def draft_file(req: DraftRequest = Body(...), format: str = Query("pdf", pattern="^(pdf|docx)$")):
-    doc = draft_templates.build(req)
+def draft_file(payload: dict = Body(...), format: str = Query("pdf", pattern="^(pdf|docx)$")):
+    doc = draft_templates.build(_parse_draft(payload))
     if format == "docx":
         data, mime = draft_render.to_docx(doc), draft_render.DOCX_MIME
     else:

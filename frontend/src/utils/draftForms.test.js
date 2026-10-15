@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildPayload, filenameFrom, initialValues, missingFields } from './draftForms';
+import { buildPayload, filenameFrom, friendlyError, initialValues, isFutureDate, missingFields } from './draftForms';
 
 const rtiValues = (over = {}) => ({
   ...initialValues('rti_application'),
@@ -12,7 +12,7 @@ describe('draft form helpers', () => {
     const missing = missingFields('rti_application', initialValues('rti_application'));
     expect(Object.keys(missing).sort()).toEqual(['address', 'authority', 'full_name', 'items', 'place', 'subject']);
     expect(missing.fee_reference).toBeUndefined(); // court fee stamp: no reference needed
-    expect(missingFields('rti_application', rtiValues({ fee_mode: 'cash' })).fee_reference).toBe(true);
+    expect(missingFields('rti_application', rtiValues({ fee_mode: 'cash' })).fee_reference).toBe('required');
     expect(missingFields('rti_application', rtiValues({ fee_mode: 'cash', below_poverty_line: true })).fee_reference).toBeUndefined();
   });
 
@@ -29,8 +29,8 @@ describe('draft form helpers', () => {
     expect(buildPayload('first_appeal', v, 'en').order_received_date).toBeUndefined();
     expect('order_received' in buildPayload('first_appeal', v, 'en')).toBe(false);
     expect(buildPayload('first_appeal', { ...v, order_received: true }, 'en').order_received_date).toBe('2026-08-20');
-    expect(missingFields('first_appeal', v).grounds_other).toBe(true); // "other" needs a reason
-    expect(missingFields('first_appeal', { ...v, grounds: [] }).grounds).toBe(true);
+    expect(missingFields('first_appeal', v).grounds_other).toBe('required'); // "other" needs a reason
+    expect(missingFields('first_appeal', { ...v, grounds: [] }).grounds).toBe('required');
   });
 
   it('numbers become numbers and empty numbers are left out', () => {
@@ -44,5 +44,22 @@ describe('draft form helpers', () => {
   it('reads the filename from Content-Disposition', () => {
     expect(filenameFrom('attachment; filename="RTI-application-2026-10-14.pdf"', 'x.pdf')).toBe('RTI-application-2026-10-14.pdf');
     expect(filenameFrom(undefined, 'draft.pdf')).toBe('draft.pdf');
+  });
+
+  it('flags dates in the future (a day/month mix-up) but not today or tomorrow', () => {
+    const day = (n) => new Date(Date.now() + n * 86_400_000).toLocaleDateString('en-CA');
+    expect(isFutureDate(day(0))).toBe(false);
+    expect(isFutureDate(day(1))).toBe(false);
+    expect(isFutureDate(day(40))).toBe(true);
+    const v = { ...initialValues('fee_payment_reply'), pio_office: 'x', pio_letter_date: day(40), application_date: day(-30), amount_demanded: '10', amount_paid: '10', payment_reference: 'r', payment_date: day(-1) };
+    const missing = missingFields('fee_payment_reply', { ...v, full_name: 'a', address: 'a', place: 'p' });
+    expect(missing).toEqual({ pio_letter_date: 'future' });
+  });
+
+  it('replaces server field names with the labels shown on the form', () => {
+    const labels = { application_date: 'Date the PIO received your application' };
+    expect(friendlyError('application_date: is in the future; other_field: bad', labels)).toBe(
+      'Date the PIO received your application: is in the future\nother_field: bad',
+    );
   });
 });
