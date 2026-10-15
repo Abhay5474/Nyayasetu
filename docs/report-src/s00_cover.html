@@ -1,0 +1,44 @@
+<section class="cover">
+  <div class="band">
+    <div class="kicker">System Architecture &amp; Interview Guide</div>
+    <h1>NyayaSetu</h1>
+    <div class="sub">An LLM-powered legal and RTI document simplifier for English and Marathi: how the four services fit together, how data flows between them, and how every feature works.</div>
+    <div class="meta">Final-year major project &nbsp;·&nbsp; Report version 1.0 &nbsp;·&nbsp; October 2026<br>
+      Stack: React · Spring Boot · FastAPI · PostgreSQL + pgvector · Docker Compose<br>
+      Source: github.com/Abhay5474/Nyayasetu (branch <span style="font-family:'DejaVu Sans Mono';font-size:8.6pt">claude/modest-brown-996d6q</span>)</div>
+  </div>
+  <div class="below">
+    <p class="lead" style="margin-bottom:2mm">What this report is for</p>
+    <p>It explains the system the way you would explain it in a viva or a technical interview: the problem, the architecture, the reason behind each design decision, the data flow between services, the problems that were hit and fixed, the measured results, and an honest list of limitations. Each major feature ends with likely interview questions and model answers.</p>
+    <div class="grid">
+      <div class="card"><b>1 · Frontend</b>React 18 SPA behind nginx; English and Marathi UI</div>
+      <div class="card"><b>2 · Backend</b>Spring Boot gateway: auth, storage, orchestration, alerts</div>
+      <div class="card"><b>3 · AI service</b>FastAPI: OCR, RAG, LLM, chat, draft generator</div>
+      <div class="card"><b>4 · PostgreSQL</b>App data plus pgvector knowledge base</div>
+    </div>
+  </div>
+</section>
+<section>
+  <h2 style="break-before:auto"><span class="num">·</span>Contents</h2>
+  <ul class="toc">
+    <li><span class="n">1</span>Problem, goals and scope<span class="d"></span></li>
+    <li><span class="n">2</span>Architecture at a glance<span class="d"></span></li>
+    <li><span class="n">3</span>Technology choices and why<span class="d"></span></li>
+    <li><span class="n">4</span>Service 1 — Frontend (React + nginx)<span class="d"></span></li>
+    <li><span class="n">5</span>Service 2 — Backend (Spring Boot gateway)<span class="d"></span></li>
+    <li><span class="n">6</span>Service 3 — AI service (FastAPI)<span class="d"></span></li>
+    <li><span class="n">7</span>Service 4 — PostgreSQL and pgvector<span class="d"></span></li>
+    <li><span class="n">8</span>The legal knowledge base and RAG in depth<span class="d"></span></li>
+    <li><span class="n">9</span>End-to-end data flows<span class="d"></span></li>
+    <li><span class="n">10</span>Functionality walk-through (interview view)<span class="d"></span></li>
+    <li><span class="n">11</span>Security and privacy<span class="d"></span></li>
+    <li><span class="n">12</span>Deployment and operations<span class="d"></span></li>
+    <li><span class="n">13</span>Testing and evaluation (with real results)<span class="d"></span></li>
+    <li><span class="n">14</span>Problems faced and how they were solved<span class="d"></span></li>
+    <li><span class="n">15</span>Limitations and future work<span class="d"></span></li>
+    <li><span class="n">16</span>Interview question bank<span class="d"></span></li>
+    <li><span class="n">A</span>Appendix — API reference, configuration, glossary<span class="d"></span></li>
+  </ul>
+  <div class="box blue" style="margin-top:6mm"><div class="t">How to read the numbers in this report</div>
+    <p>Figures such as test counts, chunk counts, defaults and evaluation scores come from the code and from runs made during development. Where a figure was measured on real models (the retrieval evaluation) it is labelled. Where something could not be tested here (for example a specific third-party LLM) the report says so.</p></div>
+</section>

@@ -1,0 +1,91 @@
+<section>
+<h2><span class="num">10</span>Functionality walk-through (interview view)</h2>
+<p class="lead">Each feature below is described the way you would explain it when asked “walk me through how this works”: what the user sees, what happens inside, the design decisions and trade-offs, edge cases that were handled, and the questions you should expect.</p>
+
+<h3>10.1 Registration, login and sessions</h3>
+<p><b>User sees:</b> a registration form (name, e-mail, password, optional phone and preferred language) and a login form. <b>Inside:</b> Bean-Validation on the DTOs (valid e-mail, password 8–72 characters, phone in international format <code>+91…</code>), BCrypt(12) hashing, a case-insensitive unique e-mail index, a JWT returned with the profile, and the browser attaching it to every call.</p>
+<ul>
+<li><b>Brute force:</b> <code>LoginThrottle</code> (5 failures per e-mail+IP in 15 minutes → 429). Same generic message for “unknown e-mail” and “wrong password” so accounts cannot be enumerated.</li>
+<li><b>Expiry:</b> the JWT lives 12 hours; the front end logs out when it expires and on any 401.</li>
+<li><b>Edge case fixed:</b> Spring needs an explicit <code>@Autowired</code> on the public constructor when a class has two constructors (one for tests with an injectable clock); the first run failed with “No default constructor found”.</li>
+</ul>
+<div class="qa"><div class="q">Walk me through what happens when a request arrives with a JWT.</div><div class="a"><p>nginx proxies it to Spring. <code>JwtAuthenticationFilter</code> runs before the standard username/password filter, extracts the bearer token, verifies the HS256 signature and expiry with <code>JwtService</code>, and puts an <code>AuthUser</code> (id, email, role) in the security context. Controllers receive it with <code>@AuthenticationPrincipal</code>. If the token is missing or invalid, <code>RestAuthenticationEntryPoint</code> returns a JSON 401 and the front end logs the user out.</p></div></div>
+
+<h3>10.2 Upload, validation and extraction</h3>
+<p><b>User sees:</b> a drop zone, a file chip, an output-language switch and a progress bar. <b>Inside:</b> section 5.4 (validation, atomic storage) and section 6.3 (extraction).</p>
+<ul>
+<li><b>Accepted:</b> PDF, PNG, JPEG, TIFF, BMP, WEBP up to 25 MB, identified by content. <b>Rejected:</b> everything else with a specific message (a renamed <code>.exe</code> is refused even if called <code>.pdf</code>).</li>
+<li><b>Mixed documents:</b> per-page choice between text layer and OCR; <code>method</code> is <code>digital</code>, <code>ocr</code> or <code>mixed</code>.</li>
+<li><b>Marathi specifics:</b> broken text layers detected and OCR’d; Devanagari-safe cleaning and tokenization; Tesseract <code>mar+hin+eng</code>.</li>
+<li><b>Failure modes handled:</b> password-protected PDF, zero-page PDF, unreadable scan (“No readable text found”), huge PDF (first 60 pages with a warning), AI service unreachable (retryable failure).</li>
+</ul>
+<div class="qa"><div class="q">How does your OCR cope with a Marathi photo?</div><div class="a"><p>Tesseract runs with Marathi, Hindi and English models together, after grayscale conversion, autocontrast and up-scaling of small images. On synthetic noisy photos it recovered 98–100% of words; real photographs with shadows and perspective will be worse, so the UI warns when OCR was used and the knowledge-base sources flag OCR text. A natural improvement is deskewing, adaptive thresholding and an OCR confidence score shown to the user.</p></div></div>
+
+<h3>10.3 Bilingual explanation with citations</h3>
+<p><b>User sees:</b> a title, a short summary, key points, an action checklist with priorities, a deadline timeline, legal references linked to numbered sources, sources with trust badges, and caveats, in English or Marathi, switchable without re-upload.</p>
+<ul>
+<li><b>Structured output</b> is a Pydantic model (<code>SimplifiedDocument</code>): <code>document_type, title, summary, key_points, deadlines, required_actions, legal_references, caveats</code>.</li>
+<li><b>Language switch</b> re-runs only the explanation step on the stored text; each language has its own result row and status.</li>
+<li><b>Deadline discipline:</b> exact ISO date only when the document states or implies it; else a relative period such as “within 30 days of receiving this reply” plus the original sentence, so the user can verify.</li>
+<li><b>Citations:</b> checked against retrieved sources; cited sources sorted first; trust badges and notes shown (section 4.4).</li>
+</ul>
+<div class="qa"><div class="q">Show me an example of the system being careful about law that changed.</div><div class="a"><p>Maharashtra notified RTI Rules twice in 2026. The 12 June notification set fees at ₹30, ₹5 and ₹100; the 7 July notification replaced it with ₹10, ₹2 and ₹20 and appeal periods of 30 and 90 days. Both are in the knowledge base, but the 12 June one is marked <code>superseded</code> and excluded by every retrieval query. A test asserts that a fee question returns the 7 July rules and nothing from the superseded set.</p></div></div>
+
+<h3>10.4 Continuous Q&amp;A about a document</h3>
+<p><b>User sees:</b> a chat that remembers the conversation, suggested follow-ups, quotes from the document and cited sources, and a distinct “this document does not say” answer when applicable. <b>Inside:</b> sections 5.8, 6.5 and 9.2.</p>
+<ul>
+<li>History persists across reloads and is private to the user; the conversation can be cleared; at most 100 questions per document.</li>
+<li>Follow-ups are made retrievable by prepending the previous question.</li>
+<li>Quotes are verified against the document; invented quotes are dropped.</li>
+<li><code>answerable: false</code> is an explicit contract, so “I could not find it” is not disguised as an answer.</li>
+</ul>
+<div class="qa"><div class="q">How does the chat know what “it” refers to?</div><div class="a"><p>Two mechanisms. The last turns are sent to the model so it can resolve references. And retrieval uses the previous question plus the current one, so “what about the second one?” still finds the right passage in the document and the right law.</p></div></div>
+
+<h3>10.5 Deadline tracking and reminders</h3>
+<p><b>User sees:</b> a Deadlines page grouped as Overdue, Next 7 days, Later, No fixed date and Done; a checkbox to mark items done; optional e-mail/SMS reminders in the user’s language. <b>Inside:</b> section 9.4.</p>
+<ul>
+<li><b>Capture:</b> from the first processed language only, so translating does not duplicate rows. A deadline can have a date, a relative period, or both, plus the source sentence.</li>
+<li><b>Reminder logic:</b> stage-based (7, 3, 1, 0 days, configurable), idempotent through <code>last_reminder_stage</code>, resilient to downtime, per-channel logging.</li>
+<li><b>Time zone:</b> scheduled at 08:00 <code>Asia/Kolkata</code>, with “today” computed in IST so a late-night run does not shift the day.</li>
+<li><b>Channels:</b> SMTP e-mail (Spring Mail) and Twilio SMS; each is enabled only when configured and when the user opted in.</li>
+</ul>
+<div class="qa"><div class="q">What would break if you ran two backend instances?</div><div class="a"><p>Two things are per-instance: the login throttle (in memory) and the scheduler (it would send reminders twice, though <code>last_reminder_stage</code> limits duplicates). The fix is a shared store (Redis) for the throttle and a scheduler lock (for example ShedLock on a database row) or running the scheduler in one replica only, as the code comment says.</p></div></div>
+
+<h3>10.6 Trust: provenance, supersession and the knowledge base</h3>
+<p>Described in sections 7 and 8. In interview terms: the knowledge base is <i>data with metadata</i>, and the metadata is a product feature. Source type, current-as-of date, status, gazette reference, OCR flag, reviewer notes and verification state travel from the manifest, through the database, through the LLM prompt, to the badge the user sees.</p>
+<ul>
+<li><b>Evidence of care:</b> hand-corrected OCR in the extracted gazette text; parser checks that fail loudly; separate notes for known staleness (2008 reprint, 2021 Rules changing consumer limits).</li>
+<li><b>Honesty:</b> nothing is marked verified; seed summaries are labelled unverified.</li>
+</ul>
+
+<h3>10.7 Draft generator: RTI application, first appeal, fee-payment reply</h3>
+<p><b>User sees:</b> a Drafts page with three cards, a form tailored to the chosen document, a language switch (English / Marathi), a preview on a “paper”, warnings and filing notes, and buttons for PDF and Word. <b>Why it exists:</b> understanding a notice is only half the problem; the user then has to write something correct and on time.</p>
+<table>
+<thead><tr><th style="width:19%">Draft</th><th>Content and built-in logic</th></tr></thead>
+<tbody>
+<tr><td><b>RTI application</b><br><span class="pill s">Annexure “A”</span></td><td>Follows the official form: applicant, office, subject, period, numbered description, post or in person (and type of post), BPL status with proof, fee paid by stamp/cash/draft/banker’s cheque. Adds the ₹10 stamp box when relevant; if the applicant is below the poverty line, states that no fee applies (Section 7(5) proviso). <b>Warns</b> when the request exceeds 150 words (the Maharashtra rule says one subject, ordinarily within 150 words).</td></tr>
+<tr><td><b>First appeal</b><br><span class="pill s">Annexure “B”, s.19(1)</span></td><td>Inputs: appellate authority, PIO, application date, decision date (if any), grounds, information sought, fee mode, optional delay reason. <b>Computes the last date:</b> decision received + 30 days; or, if no reply, application date + 30 days (the PIO’s time) + 30 days. <b>Warns</b> if the PIO still has time to reply (premature appeal), if the period has already ended and no delay reason is given, or if grounds contradict the dates. <b>Adds a “request to condone delay”</b> using the proviso to Section 19(1) when late. Each selected ground is written out citing its section (7(1)/7(2), 8/9/10, 7(3)(a)). The prayer asks for the information, for it free of charge if the time limit was missed (Section 7(6)), and for any other order; it deliberately does <b>not</b> ask for a penalty, which only the Information Commission can impose (Section 20) — a filing note says so.</td></tr>
+<tr><td><b>Reply to a fee demand</b><br><span class="pill s">s.7(3)</span></td><td>Confirms payment (amount, mode, reference, date), asks for the information and notes the period between intimation and payment is excluded (7(3)(a)). If the user gives the page count and the amount demanded differs from pages × ₹2, it asks the PIO for the calculation and reserves the right to seek a review (7(3)(b)). <b>Warns</b> if the payment is less or more than the amount demanded.</td></tr>
+</tbody></table>
+<h4>How it is built</h4>
+<ul>
+<li><b>Deterministic templates, not an LLM.</b> A legal form must say exactly what was entered. Templates exist in English and Marathi (with Devanagari numerals for dates and amounts generated by the template). The Marathi wording is based on the official Marathi forms and needs review by a Marathi speaker before real use.</li>
+<li><b>Validation.</b> Pydantic models, selected by <code>kind</code> (one model per document type): required fields, length limits, control-character stripping, date sanity (not in the future, with one day of slack for time zones; letter after application; payment after letter), fee reference required for cash/draft/cheque. Errors come back as one readable line per field (“application_date: is in the future – check that the day and month are the right way round”), and the front end replaces field names by the labels on the form.</li>
+<li><b>Rendering.</b> A neutral list of blocks (title, paragraph, rows, numbered list, signature…) feeds two renderers. The PDF uses PyMuPDF’s HTML engine, which does proper Devanagari shaping with built-in fonts (no font installation), with explicit point widths because that engine ignores percentage table widths. The Word file uses python-docx with the <i>Mangal</i> font for Marathi (installed with Windows) and sets all four font slots so complex-script text renders correctly. User text is HTML-escaped in the PDF path.</li>
+<li><b>Privacy.</b> Stateless end to end; the backend only whitelists the <code>kind</code>, limits the size, and proxies.</li>
+</ul>
+<div class="box rose"><div class="t">A bug worth telling in an interview</div><p>After release, the first-appeal and fee-reply forms failed with a wall of “RtiApplication… FeePaymentReply…” errors. Two causes: (1) the framework had stopped honouring the discriminated union, so the form was validated against every document type and all errors were reported together; and (2) the real problem, “application_date is in the future”, came from a date check with no time-zone slack on a UTC server, and from day/month confusion in the browser’s date field. Fixes: select the model by <code>kind</code> explicitly, accept dates one day ahead, block future dates in the picker, spell the chosen date out under the field, and map server field names to form labels. The lesson was that my earlier browser test had opened but never submitted those forms; the new end-to-end test submits all three.</p></div>
+<div class="qa"><div class="q">Why templates and not the LLM for drafting?</div><div class="a"><p>Accuracy, auditability and availability. A legal document must contain exactly the entered facts and the correct provisions; an LLM can rephrase a date or invent a section. Templates are testable (there are tests for every branch), cheap, instant and work when the LLM is down. An LLM could still be added for optional “polish my description” help, with the template as the safe default.</p></div></div>
+
+<h3>10.8 Settings, privacy and account deletion</h3>
+<ul>
+<li>Profile edits (name, phone, preferred language) and per-channel reminder toggles.</li>
+<li><b>Delete my account</b> removes the user and, through <code>ON DELETE CASCADE</code>, every document, result, deadline, reminder log and chat message, and the user’s upload directory. A test covers erasure.</li>
+</ul>
+
+<h3>10.9 Resilience and self-diagnosis of the LLM connection</h3>
+<p>Hosted LLMs fail in ordinary ways: a model is overloaded (503), a quota is reached (429), a model name is retired (404), a key is wrong (401). During development all four happened. The response was a <b>fallback chain</b>, clear error classification, and a diagnostic command. Section 6.6 has the design. The user-visible result: instead of “We couldn’t finish this document (500)”, a failed document says “The AI model rejected the API key… check <code>.env</code> and run <code>docker compose up -d</code>”, and in the common overload case the user does not notice at all because a backup model answers.</p>
+
+<h3>10.10 Evaluation harness</h3>
+<p>A reproducible way to measure retrieval quality: 60 labelled questions (40 English, 17 Marathi, 3 out of scope), each with the provisions that contain the answer and, for some, required facts. <code>python -m app.evaluation retrieval</code> compares five methods and writes Markdown and JSON with bootstrap confidence intervals; <code>… answers</code> scores fact recall, citation hit/precision, numbers grounded in the cited text and refusal of out-of-scope questions when a real LLM is configured. Results are in section 13.</p>
+</section>

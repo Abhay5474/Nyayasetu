@@ -1,0 +1,61 @@
+<section>
+<h2><span class="num">A</span>Appendix</h2>
+
+<h3>A.1 Numbers worth remembering</h3>
+<table>
+<thead><tr><th style="width:38%">Item</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td>Services / published ports</td><td>4 containers; only the front end is published (3000 → 80)</td></tr>
+<tr><td>Upload limit · file types</td><td>25 MB · PDF, PNG, JPEG, TIFF, BMP, WEBP (by content)</td></tr>
+<tr><td>JWT lifetime · password · throttle</td><td>12 h · BCrypt cost 12, 8–72 chars · 5 failures / 15 min per e-mail+IP</td></tr>
+<tr><td>Async job pool</td><td>2 core / 4 max threads, queue 100; one retry after 2 s for transient errors</td></tr>
+<tr><td>OCR</td><td>Tesseract mar+hin+eng · 200 DPI (300 for KB) · up to 60 pages</td></tr>
+<tr><td>Direct-prompt limit · map-reduce</td><td>14 000 characters · chunks ≈ 5 400, ≤ 24, 4 in parallel</td></tr>
+<tr><td>Knowledge base</td><td>318 entries → 467 chunks · 1 200-character chunks, 150 overlap · vector(384)</td></tr>
+<tr><td>Retrieval</td><td>20 vector + 20 keyword candidates → RRF (k = 60) → 16 → rerank → top 6 (chat 4)</td></tr>
+<tr><td>LLM</td><td>temperature 0.1 · max tokens 4096 · timeout 120 s · 1 retry per model when fallbacks exist</td></tr>
+<tr><td>Chat</td><td>10 messages loaded · 8 replayed · each ≤ 1 500 chars · ≤ 100 questions per document · ≤ 2 verified quotes</td></tr>
+<tr><td>Reminders</td><td>7, 3, 1, 0 days · daily 08:00 Asia/Kolkata</td></tr>
+<tr><td>RTI periods used by the drafts</td><td>PIO reply 30 days (s.7(1)); first appeal 30 days (s.19(1)); second appeal 90 days (s.19(3))</td></tr>
+<tr><td>Maharashtra fees (rules of 7 July 2026)</td><td>₹10 application · ₹2 per page · ₹20 appeal</td></tr>
+<tr><td>Tests</td><td>101 AI service · 27 backend · 11 front end</td></tr>
+<tr><td>Best retrieval result</td><td>MRR 0.702 · Hit@3 82% · 0% superseded text</td></tr>
+</tbody></table>
+
+<h3>A.2 Glossary</h3>
+<table>
+<thead><tr><th style="width:24%">Term</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td>RTI</td><td>Right to Information Act, 2005: citizens may request information from public authorities.</td></tr>
+<tr><td>PIO / SPIO / CPIO</td><td>(State / Central) Public Information Officer: the officer who answers RTI applications.</td></tr>
+<tr><td>First Appellate Authority</td><td>Senior officer in the same authority who hears the first appeal (Section 19(1)).</td></tr>
+<tr><td>Information Commission</td><td>Central or State body for second appeals and complaints; the only body that can impose the Section 20 penalty.</td></tr>
+<tr><td>Deemed refusal</td><td>No reply within the time limit is treated as a refusal (Section 7(2)).</td></tr>
+<tr><td>Section 8 / 9 / 10</td><td>Exemptions from disclosure · grounds of copyright · severability (release the non-exempt part).</td></tr>
+<tr><td>Superseded</td><td>Replaced by a later rule or notification. Kept for history, excluded from retrieval.</td></tr>
+<tr><td>Gazette</td><td>The government’s official publication of Acts, Rules and notifications.</td></tr>
+<tr><td>RAG</td><td>Retrieval-augmented generation: retrieve relevant text, then let the model answer using it.</td></tr>
+<tr><td>Embedding</td><td>A vector representing the meaning of a text; similar meanings give nearby vectors.</td></tr>
+<tr><td>HNSW</td><td>Hierarchical Navigable Small World: an approximate nearest-neighbour index used by pgvector.</td></tr>
+<tr><td>RRF</td><td>Reciprocal Rank Fusion: merge ranked lists by summing 1/(k + rank).</td></tr>
+<tr><td>Cross-encoder</td><td>A model that scores a (query, passage) pair jointly; used to rerank.</td></tr>
+<tr><td>IDF</td><td>Inverse document frequency: weights rare words more than common ones.</td></tr>
+<tr><td>MRR / Hit@k</td><td>Mean reciprocal rank of the first correct result · share of questions with a correct result in the top k.</td></tr>
+<tr><td>JWT</td><td>JSON Web Token: a signed token carrying the user’s identity.</td></tr>
+<tr><td>Flyway</td><td>Database migration tool that applies versioned SQL scripts.</td></tr>
+<tr><td>OCR</td><td>Optical character recognition: turning an image of text into text.</td></tr>
+</tbody></table>
+
+<h3>A.3 Useful commands</h3>
+<pre><code>docker compose up -d                                   # start (add --build only when code changed)
+docker compose up -d --build ai-service                # rebuild one service
+docker compose exec ai-service python -m app.llm.check               # which LLMs answer
+docker compose exec ai-service python -m app.llm.check --list-models # model names the keys can use
+docker compose exec ai-service python -m app.evaluation retrieval    # retrieval evaluation
+docker compose logs --tail 50 ai-service               # recent AI-service logs
+docker image prune -f &amp;&amp; docker builder prune -f       # reclaim disk (never prune volumes)
+# tests
+cd ai-service &amp;&amp; TEST_DATABASE_URL=postgresql://… pytest -q
+cd backend    &amp;&amp; TEST_DB_URL=jdbc:postgresql://localhost:5432/nyayasetu_test mvn test
+cd frontend   &amp;&amp; npm test</code></pre>
+</section>

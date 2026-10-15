@@ -1,0 +1,62 @@
+<section>
+<h3>6.5 Document chat (<code>/v1/chat</code>)</h3>
+<p>A conversation about <i>one</i> document, grounded in that document and in the knowledge base.</p>
+<ul>
+<li><b>Follow-up questions retrieve badly alone</b> (“and what about the second one?”). The retrieval query therefore combines the previous user question with the new one, and the knowledge base is searched with both formulations.</li>
+<li><b>Long documents.</b> If the document is within 14 000 characters it is sent whole. Otherwise a small per-document hybrid index is built in memory (chunks of 900 characters), cached in an LRU of 8 documents so later questions do not re-embed the file, and only the best excerpts (kept in reading order) go into the prompt.</li>
+<li><b>History.</b> The last 8 messages are replayed, each truncated to 1 500 characters, so the model can resolve “it”, “that deadline” and so on.</li>
+<li><b>Output</b> (validated like the explanation): <code>answer</code>, <code>answerable</code> (false when neither the document nor the sources contain the answer), <code>quotes</code>, <code>source_ids</code> and up to three <code>follow_ups</code>.</li>
+<li><b>Verified quotes.</b> The model is asked to quote the document, but quotes are <b>checked</b>: only those that really occur in the document text (ignoring whitespace and case, at least 8 characters) are kept, at most two. A quote cannot be invented.</li>
+<li>Only cited sources are returned, again after the id check.</li>
+</ul>
+
+<h3>6.6 LLM access, fallbacks and error handling</h3>
+<figure>
+<svg viewBox="0 0 760 168" width="760" role="img" aria-label="LLM fallback chain">
+<defs><marker id="a9" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#44506b"/></marker></defs>
+<g class="t-s t-c">
+<rect x="8" y="46" width="130" height="66" rx="7" fill="#fff" stroke="#17203a"/><text x="73" y="68" class="t-b">Simplifier / Chat</text><text x="73" y="82" class="t-g">calls one runnable:</text><text x="73" y="94" class="t-g">llm.invoke(messages)</text>
+<rect x="178" y="14" width="170" height="58" rx="7" fill="#fdf1dd" stroke="#e8890c"/><text x="263" y="34" class="t-b">1 · Primary model</text><text x="263" y="48" class="t-g">LLM_PROVIDER / LLM_MODEL</text><text x="263" y="60" class="t-g">(e.g. Groq, 1 retry first)</text>
+<rect x="388" y="14" width="170" height="58" rx="7" fill="#fdf1dd" stroke="#e8890c"/><text x="473" y="34" class="t-b">2 · Same-provider backups</text><text x="473" y="48" class="t-g">LLM_FALLBACK_MODELS</text><text x="473" y="60" class="t-g">(same key and URL)</text>
+<rect x="588" y="14" width="164" height="58" rx="7" fill="#fdf1dd" stroke="#e8890c"/><text x="670" y="34" class="t-b">3 · Another service</text><text x="670" y="48" class="t-g">FALLBACK_LLM_* with its</text><text x="670" y="60" class="t-g">own key and base URL</text>
+<rect x="178" y="100" width="574" height="52" rx="7" fill="#f6f7fb" stroke="#9aa5c0"/><text x="465" y="120" class="t-b">On failure (503 overloaded · 429 quota · 401 bad key · 404 retired model · timeout · unreachable):</text><text x="465" y="136" class="t-g">log the reason, try the next model; record which model really answered; if all fail → one clear error with an actionable message</text>
+</g>
+<line x1="138" y1="70" x2="176" y2="50" stroke="#44506b" stroke-width="1.4" marker-end="url(#a9)"/>
+<line x1="348" y1="43" x2="386" y2="43" stroke="#b23a48" stroke-dasharray="4 3" stroke-width="1.4" marker-end="url(#a9)"/>
+<line x1="558" y1="43" x2="586" y2="43" stroke="#b23a48" stroke-dasharray="4 3" stroke-width="1.4" marker-end="url(#a9)"/>
+</svg>
+<figcaption>Figure 6.3 — The fallback chain, built with LangChain’s <code>with_fallbacks</code>, so it works unchanged inside prompt pipelines and batch calls.</figcaption>
+</figure>
+<ul>
+<li><b>Providers.</b> <code>anthropic</code>, <code>openai</code> (any OpenAI-compatible endpoint: Groq, Google’s Gemini endpoint, xAI, OpenRouter…), <code>ollama</code> (local) and <code>mock</code>. Switching provider is configuration only.</li>
+<li><b>Key hygiene.</b> API keys and URLs are trimmed of quotes, spaces and a pasted “Bearer ” prefix; an empty base URL is treated as unset.</li>
+<li><b>Actionable errors.</b> <code>llm/errors.py</code> classifies failures (bad key, unknown model, rate limit, overloaded, timeout, unreachable) into short messages that name the setting to check. They travel back as a coded 502/429/503 and the backend shows them to the user, instead of a bare “500”.</li>
+<li><b>Which model answered</b> is tracked per thread and stored with the result, so a fallback answer is never mislabelled as coming from the primary.</li>
+<li><b>Self-diagnosis.</b> <code>python -m app.llm.check</code> and <code>GET /v1/llm/check</code> probe every model in the chain in parallel with a 30-second limit; <code>--list-models</code> prints the model names the configured keys can use (model names are retired often).</li>
+<li><b>Mock mode</b> (<code>LLM_PROVIDER=mock</code>) produces a deterministic extractive summary (dates found by regex, key sentences) so the whole system can be demonstrated and tested without any API key. It does not translate or truly simplify, and the documentation says so.</li>
+</ul>
+
+<h3>6.7 The draft generator (preview)</h3>
+<p>A separate module (<code>app/drafts/</code>) that does <b>not</b> use the LLM: Pydantic models validate the form, deterministic English/Marathi templates build a neutral list of blocks, and two renderers produce the file (PDF with PyMuPDF’s HTML engine, which shapes Devanagari correctly; Word with python-docx). Section 10.7 explains it in full.</p>
+
+<h3>6.8 Source layout</h3>
+<pre><code>ai-service/app
+├─ main.py            routes, exception handlers (draft input errors, LLM call errors)
+├─ container.py       composition root · background KB ingestion
+├─ config.py          typed settings from environment (keys cleaned)
+├─ security.py        internal-token dependency
+├─ schemas.py         Pydantic contracts (requests, SimplifiedDocument, Source, KbEntry, chat)
+├─ extraction/        extractor (PDF/image logic) · ocr (Tesseract, optional Paddle)
+├─ processing/        cleaning (headers, wraps, language hint, garble check) · chunking · Devanagari tokenizer
+├─ rag/               embeddings · store (pgvector/in-memory) · retriever (RRF) · reranker · ingest
+│                     legal_parser (Act/Rules/gazette splitting) · sources (manifest → entries)
+├─ llm/               providers (fallback chain) · prompts · simplifier · chat · errors · check · mock_generator
+├─ drafts/            schemas · templates (en/mr) · render (PDF, Word)
+└─ evaluation/        dataset · metrics · runner · CLI (python -m app.evaluation)
+ai-service/knowledge_base   manifest, source PDFs, proofreadable extracted text, seed JSON
+ai-service/eval             questions.jsonl (60 labelled questions) and results</code></pre>
+
+<div class="qa"><div class="q">Why does the model output JSON instead of free text?</div><div class="a"><p>The product needs structure: deadlines must become rows, actions a checklist, references links to numbered sources. A schema also lets us validate and repair the answer and drop bad citations. The cost is occasional invalid JSON, handled by tolerant extraction and one repair retry.</p></div></div>
+<div class="qa"><div class="q">How do you reduce hallucination here?</div><div class="a"><p>Six layers: (1) a prompt that forbids invented facts and dates; (2) retrieval of real legal text with provenance; (3) sources labelled by trust level and an instruction to prefer official text; (4) schema validation with a repair step; (5) post-hoc grounding that removes citations to sources that were never retrieved, and chat quotes that are not in the document; (6) a visible UI with source badges and caveats so the user can verify. It does not eliminate errors, which is why every page says it is not legal advice.</p></div></div>
+<div class="qa"><div class="q">What if the document is 200 pages?</div><div class="a"><p>Extraction is capped at 60 pages with a warning. Anything over 14 000 characters is condensed with parallel map-reduce into notes first. For chat, a per-document index retrieves only the relevant excerpts for each question.</p></div></div>
+</section>

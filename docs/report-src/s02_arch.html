@@ -1,0 +1,97 @@
+<section>
+<h2><span class="num">2</span>Architecture at a glance</h2>
+<p>NyayaSetu runs as <b>four containers</b> defined in <code>docker-compose.yml</code>: a web front end, a Java gateway, a Python AI service and a PostgreSQL database. Only the front end is published to the host (port 3000). Everything else is reachable only inside the Compose network.</p>
+
+<figure>
+<svg viewBox="0 0 760 500" width="760" role="img" aria-label="System architecture">
+<defs>
+<marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#44506b"/></marker>
+<marker id="arS" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#e8890c"/></marker>
+</defs>
+<rect x="150" y="14" width="600" height="472" rx="10" fill="#f6f7fb" stroke="#9aa5c0" stroke-dasharray="6 4"/>
+<text x="164" y="32" class="t-s t-b t-g">Docker Compose network “nyayasetu”</text>
+
+<!-- browser -->
+<rect x="14" y="205" width="110" height="80" rx="8" fill="#ffffff" stroke="#17203a" stroke-width="1.4"/>
+<text x="69" y="232" class="t-m t-b t-c">User’s</text><text x="69" y="246" class="t-m t-b t-c">browser</text><text x="69" y="266" class="t-s t-c t-g">React SPA runs here</text>
+
+<!-- frontend -->
+<rect x="176" y="190" width="150" height="110" rx="8" fill="#fdf1dd" stroke="#e8890c" stroke-width="1.6"/>
+<text x="251" y="212" class="t-m t-b t-c">① frontend</text>
+<text x="251" y="228" class="t-s t-c">nginx 1.27 serves the</text><text x="251" y="240" class="t-s t-c">built React bundle</text>
+<text x="251" y="256" class="t-s t-c">reverse-proxies /api/*</text><text x="251" y="268" class="t-s t-c">CSP + security headers</text>
+<text x="251" y="288" class="t-s t-c t-g">published :3000 → :80</text>
+
+<!-- backend -->
+<rect x="372" y="190" width="150" height="110" rx="8" fill="#eef3fb" stroke="#2c5fa8" stroke-width="1.6"/>
+<text x="447" y="212" class="t-m t-b t-c">② backend</text>
+<text x="447" y="228" class="t-s t-c">Spring Boot 3.3 · Java 21</text><text x="447" y="240" class="t-s t-c">JWT auth · REST API</text>
+<text x="447" y="252" class="t-s t-c">upload validation · jobs</text><text x="447" y="264" class="t-s t-c">chat · deadlines · alerts</text>
+<text x="447" y="288" class="t-s t-c t-g">internal :8080</text>
+
+<!-- ai -->
+<rect x="568" y="190" width="162" height="110" rx="8" fill="#eaf6f0" stroke="#1f7a5a" stroke-width="1.6"/>
+<text x="649" y="212" class="t-m t-b t-c">③ ai-service</text>
+<text x="649" y="228" class="t-s t-c">FastAPI · Python 3.12</text><text x="649" y="240" class="t-s t-c">PyMuPDF + Tesseract OCR</text>
+<text x="649" y="252" class="t-s t-c">RAG · LangChain · LLM chain</text><text x="649" y="264" class="t-s t-c">chat · draft generator</text>
+<text x="649" y="288" class="t-s t-c t-g">internal :8000 · models in image</text>
+
+<!-- postgres -->
+<rect x="372" y="376" width="226" height="94" rx="8" fill="#ffffff" stroke="#17203a" stroke-width="1.6"/>
+<text x="485" y="398" class="t-m t-b t-c">④ postgres (pgvector/pg16)</text>
+<text x="485" y="416" class="t-s t-c">schema public — users, documents, results,</text><text x="485" y="428" class="t-s t-c">deadlines, notification_log, chat_messages</text>
+<text x="485" y="444" class="t-s t-c">schema kb — kb_chunks (text, tsvector,</text><text x="485" y="456" class="t-s t-c">vector(384), status, provenance JSONB)</text>
+
+<!-- volumes -->
+<rect x="176" y="392" width="150" height="62" rx="8" fill="#fff" stroke="#9aa5c0" stroke-dasharray="4 3"/>
+<text x="251" y="414" class="t-s t-b t-c">volume: uploads</text><text x="251" y="428" class="t-s t-c t-g">/data/uploads (original files,</text><text x="251" y="440" class="t-s t-c t-g">random names, never served raw)</text>
+
+<!-- externals -->
+<rect x="568" y="50" width="162" height="62" rx="8" fill="#fff" stroke="#9aa5c0"/>
+<text x="649" y="70" class="t-s t-b t-c">LLM providers (HTTPS)</text><text x="649" y="84" class="t-s t-c t-g">Groq · Gemini · Anthropic</text><text x="649" y="96" class="t-s t-c t-g">OpenAI · Ollama (local)</text>
+<rect x="372" y="50" width="150" height="62" rx="8" fill="#fff" stroke="#9aa5c0"/>
+<text x="447" y="70" class="t-s t-b t-c">Notification channels</text><text x="447" y="84" class="t-s t-c t-g">SMTP e-mail · Twilio SMS</text><text x="447" y="96" class="t-s t-c t-g">(optional, daily 08:00 IST)</text>
+
+<!-- arrows -->
+<line x1="124" y1="245" x2="174" y2="245" stroke="#44506b" stroke-width="1.6" marker-end="url(#ar)"/>
+<text x="149" y="236" class="t-s t-c t-g">HTTP</text>
+<line x1="326" y1="245" x2="370" y2="245" stroke="#44506b" stroke-width="1.6" marker-end="url(#ar)"/>
+<text x="348" y="236" class="t-s t-c t-g">/api</text>
+<line x1="522" y1="235" x2="566" y2="235" stroke="#e8890c" stroke-width="1.8" marker-end="url(#arS)"/>
+<line x1="566" y1="258" x2="522" y2="258" stroke="#44506b" stroke-width="1.2" marker-end="url(#ar)"/>
+<text x="544" y="228" class="t-s t-c t-g" style="font-size:8px">REST+token</text>
+<line x1="649" y1="190" x2="649" y2="114" stroke="#44506b" stroke-width="1.6" marker-end="url(#ar)"/>
+<text x="657" y="150" class="t-s t-g">chat completions</text>
+<line x1="447" y1="190" x2="447" y2="114" stroke="#44506b" stroke-width="1.6" marker-end="url(#ar)"/>
+<text x="456" y="150" class="t-s t-g">send reminders</text>
+<line x1="420" y1="300" x2="420" y2="374" stroke="#44506b" stroke-width="1.6" marker-end="url(#ar)"/>
+<text x="326" y="340" class="t-s t-g">JDBC · public schema</text>
+<line x1="610" y1="300" x2="560" y2="374" stroke="#44506b" stroke-width="1.6" marker-end="url(#ar)"/>
+<text x="600" y="345" class="t-s t-g">psycopg · kb schema</text>
+<line x1="372" y1="285" x2="300" y2="394" stroke="#44506b" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+<text x="300" y="360" class="t-s t-g">files</text>
+</svg>
+<figcaption>Figure 2.1 — The four services, their ports and the three kinds of storage (relational data, vectors, uploaded files).</figcaption>
+</figure>
+
+<h3>2.1 Responsibilities in one table</h3>
+<table>
+<thead><tr><th style="width:15%">Service</th><th style="width:26%">Owns</th><th>Deliberately does not do</th></tr></thead>
+<tbody>
+<tr><td><b>① frontend</b></td><td>UI, language switch, routing, polling for job status, rendering results, drafts preview and downloads, token storage in the browser</td><td>Any legal logic, any secret, any direct call to the AI service or the database</td></tr>
+<tr><td><b>② backend</b></td><td>Identity (register/login/JWT), authorisation (who owns which document), upload validation and storage, job orchestration, persistence of results/deadlines/chat, reminders, error translation</td><td>OCR, retrieval, prompts, LLM calls (it only calls the AI service)</td></tr>
+<tr><td><b>③ ai-service</b></td><td>Text extraction and OCR, cleaning, chunking, knowledge-base ingestion and hybrid retrieval, prompts, LLM calls with fallbacks, JSON validation, grounding, document chat, draft templates and rendering</td><td>User accounts, file ownership, long-term storage of user content (it is stateless for user data)</td></tr>
+<tr><td><b>④ postgres</b></td><td>Durable storage for application data (schema <code>public</code>) and the vector/keyword knowledge base (schema <code>kb</code>)</td><td>Business logic (only constraints, indexes and the retrieval queries issued by the AI service)</td></tr>
+</tbody></table>
+
+<h3>2.2 Why this split (the interview answer)</h3>
+<ul>
+<li><b>Separation of concerns by skill set.</b> Java/Spring is strong at authentication, transactions and long-lived APIs. Python is where the OCR, embedding and LLM libraries live. Putting each in the language of its ecosystem avoids bridging hacks.</li>
+<li><b>Trust boundary.</b> The browser talks only to the gateway. The AI service is never exposed: it trusts a shared secret header, and only the backend holds it. A bug in the AI service cannot be reached by an anonymous user.</li>
+<li><b>Independent scaling and failure.</b> OCR and LLM calls are slow and bursty; the gateway keeps serving login, history and deadlines while the AI service is busy or restarting (the Compose file lets the backend start without waiting for the AI service to be healthy).</li>
+<li><b>Testability.</b> The backend tests mock the AI client; the AI service tests use an in-memory store, a hash embedder and a mock LLM; both also have real-database tests.</li>
+</ul>
+
+<h3>2.3 The request path in three sentences</h3>
+<p>The browser sends every API call to nginx, which proxies <code>/api/*</code> to Spring Boot. Spring Boot authenticates the JWT, checks ownership, does the work it owns (storage, database) and, for anything involving understanding text, calls the AI service with an internal token. The AI service reads or writes the knowledge base in PostgreSQL, calls an LLM provider if needed, and returns JSON; Spring Boot stores what matters and answers the browser.</p>
+</section>

@@ -1,0 +1,52 @@
+<section>
+<h2><span class="num">13</span>Testing and evaluation (with real results)</h2>
+
+<h3>13.1 Automated tests</h3>
+<table>
+<thead><tr><th style="width:17%">Code base</th><th style="width:10%">Tests</th><th>What they cover</th></tr></thead>
+<tbody>
+<tr><td>AI service (pytest)</td><td><b>101</b></td><td>Text cleaning and Devanagari tokenizer; PDF and image extraction including <b>real Tesseract OCR</b> on generated Marathi/English images; garbled-text detection; chunking; hybrid retrieval, RRF and the reranker; <b>real pgvector</b> retrieval and idempotent re-ingestion; official-source parsers (rule counts, supersession chain, July 2026 fees, Consumer Protection sections, provenance reaching the prompt); simplifier (JSON repair, hallucinated-source removal, map-reduce); chat (history, quote verification, unanswerable); LLM fallback chain against a scripted OpenAI-style server (503, 429, 401, 404, chain order, batch use); error classification; evaluation metrics; the draft generator (every branch of the templates, validation, date rules, PDF/Word output, OCR of the Marathi PDF to prove glyph shaping, HTML escaping, API errors).</td></tr>
+<tr><td>Backend (JUnit + MockMvc)</td><td><b>27</b></td><td>Registration/login validation, JWT, throttle, file-type sniffing and storage, <b>full-stack tests on a real PostgreSQL with Flyway</b> (upload → process → results → deadlines; users cannot see each other’s documents; AI failure is reported and retryable; non-document uploads rejected; account erasure; persisted private chat; chat requires extracted text; drafts proxy), and the reminder-stage logic.</td></tr>
+<tr><td>Frontend (Vitest)</td><td><b>11</b></td><td>Date formatting and deadline grouping; draft form rules: required fields, hidden fields, payload building, future-date detection, field-label mapping.</td></tr>
+<tr><td>Browser end-to-end (Playwright, scripted)</td><td>—</td><td>Run during development with the real stack (backend jar, AI service, Vite) and a scripted stand-in for the LLM: registration, upload of PDFs/photos, summary, Marathi, chat, deadlines, provenance badges, and all three draft forms with downloads. These scripts are not part of CI.</td></tr>
+</tbody></table>
+<div class="box blue"><div class="t">What the tests deliberately do not prove</div><p>The real embedding model, the real reranker and any real LLM cannot be exercised in the CI environment’s offline mode. They were exercised separately: the retrieval evaluation below ran with the real models on a local machine; answer quality with a real LLM was checked by hand on sample documents, not scored.</p></div>
+
+<h3>13.2 Retrieval evaluation: method</h3>
+<ul>
+<li><b>Question set:</b> 60 questions in <code>ai-service/eval/questions.jsonl</code>: 40 English and 17 Marathi answerable questions across RTI procedure, consumer law and other laws, 12 of them phrased informally (“I filed an RTI and got no reply…”), plus 3 out-of-scope questions (not scored for retrieval).</li>
+<li><b>Gold labels:</b> for each question, the knowledge-base provisions that contain the answer, assigned by reading the source text (not by looking at what the retriever returned). A test fails if a label points at a missing or superseded provision.</li>
+<li><b>Metrics:</b> <b>Hit@k</b> = a gold provision is among the top k results; <b>MRR</b> = mean of 1/rank of the first gold provision (depth 10); 95% bootstrap confidence interval; and “superseded text returned”.</li>
+<li><b>Ablation:</b> each method adds one component to the previous one.</li>
+</ul>
+
+<h3>13.3 Retrieval evaluation: results</h3>
+<p>57 scored questions, real models (<code>paraphrase-multilingual-MiniLM-L12-v2</code> embeddings and <code>jina-reranker-v2-base-multilingual</code>), 467 chunks, run on 14 October 2026.</p>
+<!--CHART:eval-->
+<table>
+<thead><tr><th style="width:36%">Method</th><th>Hit@1</th><th>Hit@3</th><th>Hit@5</th><th>MRR (95% CI)</th><th>Superseded returned</th></tr></thead>
+<tbody>
+<!--TABLE:eval-->
+</tbody></table>
+<h4>What the results show</h4>
+<ul>
+<li>Each added component helped: <b>MRR 0.559 → 0.589 → 0.648 → 0.702</b> from vector-only to the full pipeline, and the correct provision was in the top three for <b>82%</b> of questions with the cross-encoder.</li>
+<li><b>Superseded law was never returned</b> by any method (0%).</li>
+<li><b>English is stronger than Marathi</b> (full pipeline MRR 0.744 vs 0.605). Several Marathi misses are questions whose answer sits in the noisy scanned Marathi Act.</li>
+<li><b>Direct questions beat informal ones</b> (MRR 0.766 vs 0.465).</li>
+<li>The confidence intervals are wide (about ±0.1) because there are only 57 questions: small differences between neighbouring methods should not be over-interpreted.</li>
+</ul>
+<div class="box rose"><div class="t">The evaluation found a real bug</div><p>The keyword-only score (MRR 0.373) was far below what the same keyword code had scored in an earlier offline run (0.695). The cause: the in-memory store weighted terms by rarity, but the Postgres query used <code>ts_rank_cd</code>, which treats “how”, “many” and “days” the same as “poverty” or “penalty”. Reproducing the gap against the local Postgres confirmed it, and the fix (IDF-weighted scoring, section 7.3) raised keyword-only MRR from 0.373 to 0.661 and hybrid from 0.480 to 0.594 in the offline-embedder run. The fixed system has not yet been re-measured with the real models, so the table above shows the <i>before-fix</i> numbers for the keyword and hybrid rows.</p></div>
+
+<h3>13.4 Answer-quality evaluation (built, partly run)</h3>
+<p>The harness also scores answers from a real LLM: required facts present (fact recall), whether a relevant provision was cited (citation hit and precision), whether every number in the answer appears in the cited text, and whether out-of-scope questions are declined. The scoring logic is unit-tested with a stub model. It was not run at scale against a real LLM for this report, so no answer-quality numbers are claimed. The string checks flag likely errors but cannot prove an answer correct; a human reviewer should read a sample.</p>
+
+<h3>13.5 Other measurements</h3>
+<ul>
+<li><b>OCR:</b> 98–100% word recall on three synthetic noisy phone-photo images (English and Marathi).</li>
+<li><b>Draft PDFs:</b> Marathi PDF shaping verified by rendering the PDF to an image and OCR-ing it with the Marathi model, plus visual inspection.</li>
+</ul>
+
+<div class="qa"><div class="q">How do you know your RAG pipeline works?</div><div class="a"><p>I measured it. I wrote 57 scored questions with gold provisions, compared five retrieval methods with confidence intervals, and found that hybrid plus a cross-encoder reranker reached MRR 0.70 and top-3 hit rate 82%, with zero superseded results. The evaluation also exposed a defect in my keyword ranking, which I then fixed and added a regression test for. I am explicit about the limits: a small set, labels I assigned myself, and answer quality not yet scored at scale.</p></div></div>
+<div class="qa"><div class="q">Why MRR and Hit@k rather than accuracy?</div><div class="a"><p>Retrieval returns a ranked list, and what matters downstream is whether the right provision is near the top, because only the top few sources go into the LLM prompt. Hit@k answers “is it in the prompt?”, MRR rewards ranking it higher.</p></div></div>
+</section>

@@ -1,0 +1,61 @@
+<section>
+<h2><span class="num">7</span>Service 4 — PostgreSQL and pgvector</h2>
+<p class="lead">One PostgreSQL 16 instance (image <code>pgvector/pgvector:pg16</code>) holds everything that must survive a restart. It is shared by two services that never touch each other’s tables, which is why the data is split into two schemas.</p>
+
+<h3>7.1 Two schemas, two owners</h3>
+<table>
+<thead><tr><th style="width:15%">Schema</th><th style="width:20%">Owner</th><th>Contents and lifecycle</th></tr></thead>
+<tbody>
+<tr><td><code>public</code></td><td>Backend (Flyway)</td><td>users, documents, processing_results, deadlines, notification_log, chat_messages, plus Flyway’s own history table. Created by versioned migrations <code>V1__init.sql</code> and <code>V2__chat.sql</code>.</td></tr>
+<tr><td><code>kb</code></td><td>AI service</td><td><code>kb.kb_chunks</code>: the legal knowledge base. Created and upgraded in code (<code>CREATE TABLE IF NOT EXISTS</code>, <code>ALTER TABLE … ADD COLUMN IF NOT EXISTS</code>) so a new version of the service upgrades an existing database in place.</td></tr>
+</tbody></table>
+<div class="box rose"><div class="t">A real bug this design fixed</div><p>The knowledge-base table was first created in <code>public</code>. Flyway then refused to start with “Found non-empty schema(s) <code>public</code> but no schema history table”, because the AI service had created a table before Flyway ran. The fix was the dedicated <code>kb</code> schema, which makes start-up order irrelevant.</p></div>
+<p><code>db/init.sql</code> runs once when the volume is first created and executes <code>CREATE EXTENSION IF NOT EXISTS vector</code>. The AI service also issues this statement defensively. Data lives in the <code>pgdata</code> named volume; <code>docker compose down</code> keeps it, <code>down -v</code> deletes it.</p>
+
+<h3>7.2 The knowledge-base table</h3>
+<pre><code>kb.kb_chunks
+  id            TEXT PRIMARY KEY          -- "&lt;kb_id&gt;#&lt;chunk number&gt;"
+  kb_id         TEXT NOT NULL             -- the provision, e.g. rti-act-2005-en-s19
+  kind          TEXT                      -- act | rule | notification | judgment | other
+  title, citation, jurisdiction, language, text
+  content_hash  TEXT                      -- sha256 of text + provenance: skip unchanged chunks on re-ingest
+  status        TEXT DEFAULT 'in_force'   -- in_force | superseded | repealed
+  meta          JSONB                     -- provenance: source_type, gazette_ref, version_date, verified_at/by, ocr, notes, origin
+  embedding     vector(384)               -- paraphrase-multilingual-MiniLM-L12-v2
+  tsv           tsvector GENERATED ALWAYS AS (to_tsvector('simple', title||' '||citation||' '||text)) STORED
+  updated_at    TIMESTAMPTZ
+
+  GIN  index on tsv                       -- keyword search
+  HNSW index on embedding (vector_cosine_ops)   -- approximate nearest neighbour</code></pre>
+<ul>
+<li><b>Why a generated <code>tsvector</code> column?</b> The keyword index can never drift from the text; the database maintains it on every write.</li>
+<li><b>Why the <code>simple</code> text-search configuration?</b> It does no stemming or stop-word removal for a specific language, so it behaves the same for English and Marathi. (Postgres ships no Marathi dictionary.)</li>
+<li><b>Why HNSW?</b> Fast approximate nearest-neighbour search with good recall and no training step; cosine distance matches how the embedding model was trained.</li>
+<li><b>Why is status a column, not a deletion?</b> Superseded law (for example the Maharashtra Rules of 12 June 2026, replaced on 7 July 2026) is kept for history but excluded by every retrieval query with <code>status NOT IN ('superseded','repealed')</code>.</li>
+<li><b>Origin tag and pruning.</b> Chunks ingested from files are tagged <code>origin: files</code>; after a directory ingest, chunks of that origin whose entry no longer exists are deleted. Chunks added through the API (<code>origin: api</code>) are never pruned.</li>
+</ul>
+
+<h3>7.3 The two retrieval queries</h3>
+<h4>Vector search</h4>
+<pre><code>SELECT … , 1 - (embedding &lt;=&gt; :query_vec) AS sim
+FROM kb.kb_chunks
+WHERE status NOT IN ('superseded','repealed')
+ORDER BY embedding &lt;=&gt; :query_vec
+LIMIT 20;</code></pre>
+<h4>Keyword search with rarity weighting</h4>
+<p>The query is turned into OR-ed terms (long legal questions would match nothing if every word had to appear). Postgres’ built-in <code>ts_rank_cd</code> weighs all words equally, so filler words like “how” and “days” decided the ranking. The evaluation exposed this (section 13). The replacement computes, for each term, an <b>inverse document frequency</b> from <code>ts_stat</code> (cached until the next write) and scores each chunk as the sum of weights of the terms it contains:</p>
+<pre><code>score(chunk) = Σ  idf(term) · [chunk contains term],     idf(t) = ln(1 + N / df(t))
+SELECT …, ( CASE WHEN tsv @@ to_tsquery('simple', :t1) THEN :w1 ELSE 0 END + … ) AS score
+FROM kb.kb_chunks WHERE tsv @@ to_tsquery('simple', 't1 | t2 | …') AND status NOT IN (…)
+ORDER BY score DESC LIMIT 20;</code></pre>
+
+<h3>7.4 Connection handling and operations</h3>
+<ul>
+<li>The backend uses HikariCP via Spring; the AI service uses a <code>psycopg_pool</code> pool (1–5 connections) with the pgvector type registered on each connection.</li>
+<li>Healthcheck: <code>pg_isready</code>; the AI service and backend wait for <code>service_healthy</code> before starting. The backend does <i>not</i> wait for the AI service to be healthy, only started, so login and history stay available while models load.</li>
+<li>Backup: <code>pg_dump</code> of the database covers both schemas (the knowledge base can also be rebuilt from the repository at any time, which is why losing <code>kb</code> is harmless but losing <code>public</code> is not).</li>
+</ul>
+
+<div class="qa"><div class="q">Why pgvector instead of a dedicated vector database like Pinecone or Qdrant?</div><div class="a"><p>At this scale (hundreds of chunks) a separate system is unnecessary operational weight. Keeping vectors beside the relational data gives one backup, one connection pool, transactional upserts, and lets keyword (full-text) and vector search run in the same database. If the corpus grew to millions of chunks, a dedicated engine or partitioning would be worth discussing.</p></div></div>
+<div class="qa"><div class="q">What is the difference between the two schemas and why does it matter?</div><div class="a"><p>Ownership. Flyway owns <code>public</code> and demands it is empty on first run; the AI service owns <code>kb</code> and manages it in code. Separate schemas remove the start-up race I hit and make it obvious which service may change which table.</p></div></div>
+</section>

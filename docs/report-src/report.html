@@ -1,0 +1,1217 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>NyayaSetu — System Architecture and Interview Guide</title><style>@page { size: A4; margin: 20mm 17mm 20mm 17mm; }
+:root { --ink:#17203a; --ink2:#44506b; --ink3:#7a859c; --line:#dfe3ec; --paper:#fbfaf7; --saf:#e8890c; --saf-d:#b96605; --saf-l:#fdf1dd; --navy:#1b2547; --green:#1f7a5a; --blue:#2c5fa8; --rose:#b23a48; --code:#f3f4f8; }
+* { box-sizing: border-box; }
+html { font-family: 'Inter', 'DejaVu Sans', sans-serif; font-size: 9.6pt; line-height: 1.5; color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { margin: 0; }
+h1,h2,h3,h4 { font-family: 'Inter','DejaVu Sans',sans-serif; color: var(--navy); line-height: 1.25; margin: 0; }
+h2 { font-size: 19pt; font-weight: 700; margin: 0 0 4mm; padding-bottom: 2.5mm; border-bottom: 2.2px solid var(--saf); break-before: page; break-after: avoid-page; }
+h2 .num { color: var(--saf); margin-right: 3mm; }
+h3 { font-size: 12.5pt; font-weight: 700; margin: 6.5mm 0 2mm; break-after: avoid-page; }
+h4 { font-size: 10.2pt; font-weight: 700; margin: 4.5mm 0 1.2mm; color: var(--saf-d); text-transform: uppercase; letter-spacing: .04em; break-after: avoid-page; }
+p { margin: 0 0 2.6mm; orphans: 3; widows: 3; }
+ul, ol { margin: 0 0 3mm; padding-left: 5.2mm; } li { margin: 0 0 1.1mm; }
+a { color: var(--blue); text-decoration: none; }
+code { font-family: 'DejaVu Sans Mono', monospace; font-size: 8.3pt; background: var(--code); padding: .2mm 1.1mm; border-radius: 1mm; color: #28324f; }
+pre { font-family: 'DejaVu Sans Mono', monospace; font-size: 7.7pt; line-height: 1.42; background: var(--code); border: 1px solid var(--line); border-left: 3px solid var(--saf); border-radius: 1.5mm; padding: 2.6mm 3.2mm; margin: 0 0 3.4mm; white-space: pre-wrap; break-inside: avoid; color: #232c46; }
+pre code { background: none; padding: 0; font-size: inherit; }
+table { width: 100%; border-collapse: collapse; margin: 1mm 0 4mm; font-size: 8.6pt; break-inside: auto; }
+th { background: var(--navy); color: #fff; text-align: left; font-weight: 600; padding: 1.7mm 2.2mm; }
+td { padding: 1.6mm 2.2mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr { break-inside: avoid; } tbody tr:nth-child(even) td { background: #f7f8fb; }
+td code { font-size: 7.9pt; }
+figure { margin: 3mm 0 5mm; break-inside: avoid; text-align: center; }
+figure svg { max-width: 100%; height: auto; }
+figcaption { font-size: 8.3pt; color: var(--ink3); margin-top: 1.5mm; font-style: italic; }
+.lead { font-size: 11pt; color: var(--ink2); line-height: 1.55; }
+.box { border: 1px solid var(--line); border-left: 4px solid var(--saf); background: var(--saf-l); border-radius: 1.5mm; padding: 2.8mm 3.6mm; margin: 2mm 0 4mm; break-inside: avoid; }
+.box.blue { border-left-color: var(--blue); background: #eef3fb; } .box.green { border-left-color: var(--green); background: #eaf6f0; } .box.rose { border-left-color: var(--rose); background: #fbeff0; }
+.box p:last-child, .box ul:last-child { margin-bottom: 0; }
+.box .t { font-weight: 700; font-size: 8.6pt; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 1mm; color: var(--saf-d); }
+.box.blue .t { color: var(--blue); } .box.green .t { color: var(--green); } .box.rose .t { color: var(--rose); }
+.qa { break-inside: avoid; border: 1px solid var(--line); border-radius: 1.5mm; margin: 0 0 3mm; overflow: hidden; }
+.qa .q { background: var(--navy); color: #fff; font-weight: 600; padding: 1.8mm 3mm; font-size: 9pt; }
+.qa .q:before { content: "Q  "; color: var(--saf); font-weight: 800; }
+.qa .a { padding: 2.2mm 3mm; background: #fff; } .qa .a p:last-child { margin-bottom: 0; }
+.cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; } .cols2 > div > *:last-child { margin-bottom: 0; }
+.pill { display: inline-block; font-size: 7.6pt; font-weight: 700; padding: .3mm 2mm; border-radius: 3mm; background: var(--navy); color: #fff; vertical-align: 1px; }
+.pill.s { background: var(--saf); } .pill.g { background: var(--green); } .pill.b { background: var(--blue); } .pill.r { background: var(--rose); }
+/* cover */
+.cover { height: 257mm; position: relative; page-break-after: always; }
+.cover .band { background: var(--navy); color: #fff; margin: -20mm -17mm 0; padding: 30mm 17mm 18mm; height: 150mm; }
+.cover .kicker { color: var(--saf); font-weight: 700; letter-spacing: .18em; font-size: 9.5pt; text-transform: uppercase; }
+.cover h1 { color: #fff; font-size: 34pt; font-weight: 800; margin: 5mm 0 4mm; line-height: 1.1; }
+.cover .sub { font-size: 14pt; color: #c9d1ea; max-width: 150mm; line-height: 1.4; }
+.cover .meta { margin-top: 12mm; font-size: 9.6pt; color: #aab4d4; line-height: 1.8; }
+.cover .below { padding-top: 12mm; } .cover .below .grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 4mm; margin-top: 3mm; }
+.cover .card { border: 1px solid var(--line); border-top: 3px solid var(--saf); border-radius: 1.5mm; padding: 3mm; font-size: 8.6pt; color: var(--ink2); }
+.cover .card b { display: block; color: var(--navy); font-size: 10pt; margin-bottom: 1mm; }
+.toc { columns: 1; margin: 0; padding: 0; list-style: none; } .toc li { display: flex; padding: 1.1mm 0; border-bottom: 1px dotted var(--line); font-size: 9.6pt; } .toc li span.n { width: 9mm; color: var(--saf); font-weight: 700; } .toc li span.d { color: var(--ink3); margin-left: auto; font-size: 8.4pt; }
+/* svg text */
+svg text { font-family: 'Inter', sans-serif; fill: #17203a; } svg .t-s { font-size: 9px; } svg .t-m { font-size: 10.5px; } svg .t-b { font-weight: 700; } svg .t-w { fill: #fff; } svg .t-g { fill: #5b6682; } svg .t-c { text-anchor: middle; }
+svg .mono { font-family: 'DejaVu Sans Mono', monospace; font-size: 8.6px; }
+</style></head><body><section class="cover">
+  <div class="band">
+    <div class="kicker">System Architecture &amp; Interview Guide</div>
+    <h1>NyayaSetu</h1>
+    <div class="sub">An LLM-powered legal and RTI document simplifier for English and Marathi: how the four services fit together, how data flows between them, and how every feature works.</div>
+    <div class="meta">Final-year major project &nbsp;·&nbsp; Report version 1.0 &nbsp;·&nbsp; October 2026<br>
+      Stack: React · Spring Boot · FastAPI · PostgreSQL + pgvector · Docker Compose<br>
+      Source: github.com/Abhay5474/Nyayasetu (branch <span style="font-family:'DejaVu Sans Mono';font-size:8.6pt">claude/modest-brown-996d6q</span>)</div>
+  </div>
+  <div class="below">
+    <p class="lead" style="margin-bottom:2mm">What this report is for</p>
+    <p>It explains the system the way you would explain it in a viva or a technical interview: the problem, the architecture, the reason behind each design decision, the data flow between services, the problems that were hit and fixed, the measured results, and an honest list of limitations. Each major feature ends with likely interview questions and model answers.</p>
+    <div class="grid">
+      <div class="card"><b>1 · Frontend</b>React 18 SPA behind nginx; English and Marathi UI</div>
+      <div class="card"><b>2 · Backend</b>Spring Boot gateway: auth, storage, orchestration, alerts</div>
+      <div class="card"><b>3 · AI service</b>FastAPI: OCR, RAG, LLM, chat, draft generator</div>
+      <div class="card"><b>4 · PostgreSQL</b>App data plus pgvector knowledge base</div>
+    </div>
+  </div>
+</section>
+<section>
+  <h2 style="break-before:auto"><span class="num">·</span>Contents</h2>
+  <ul class="toc">
+    <li><span class="n">1</span>Problem, goals and scope<span class="d">3</span></li>
+    <li><span class="n">2</span>Architecture at a glance<span class="d">5</span></li>
+    <li><span class="n">3</span>Technology choices and why<span class="d">7</span></li>
+    <li><span class="n">4</span>Service 1 — Frontend (React + nginx)<span class="d">8</span></li>
+    <li><span class="n">5</span>Service 2 — Backend (Spring Boot gateway)<span class="d">11</span></li>
+    <li><span class="n">6</span>Service 3 — AI service (FastAPI)<span class="d">16</span></li>
+    <li><span class="n">7</span>Service 4 — PostgreSQL and pgvector<span class="d">21</span></li>
+    <li><span class="n">8</span>The legal knowledge base and RAG in depth<span class="d">23</span></li>
+    <li><span class="n">9</span>End-to-end data flows<span class="d">26</span></li>
+    <li><span class="n">10</span>Functionality walk-through (interview view)<span class="d">31</span></li>
+    <li><span class="n">11</span>Security and privacy<span class="d">35</span></li>
+    <li><span class="n">12</span>Deployment and operations<span class="d">37</span></li>
+    <li><span class="n">13</span>Testing and evaluation (with real results)<span class="d">39</span></li>
+    <li><span class="n">14</span>Problems faced and how they were solved<span class="d">42</span></li>
+    <li><span class="n">15</span>Limitations and future work<span class="d">44</span></li>
+    <li><span class="n">16</span>Interview question bank<span class="d">45</span></li>
+    <li><span class="n">A</span>Appendix — API reference, configuration, glossary<span class="d">49</span></li>
+  </ul>
+  <div class="box blue" style="margin-top:6mm"><div class="t">How to read the numbers in this report</div>
+    <p>Figures such as test counts, chunk counts, defaults and evaluation scores come from the code and from runs made during development. Where a figure was measured on real models (the retrieval evaluation) it is labelled. Where something could not be tested here (for example a specific third-party LLM) the report says so.</p></div>
+</section>
+
+<section>
+<h2><span class="num">1</span>Problem, goals and scope</h2>
+<p class="lead">Most people who receive an RTI reply, a legal notice or a court order cannot read it. The language is technical, the document is often a scan or a phone photo, and the deadline that matters (usually 30 days) is buried in a paragraph. Missing it can mean losing the right to appeal.</p>
+
+<h3>1.1 The problem in concrete terms</h3>
+<ul>
+<li><b>Language barrier.</b> Official text is dense English or formal Marathi. A citizen needs plain language in the language they think in.</li>
+<li><b>Format barrier.</b> Documents arrive as digital PDFs, scanned pages, or photographs taken on a phone, sometimes with broken Marathi text layers.</li>
+<li><b>Time-bound consequences.</b> The Right to Information Act, 2005 gives 30 days for a first appeal (Section 19(1)) and 90 days for a second appeal (Section 19(3)). A missed date is expensive.</li>
+<li><b>Trust.</b> A summary that invents a section number or states an outdated fee does harm. The system must ground its statements in real law and show where each statement comes from.</li>
+</ul>
+
+<h3>1.2 What NyayaSetu does</h3>
+<table>
+<thead><tr><th style="width:24%">Capability</th><th>What the user gets</th></tr></thead>
+<tbody>
+<tr><td><b>Understand</b></td><td>Upload a PDF or photo. The system extracts the text (OCR when needed), checks it against a legal knowledge base, and returns a plain-language summary, key points, deadlines, required actions and legal references with source citations, in English or Marathi.</td></tr>
+<tr><td><b>Ask</b></td><td>A continuous, multi-turn chat about the uploaded document. Answers are grounded in the document text and the legal knowledge base, with verbatim quotes and a clear “not answerable from this document” signal.</td></tr>
+<tr><td><b>Track</b></td><td>Deadlines found in documents are stored per user, grouped by urgency, and can trigger e-mail and SMS reminders 7, 3 and 1 day before and on the day.</td></tr>
+<tr><td><b>Act</b></td><td>A draft generator produces a ready-to-file RTI application, first appeal or reply to a fee demand in English or Marathi as PDF or Word, with checks such as the computed last date to appeal.</td></tr>
+<tr><td><b>Trust</b></td><td>Every citation is labelled “Official text”, “Government reprint” or “Unverified summary”, with the date the text is current as of, the verification status and reviewer notes. Superseded rules are never used.</td></tr>
+</tbody></table>
+
+<h3>1.3 Design goals</h3>
+<ol>
+<li><b>Correctness over fluency.</b> Ground every statement in the document or in cited law; refuse to guess dates.</li>
+<li><b>Works with imperfect inputs.</b> Scans, photos, broken text layers, mixed English and Marathi.</li>
+<li><b>Privacy by default.</b> Each user sees only their own documents; drafts are not stored; secrets stay server-side.</li>
+<li><b>Operable by a student on a laptop.</b> One command (<code>docker compose up</code>) starts everything; offline modes exist for tests.</li>
+<li><b>Honest about limits.</b> The product explains documents; it does not give legal advice, and says so in the UI and in every prompt.</li>
+</ol>
+
+<h3>1.4 Scope boundaries</h3>
+<p>The knowledge base focuses on the RTI Act 2005, the Maharashtra RTI Rules (2005 and the 2026 notifications), the Central fee rules, the Consumer Protection Act 2019, plus summaries of a few other laws and judgments. It is a major-project prototype: the legal texts are not human-verified, the Marathi RTI Act text is OCR-derived, and Section 15 lists what a production system would still need.</p>
+<div class="box"><div class="t">Interview framing</div><p>“It is a retrieval-augmented generation system with a product layer around it. The LLM is the smallest part of the codebase. Most of the engineering is about getting trustworthy text in (OCR, cleaning), trustworthy law in (knowledge base with provenance), and trustworthy output out (schema validation, grounding, deadlines, drafts).”</p></div>
+</section>
+
+<section>
+<h2><span class="num">2</span>Architecture at a glance</h2>
+<p>NyayaSetu runs as <b>four containers</b> defined in <code>docker-compose.yml</code>: a web front end, a Java gateway, a Python AI service and a PostgreSQL database. Only the front end is published to the host (port 3000). Everything else is reachable only inside the Compose network.</p>
+
+<figure>
+<svg viewBox="0 0 760 500" width="760" role="img" aria-label="System architecture">
+<defs>
+<marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#44506b"/></marker>
+<marker id="arS" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#e8890c"/></marker>
+</defs>
+<rect x="150" y="14" width="600" height="472" rx="10" fill="#f6f7fb" stroke="#9aa5c0" stroke-dasharray="6 4"/>
+<text x="164" y="32" class="t-s t-b t-g">Docker Compose network “nyayasetu”</text>
+
+<!-- browser -->
+<rect x="14" y="205" width="110" height="80" rx="8" fill="#ffffff" stroke="#17203a" stroke-width="1.4"/>
+<text x="69" y="232" class="t-m t-b t-c">User’s</text><text x="69" y="246" class="t-m t-b t-c">browser</text><text x="69" y="266" class="t-s t-c t-g">React SPA runs here</text>
+
+<!-- frontend -->
+<rect x="176" y="190" width="150" height="110" rx="8" fill="#fdf1dd" stroke="#e8890c" stroke-width="1.6"/>
+<text x="251" y="212" class="t-m t-b t-c">① frontend</text>
+<text x="251" y="228" class="t-s t-c">nginx 1.27 serves the</text><text x="251" y="240" class="t-s t-c">built React bundle</text>
+<text x="251" y="256" class="t-s t-c">reverse-proxies /api/*</text><text x="251" y="268" class="t-s t-c">CSP + security headers</text>
+<text x="251" y="288" class="t-s t-c t-g">published :3000 → :80</text>
+
+<!-- backend -->
+<rect x="372" y="190" width="150" height="110" rx="8" fill="#eef3fb" stroke="#2c5fa8" stroke-width="1.6"/>
+<text x="447" y="212" class="t-m t-b t-c">② backend</text>
+<text x="447" y="228" class="t-s t-c">Spring Boot 3.3 · Java 21</text><text x="447" y="240" class="t-s t-c">JWT auth · REST API</text>
+<text x="447" y="252" class="t-s t-c">upload validation · jobs</text><text x="447" y="264" class="t-s t-c">chat · deadlines · alerts</text>
+<text x="447" y="288" class="t-s t-c t-g">internal :8080</text>
+
+<!-- ai -->
+<rect x="568" y="190" width="162" height="110" rx="8" fill="#eaf6f0" stroke="#1f7a5a" stroke-width="1.6"/>
+<text x="649" y="212" class="t-m t-b t-c">③ ai-service</text>
+<text x="649" y="228" class="t-s t-c">FastAPI · Python 3.12</text><text x="649" y="240" class="t-s t-c">PyMuPDF + Tesseract OCR</text>
+<text x="649" y="252" class="t-s t-c">RAG · LangChain · LLM chain</text><text x="649" y="264" class="t-s t-c">chat · draft generator</text>
+<text x="649" y="288" class="t-s t-c t-g">internal :8000 · models in image</text>
+
+<!-- postgres -->
+<rect x="372" y="376" width="226" height="94" rx="8" fill="#ffffff" stroke="#17203a" stroke-width="1.6"/>
+<text x="485" y="398" class="t-m t-b t-c">④ postgres (pgvector/pg16)</text>
+<text x="485" y="416" class="t-s t-c">schema public — users, documents, results,</text><text x="485" y="428" class="t-s t-c">deadlines, notification_log, chat_messages</text>
+<text x="485" y="444" class="t-s t-c">schema kb — kb_chunks (text, tsvector,</text><text x="485" y="456" class="t-s t-c">vector(384), status, provenance JSONB)</text>
+
+<!-- volumes -->
+<rect x="176" y="392" width="150" height="62" rx="8" fill="#fff" stroke="#9aa5c0" stroke-dasharray="4 3"/>
+<text x="251" y="414" class="t-s t-b t-c">volume: uploads</text><text x="251" y="428" class="t-s t-c t-g">/data/uploads (original files,</text><text x="251" y="440" class="t-s t-c t-g">random names, never served raw)</text>
+
+<!-- externals -->
+<rect x="568" y="50" width="162" height="62" rx="8" fill="#fff" stroke="#9aa5c0"/>
+<text x="649" y="70" class="t-s t-b t-c">LLM providers (HTTPS)</text><text x="649" y="84" class="t-s t-c t-g">Groq · Gemini · Anthropic</text><text x="649" y="96" class="t-s t-c t-g">OpenAI · Ollama (local)</text>
+<rect x="372" y="50" width="150" height="62" rx="8" fill="#fff" stroke="#9aa5c0"/>
+<text x="447" y="70" class="t-s t-b t-c">Notification channels</text><text x="447" y="84" class="t-s t-c t-g">SMTP e-mail · Twilio SMS</text><text x="447" y="96" class="t-s t-c t-g">(optional, daily 08:00 IST)</text>
+
+<!-- arrows -->
+<line x1="124" y1="245" x2="174" y2="245" stroke="#44506b" stroke-width="1.6" marker-end="url(#ar)"/>
+<text x="149" y="236" class="t-s t-c t-g">HTTP</text>
+<line x1="326" y1="245" x2="370" y2="245" stroke="#44506b" stroke-width="1.6" marker-end="url(#ar)"/>
+<text x="348" y="236" class="t-s t-c t-g">/api</text>
+<line x1="522" y1="235" x2="566" y2="235" stroke="#e8890c" stroke-width="1.8" marker-end="url(#arS)"/>
+<line x1="566" y1="258" x2="522" y2="258" stroke="#44506b" stroke-width="1.2" marker-end="url(#ar)"/>
+<text x="544" y="228" class="t-s t-c t-g" style="font-size:8px">REST+token</text>
+<line x1="649" y1="190" x2="649" y2="114" stroke="#44506b" stroke-width="1.6" marker-end="url(#ar)"/>
+<text x="657" y="150" class="t-s t-g">chat completions</text>
+<line x1="447" y1="190" x2="447" y2="114" stroke="#44506b" stroke-width="1.6" marker-end="url(#ar)"/>
+<text x="456" y="150" class="t-s t-g">send reminders</text>
+<line x1="420" y1="300" x2="420" y2="374" stroke="#44506b" stroke-width="1.6" marker-end="url(#ar)"/>
+<text x="326" y="340" class="t-s t-g">JDBC · public schema</text>
+<line x1="610" y1="300" x2="560" y2="374" stroke="#44506b" stroke-width="1.6" marker-end="url(#ar)"/>
+<text x="600" y="345" class="t-s t-g">psycopg · kb schema</text>
+<line x1="372" y1="285" x2="300" y2="394" stroke="#44506b" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+<text x="300" y="360" class="t-s t-g">files</text>
+</svg>
+<figcaption>Figure 2.1 — The four services, their ports and the three kinds of storage (relational data, vectors, uploaded files).</figcaption>
+</figure>
+
+<h3>2.1 Responsibilities in one table</h3>
+<table>
+<thead><tr><th style="width:15%">Service</th><th style="width:26%">Owns</th><th>Deliberately does not do</th></tr></thead>
+<tbody>
+<tr><td><b>① frontend</b></td><td>UI, language switch, routing, polling for job status, rendering results, drafts preview and downloads, token storage in the browser</td><td>Any legal logic, any secret, any direct call to the AI service or the database</td></tr>
+<tr><td><b>② backend</b></td><td>Identity (register/login/JWT), authorisation (who owns which document), upload validation and storage, job orchestration, persistence of results/deadlines/chat, reminders, error translation</td><td>OCR, retrieval, prompts, LLM calls (it only calls the AI service)</td></tr>
+<tr><td><b>③ ai-service</b></td><td>Text extraction and OCR, cleaning, chunking, knowledge-base ingestion and hybrid retrieval, prompts, LLM calls with fallbacks, JSON validation, grounding, document chat, draft templates and rendering</td><td>User accounts, file ownership, long-term storage of user content (it is stateless for user data)</td></tr>
+<tr><td><b>④ postgres</b></td><td>Durable storage for application data (schema <code>public</code>) and the vector/keyword knowledge base (schema <code>kb</code>)</td><td>Business logic (only constraints, indexes and the retrieval queries issued by the AI service)</td></tr>
+</tbody></table>
+
+<h3>2.2 Why this split (the interview answer)</h3>
+<ul>
+<li><b>Separation of concerns by skill set.</b> Java/Spring is strong at authentication, transactions and long-lived APIs. Python is where the OCR, embedding and LLM libraries live. Putting each in the language of its ecosystem avoids bridging hacks.</li>
+<li><b>Trust boundary.</b> The browser talks only to the gateway. The AI service is never exposed: it trusts a shared secret header, and only the backend holds it. A bug in the AI service cannot be reached by an anonymous user.</li>
+<li><b>Independent scaling and failure.</b> OCR and LLM calls are slow and bursty; the gateway keeps serving login, history and deadlines while the AI service is busy or restarting (the Compose file lets the backend start without waiting for the AI service to be healthy).</li>
+<li><b>Testability.</b> The backend tests mock the AI client; the AI service tests use an in-memory store, a hash embedder and a mock LLM; both also have real-database tests.</li>
+</ul>
+
+<h3>2.3 The request path in three sentences</h3>
+<p>The browser sends every API call to nginx, which proxies <code>/api/*</code> to Spring Boot. Spring Boot authenticates the JWT, checks ownership, does the work it owns (storage, database) and, for anything involving understanding text, calls the AI service with an internal token. The AI service reads or writes the knowledge base in PostgreSQL, calls an LLM provider if needed, and returns JSON; Spring Boot stores what matters and answers the browser.</p>
+</section>
+
+<section>
+<h2><span class="num">3</span>Technology choices and why</h2>
+<table>
+<thead><tr><th style="width:17%">Layer</th><th style="width:25%">Choice</th><th>Why this and not the alternative</th></tr></thead>
+<tbody>
+<tr><td>UI</td><td>React 18, Vite 5, Tailwind CSS 3, Axios, react-router, lucide-react</td><td>Component model suits a stateful results page and chat; Vite gives fast builds; Tailwind keeps styling consistent without a design system; Axios interceptors centralise the auth header and 401 handling.</td></tr>
+<tr><td>Web server</td><td>nginx 1.27 (alpine)</td><td>Serves static files efficiently, adds security headers/CSP, and proxies <code>/api</code> so the browser sees one origin (no CORS in production).</td></tr>
+<tr><td>Gateway</td><td>Spring Boot 3.3.5, Java 21, Spring Security, Spring Data JPA, Flyway, jjwt 0.12.6, BCrypt(12), RestClient</td><td>Mature security and transaction model; Flyway gives versioned schema migrations; RestClient is the modern synchronous HTTP client.</td></tr>
+<tr><td>AI service</td><td>FastAPI + uvicorn, Pydantic v2, LangChain core, PyMuPDF, Tesseract (mar+hin+eng), fastembed (ONNX), psycopg 3 + pgvector, python-docx</td><td>Pydantic gives strict, self-documenting JSON contracts; PyMuPDF is fast and also renders the draft PDFs; Tesseract has Marathi/Hindi models; fastembed runs multilingual embeddings and a cross-encoder without PyTorch (smaller image).</td></tr>
+<tr><td>Database</td><td>PostgreSQL 16 with pgvector</td><td>One database for relational data, full-text search and vectors; avoids running a separate vector database; transactional and easy to back up.</td></tr>
+<tr><td>Embeddings</td><td><code>paraphrase-multilingual-MiniLM-L12-v2</code> (384 dimensions)</td><td>Small, CPU-friendly, covers English/Hindi/Marathi well enough for retrieval.</td></tr>
+<tr><td>Reranker</td><td><code>jina-reranker-v2-base-multilingual</code> cross-encoder (lexical fallback)</td><td>A cross-encoder reads query and passage together and corrects the first-stage ranking; it was the largest single gain in the evaluation.</td></tr>
+<tr><td>LLM access</td><td>LangChain chat models: Anthropic, OpenAI-compatible (Groq, Gemini, xAI…), Ollama, plus a mock</td><td>Provider-agnostic: any OpenAI-compatible endpoint works by changing a URL and key. A fallback chain protects against outages.</td></tr>
+<tr><td>Packaging</td><td>Docker Compose, GitHub Actions CI</td><td>Reproducible start-up and automated tests for all three code bases.</td></tr>
+</tbody></table>
+
+<div class="box blue"><div class="t">Interview question this answers</div><p><b>“Why not do everything in one Python app?”</b> It would be shorter, yes. The split shows a real service boundary: the identity, storage and transaction logic lives in the stack built for it, while the AI-specific work is isolated behind a narrow, token-protected API. It also let the gateway degrade gracefully when the AI side is slow or down.</p></div>
+</section>
+
+<section>
+<h2><span class="num">4</span>Service 1 — Frontend (React + nginx)</h2>
+<p class="lead">The front end is a single-page application. Its job is to make a slow, multi-step backend feel simple: upload, wait with feedback, read a result, ask follow-up questions, draft a reply.</p>
+
+<h3>4.1 Structure of the code</h3>
+<pre><code>frontend/src
+├─ App.jsx                routes: / · /login · /register · /app (protected) · 404
+├─ pages/                 Landing · AuthPages · Dashboard · DocumentDetail · Deadlines · Drafts · SettingsPage
+├─ components/            Layout/Navbar · Dropzone · ChatPanel · StatusBadge · ui.jsx (Alert, Field, Segmented…)
+│  └─ results/            Sections (summary, key points, checklist, deadline timeline, references, sources),
+│                         Provenance (trust badges), ProcessingPanel (progress while the job runs)
+│  └─ drafts/             DraftPaper (on-screen preview of a draft)
+├─ context/               AuthContext (session, login, logout, auto-expiry) · I18nContext (en/mr)
+├─ api/                   client.js (Axios instance, interceptors) · endpoints.js (typed API modules)
+├─ i18n/                  strings.js (UI text en + mr) · drafts.js (draft-form text)
+├─ utils/                 format.js (dates, deadline grouping) · draftForms.js (form rules + payload builder)
+└─ hooks.js               usePolling (only while the tab is visible)</code></pre>
+
+<h3>4.2 How the main screens work</h3>
+<h4>Dashboard — upload and history</h4>
+<p>A drag-and-drop zone accepts a PDF or image (client-side type and size hints; the real validation is on the server). The user picks the output language with a segmented control (English / मराठी) and submits. The upload shows a progress bar (Axios <code>onUploadProgress</code>), then the document appears in the history list with a status badge. While any document is <code>UPLOADED</code> or <code>PROCESSING</code>, the list polls every 3 seconds; polling stops when nothing is active and pauses when the browser tab is hidden.</p>
+<h4>Document detail — the result</h4>
+<p>Two tabs: <b>Explanation</b> and <b>Ask questions</b> (the active tab is kept in the URL, <code>?tab=ask</code>, so a refresh keeps it). While processing, a progress panel is shown and the page polls every 2.5 seconds. When complete, the explanation is rendered in sections:</p>
+<ul>
+<li><b>Summary card</b> and <b>key points</b>;</li>
+<li><b>Action checklist</b> with priorities (high, medium, low);</li>
+<li><b>Deadline timeline</b> — each deadline shows the exact date or the relative period, the original sentence it came from, days remaining, and a toggle to mark it done (this calls the backend and updates the deadlines page);</li>
+<li><b>Legal references</b>, each linked to a numbered source (S1, S2…) with a “Cited” marker;</li>
+<li><b>Sources &amp; citations</b>, each with a trust badge and an expandable provenance panel (section 4.4);</li>
+<li><b>Caveats</b>, where the model lists uncertainty.</li>
+</ul>
+<p>The user can switch output language without re-uploading: the backend re-runs only the AI explanation step on the already-extracted text. The original file can be viewed (fetched with the auth header and shown through a blob URL, because a plain link would not carry the JWT), and the page can be printed with a print stylesheet that hides navigation.</p>
+<h4>Chat tab</h4>
+<p>A message list with “You” and “NyayaSetu” bubbles, suggested follow-up questions returned by the model, an answer-language selector, Enter to send and Shift+Enter for a new line. Each answer shows verbatim quotes from the document and the cited sources; if the model says it cannot answer from the document, that is displayed distinctly rather than as a confident answer. History is loaded from the backend, so a conversation survives a page reload.</p>
+<h4>Deadlines page</h4>
+<p>All deadlines across documents, grouped by <code>groupDeadlines()</code> into Overdue, Next 7 days, Later, No fixed date, and Done, each linking back to its source document.</p>
+<h4>Drafts page</h4>
+<p>Choose a document type, fill a form whose fields depend on the type, preview the generated document on screen (rendered from the server’s blocks), read warnings and filing notes, and download PDF or Word. Details are in section 10.7.</p>
+<h4>Settings</h4>
+<p>Profile (name, phone, preferred language), e-mail and SMS reminder toggles, and account deletion (which cascades to all of the user’s data).</p>
+
+<h3>4.3 Cross-cutting front-end design</h3>
+<table>
+<thead><tr><th style="width:22%">Concern</th><th>Implementation</th></tr></thead>
+<tbody>
+<tr><td>Authentication state</td><td><code>AuthContext</code> keeps <code>{token, expiresAt, user}</code> in <code>localStorage</code> (guarded by try/catch for private windows). A timer logs the user out at expiry; the Axios response interceptor logs out on any 401 except on <code>/auth/*</code>. <code>ProtectedLayout</code> redirects anonymous users to <code>/login</code> and remembers where they came from.</td></tr>
+<tr><td>API layer</td><td>One Axios instance with <code>baseURL: '/api'</code> and a request interceptor adding <code>Authorization: Bearer …</code>. <code>errorMessage()</code> converts any failure (timeout, no network, field errors, server message) into a short safe string.</td></tr>
+<tr><td>Internationalisation</td><td><code>I18nContext</code> exposes <code>t</code> (UI strings) and <code>lang</code>. The UI language is separate from the language of the AI output, because a user may read the interface in English but want a Marathi explanation. The choice is persisted.</td></tr>
+<tr><td>Accessibility</td><td><code>Field</code> associates labels with inputs through <code>useId</code> and <code>cloneElement</code>; the language control uses <code>role="radiogroup"</code>; tabs use <code>role="tablist"</code>; alerts use <code>role="alert"</code>/<code>status</code>.</td></tr>
+<tr><td>Performance</td><td>Hashed assets cached for a year by nginx; the SPA fallback is never cached; polling is conditional on visibility.</td></tr>
+<tr><td>Same-origin design</td><td>In production the browser only talks to its own origin. nginx forwards <code>/api/</code> to the backend preserving the original <code>Host</code> header, so Spring’s CORS check sees matching Origin and Host. In development, Vite proxies <code>/api</code> to port 8080 with <code>changeOrigin: false</code> for the same reason.</td></tr>
+</tbody></table>
+
+<h3>4.4 Trust badges (a feature worth explaining)</h3>
+<p>Each retrieved source carries its provenance from the knowledge base. The UI turns that into:</p>
+<table>
+<thead><tr><th style="width:22%">Badge</th><th>Meaning</th><th style="width:34%">Extra detail shown</th></tr></thead>
+<tbody>
+<tr><td><span class="pill g">Official text</span></td><td>Parsed from a gazette PDF</td><td>“Text as of <i>date</i>”, verification status, gazette reference, OCR warning, notes, link</td></tr>
+<tr><td><span class="pill b">Government reprint</span></td><td>Official text as reprinted in a government handbook (not the gazette)</td><td>Same, plus a note that later amendments may be missing</td></tr>
+<tr><td><span class="pill s">Unverified summary</span></td><td>A summary written for this project</td><td>A warning to confirm before relying on it</td></tr>
+</tbody></table>
+
+<h3>4.5 nginx: the other half of the front-end container</h3>
+<ul>
+<li>Serves the built bundle from <code>/usr/share/nginx/html</code> with <code>try_files … /index.html</code> so deep links work.</li>
+<li>Proxies <code>/api/</code> to <code>backend:8080</code> with 300-second read/send timeouts (uploads plus OCR are slow), request buffering off, and a 26 MB body limit (the application limit is 25 MB).</li>
+<li>Sets <code>Content-Security-Policy</code> (only own origin plus Google Fonts), <code>X-Frame-Options: DENY</code>, <code>X-Content-Type-Options: nosniff</code>, <code>Referrer-Policy: no-referrer</code> and a restrictive <code>Permissions-Policy</code>.</li>
+</ul>
+
+<div class="qa"><div class="q">Why store the JWT in localStorage instead of an HttpOnly cookie?</div><div class="a"><p>It keeps the API stateless and avoids CSRF entirely (no ambient credentials), which is why CSRF protection is disabled on the backend. The trade-off is exposure to XSS, which is mitigated by a strict Content-Security-Policy (<code>script-src 'self'</code>), React’s escaping, and no use of <code>dangerouslySetInnerHTML</code>. A production hardening step would be short-lived access tokens plus a refresh token in an HttpOnly cookie.</p></div></div>
+<div class="qa"><div class="q">Why poll instead of using WebSockets or Server-Sent Events?</div><div class="a"><p>A job takes seconds to a minute and the status changes only a few times. Polling every 2.5–3 seconds is simple, works through any proxy and needs no extra server state. The hook polls only while something is active and the tab is visible, so the cost is small. SSE would be the next step if jobs became longer or more numerous.</p></div></div>
+</section>
+
+<section>
+<h2><span class="num">5</span>Service 2 — Backend (Spring Boot gateway)</h2>
+<p class="lead">The backend is the only component the browser can reach. It owns identity, ownership of data, safe file handling and the orchestration of long-running work. It contains no OCR, retrieval or prompt logic: for those it calls the AI service.</p>
+
+<h3>5.1 Package structure</h3>
+<table>
+<thead><tr><th style="width:19%">Package</th><th>Role</th></tr></thead>
+<tbody>
+<tr><td><code>auth</code></td><td>Register and login (<code>AuthController</code>, <code>AuthService</code>, DTO validation). Returns a JWT plus the user profile.</td></tr>
+<tr><td><code>security</code></td><td><code>JwtService</code> (sign/verify HS256), <code>JwtAuthenticationFilter</code>, <code>LoginThrottle</code>, <code>RestAuthenticationEntryPoint</code> (JSON 401/403).</td></tr>
+<tr><td><code>user</code></td><td>Profile read/update, account deletion (cascades to all the user’s rows and files).</td></tr>
+<tr><td><code>storage</code></td><td><code>FileStorageService</code> and <code>FileType</code>: upload validation by content, atomic write, SHA-256, safe paths.</td></tr>
+<tr><td><code>document</code></td><td>Upload, list, detail, reprocess, results, original file, delete; <code>DocumentProcessor</code> (the asynchronous job) and <code>DocumentStateService</code> (the status state machine, transactional).</td></tr>
+<tr><td><code>gateway</code></td><td><code>AiServiceClient</code>: the only code that talks to the AI service; <code>AiServiceException</code> carries a user-safe message and the upstream status.</td></tr>
+<tr><td><code>chat</code></td><td>Persisted multi-turn Q&amp;A per document.</td></tr>
+<tr><td><code>deadline</code></td><td>Captures deadlines from AI results, lists them, updates their status.</td></tr>
+<tr><td><code>notification</code></td><td><code>DeadlineAlertScheduler</code>, <code>DeadlineAlertService</code>, e-mail (SMTP) and SMS (Twilio) senders, bilingual message templates, send log.</td></tr>
+<tr><td><code>draft</code></td><td>Stateless proxy for the draft generator, with input checks and error mapping.</td></tr>
+<tr><td><code>web</code>, <code>config</code></td><td>One <code>GlobalExceptionHandler</code> producing a uniform error JSON; typed configuration (<code>AppProperties</code>), security chain, async executor.</td></tr>
+</tbody></table>
+
+<h3>5.2 The REST API</h3>
+<table>
+<thead><tr><th style="width:11%">Method</th><th style="width:34%">Path</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td>POST</td><td><code>/api/auth/register</code></td><td>Create an account; validates e-mail, 8–72 character password, optional international phone; returns token + user.</td></tr>
+<tr><td>POST</td><td><code>/api/auth/login</code></td><td>Verify credentials (throttled); returns token + user.</td></tr>
+<tr><td>GET · PATCH · DELETE</td><td><code>/api/users/me</code></td><td>Read, update (name, phone, language, alert preferences) or delete the account.</td></tr>
+<tr><td>POST</td><td><code>/api/documents</code></td><td>Multipart upload (<code>file</code>, <code>language</code>) → stores the file, starts processing, returns the document.</td></tr>
+<tr><td>GET</td><td><code>/api/documents</code></td><td>Paged list of the user’s documents with per-language status.</td></tr>
+<tr><td>GET</td><td><code>/api/documents/{id}</code></td><td>Document detail and status (this is what the UI polls).</td></tr>
+<tr><td>POST</td><td><code>/api/documents/{id}/process?language=</code></td><td>Process in another language (or <code>force=true</code> to redo); reuses the extracted text.</td></tr>
+<tr><td>GET</td><td><code>/api/documents/{id}/results/{lang}</code></td><td>The stored AI result (JSON) for one language.</td></tr>
+<tr><td>GET</td><td><code>/api/documents/{id}/file</code> · DELETE <code>/…/{id}</code></td><td>Stream the original file (owner only) · delete document, results, deadlines, chat and file.</td></tr>
+<tr><td>GET · POST · DELETE</td><td><code>/api/documents/{id}/chat</code></td><td>History · ask a question · clear the conversation.</td></tr>
+<tr><td>GET · PATCH</td><td><code>/api/deadlines</code> · <code>/api/deadlines/{id}</code></td><td>List (optionally by status) · mark pending/done.</td></tr>
+<tr><td>POST</td><td><code>/api/drafts/preview</code> · <code>/api/drafts/file?format=</code></td><td>Draft generator: JSON preview · PDF or Word file.</td></tr>
+<tr><td>GET</td><td><code>/actuator/health</code></td><td>Liveness/readiness for Docker; includes a health indicator for the AI service.</td></tr>
+</tbody></table>
+
+<h3>5.3 Security design</h3>
+<ul>
+<li><b>Stateless JWT.</b> The token (HS256, signed with a secret of at least 32 bytes — the application refuses to start otherwise) carries the user id as subject plus e-mail and role. Default lifetime is 12 hours. <code>JwtAuthenticationFilter</code> validates it on every request and places an <code>AuthUser</code> in the security context. <code>SessionCreationPolicy.STATELESS</code>; no server session exists.</li>
+<li><b>CSRF disabled on purpose.</b> Credentials travel in the <code>Authorization</code> header, not in a cookie, so a cross-site form cannot attach them.</li>
+<li><b>Passwords.</b> BCrypt with cost 12. Passwords longer than 72 bytes are rejected rather than silently truncated (BCrypt’s limit). E-mail uniqueness is enforced case-insensitively by a unique index on <code>lower(email)</code>.</li>
+<li><b>Brute-force guard.</b> <code>LoginThrottle</code> allows 5 failures per (e-mail + client IP) within 15 minutes, then returns HTTP 429. It is in-memory and therefore per instance.</li>
+<li><b>Ownership by construction.</b> Repositories expose methods like <code>findByIdAndUserId</code>. Requesting someone else’s document returns <b>404</b>, not 403, so the API does not even reveal that the id exists.</li>
+<li><b>Security headers</b> on API responses: <code>nosniff</code>, <code>X-Frame-Options: DENY</code>, <code>Referrer-Policy: no-referrer</code>. CORS allows only configured origins and exposes <code>Content-Disposition</code> (needed by the draft download).</li>
+</ul>
+
+<h3>5.4 Upload handling (defence in depth)</h3>
+<ol>
+<li>Reject empty files and files above the limit (25 MB by default; checked twice, once from the declared size and once while copying).</li>
+<li><b>Identify the file by its first bytes</b> (magic numbers): PDF <code>%PDF-</code>, PNG, JPEG, TIFF, BMP, WEBP. The client-supplied name and MIME type are never trusted.</li>
+<li>Generate a random name (<code>&lt;userId&gt;/&lt;uuid&gt;.&lt;ext&gt;</code>), resolve the path and verify it stays inside the storage root (path-traversal check).</li>
+<li>Stream into a temporary file while computing SHA-256, then <b>atomically move</b> into place, so a crash never leaves a half-written file.</li>
+<li>Insert the database row; if that fails, delete the stored file so no orphans remain.</li>
+</ol>
+<p>The original filename is sanitised before it is stored for display. The AI service re-checks the file type from bytes as well.</p>
+
+<h3>5.5 The document lifecycle</h3>
+<figure>
+<svg viewBox="0 0 760 150" width="760" role="img" aria-label="Document and result status flow">
+<defs><marker id="a5" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#44506b"/></marker></defs>
+<g class="t-s">
+<rect x="10" y="50" width="120" height="46" rx="8" fill="#eef3fb" stroke="#2c5fa8"/><text x="70" y="70" class="t-m t-b t-c">UPLOADED</text><text x="70" y="84" class="t-s t-c t-g">file stored, row saved</text>
+<rect x="190" y="50" width="130" height="46" rx="8" fill="#fdf1dd" stroke="#e8890c"/><text x="255" y="70" class="t-m t-b t-c">PROCESSING</text><text x="255" y="84" class="t-s t-c t-g">async job running</text>
+<rect x="400" y="14" width="130" height="46" rx="8" fill="#eaf6f0" stroke="#1f7a5a"/><text x="465" y="34" class="t-m t-b t-c">COMPLETED</text><text x="465" y="48" class="t-s t-c t-g">result + deadlines saved</text>
+<rect x="400" y="86" width="130" height="46" rx="8" fill="#fbeff0" stroke="#b23a48"/><text x="465" y="106" class="t-m t-b t-c">FAILED</text><text x="465" y="120" class="t-s t-c t-g">user-safe message saved</text>
+</g>
+<line x1="130" y1="73" x2="188" y2="73" stroke="#44506b" stroke-width="1.5" marker-end="url(#a5)"/>
+<line x1="320" y1="64" x2="398" y2="40" stroke="#44506b" stroke-width="1.5" marker-end="url(#a5)"/>
+<line x1="320" y1="84" x2="398" y2="108" stroke="#44506b" stroke-width="1.5" marker-end="url(#a5)"/>
+<path d="M465 132 Q465 148 300 146 Q250 146 255 98" fill="none" stroke="#9aa5c0" stroke-dasharray="4 3" marker-end="url(#a5)"/>
+<text x="330" y="141" class="t-s t-g">retry / “process again” (force)</text>
+<text x="560" y="40" class="t-s t-g">A <tspan class="t-b">processing_results</tspan> row exists per</text><text x="560" y="52" class="t-s t-g">(document, language) with its own status,</text><text x="560" y="64" class="t-s t-g">so English can be done while Marathi runs.</text>
+</svg>
+<figcaption>Figure 5.1 — Status flow. <code>DocumentStatus</code> = UPLOADED / PROCESSING / COMPLETED / FAILED; each language result has <code>ResultStatus</code> PROCESSING / COMPLETED / FAILED.</figcaption>
+</figure>
+
+<h4>How the asynchronous job works</h4>
+<ul>
+<li><code>DocumentService.upload()</code> stores the file and row, then calls <code>start()</code>. <code>DocumentStateService.beginProcessing()</code> is a small transactional method that refuses to start a second job for the same (document, language) while one is running, and refuses to redo a completed one unless <code>force</code> is set. That makes double-clicks and retries safe (idempotent).</li>
+<li><code>DocumentProcessor.process()</code> runs on the <code>documentExecutor</code> thread pool (2 core / 4 max threads, queue of 100). If the queue is full, the request does not hang: the result is marked FAILED with “The server is busy right now”. The HTTP request returns immediately with status PROCESSING.</li>
+<li>The job: extract text via the AI service only if it is not already stored, save the extraction (text, page count, method <code>digital</code>/<code>ocr</code>/<code>mixed</code>, detected language), call <code>/v1/simplify</code>, save the JSON result and the model name, then capture deadlines.</li>
+<li><b>One retry for transient failures</b> (connection error, 5xx) after 2 seconds; client errors (4xx) and “LLM not configured” (503) are final.</li>
+<li>Deadline capture is wrapped in its own try/catch so a bookkeeping error can never lose a finished explanation. Deadlines are captured only by the first language processed, so translating does not duplicate them.</li>
+<li><code>StartupRecovery</code> runs at start-up and marks any job left in PROCESSING by a crash or restart as FAILED (jobs wait in memory and are lost on restart), so users see a retryable error instead of a spinner that never ends.</li>
+</ul>
+
+<h3>5.6 The gateway client to the AI service</h3>
+<ul>
+<li>Three <code>RestClient</code> instances with different read timeouts: extract (300 s), simplify/chat/drafts (240 s) and health (3 s).</li>
+<li>Every call adds <code>X-Internal-Token</code>. The client is forced to <b>HTTP/1.1</b>; the JDK client would otherwise try an <code>h2c</code> upgrade that uvicorn rejects, which corrupted multipart uploads during development.</li>
+<li>Failures become <code>AiServiceException</code>. FastAPI’s <code>detail</code> text is passed to the user only for safe categories: 422 (for example an unreadable scan, or a draft form field problem) and AI errors tagged <code>code: llm_*</code> (bad key, rate limit, overloaded model). Anything else becomes a generic message, so internal details never leak.</li>
+</ul>
+
+<h3>5.7 Data model</h3>
+<figure>
+<svg viewBox="0 0 760 360" width="760" role="img" aria-label="Entity relationship diagram">
+<defs><marker id="a6" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#44506b"/></marker></defs>
+<g>
+<rect x="14" y="20" width="170" height="150" rx="6" fill="#fff" stroke="#17203a" stroke-width="1.5"/><rect x="14" y="20" width="170" height="22" rx="6" fill="#1b2547"/><text x="99" y="35" class="t-m t-b t-c t-w">users</text>
+<text x="22" y="58" class="mono">id UUID PK</text><text x="22" y="71" class="mono">email  (unique lower())</text><text x="22" y="84" class="mono">password_hash (BCrypt)</text><text x="22" y="97" class="mono">full_name, phone</text><text x="22" y="110" class="mono">role, preferred_language</text><text x="22" y="123" class="mono">email_alerts, sms_alerts</text><text x="22" y="136" class="mono">created_at</text>
+<rect x="260" y="20" width="200" height="206" rx="6" fill="#fff" stroke="#17203a" stroke-width="1.5"/><rect x="260" y="20" width="200" height="22" rx="6" fill="#1b2547"/><text x="360" y="35" class="t-m t-b t-c t-w">documents</text>
+<text x="268" y="58" class="mono">id UUID PK</text><text x="268" y="71" class="mono">user_id → users (CASCADE)</text><text x="268" y="84" class="mono">original_filename</text><text x="268" y="97" class="mono">stored_path, content_type</text><text x="268" y="110" class="mono">size_bytes, sha256</text><text x="268" y="123" class="mono">status, error_message</text><text x="268" y="136" class="mono">page_count, extraction_method</text><text x="268" y="149" class="mono">detected_language</text><text x="268" y="162" class="mono">extracted_text (TEXT)</text><text x="268" y="175" class="mono">created_at, updated_at</text><text x="268" y="195" class="mono" fill="#7a859c">idx (user_id, created_at DESC)</text>
+<rect x="540" y="20" width="206" height="136" rx="6" fill="#fff" stroke="#17203a" stroke-width="1.5"/><rect x="540" y="20" width="206" height="22" rx="6" fill="#1b2547"/><text x="643" y="35" class="t-m t-b t-c t-w">processing_results</text>
+<text x="548" y="58" class="mono">id UUID PK</text><text x="548" y="71" class="mono">document_id → documents</text><text x="548" y="84" class="mono">language  (en | mr)</text><text x="548" y="97" class="mono">status, model, error_message</text><text x="548" y="110" class="mono">result  JSONB</text><text x="548" y="127" class="mono" fill="#7a859c">UNIQUE (document_id, language)</text>
+<rect x="260" y="262" width="200" height="86" rx="6" fill="#fff" stroke="#17203a" stroke-width="1.5"/><rect x="260" y="262" width="200" height="22" rx="6" fill="#1b2547"/><text x="360" y="277" class="t-m t-b t-c t-w">chat_messages</text>
+<text x="268" y="298" class="mono">document_id, user_id (CASCADE)</text><text x="268" y="311" class="mono">role (USER|ASSISTANT), language</text><text x="268" y="324" class="mono">content, details JSONB</text><text x="268" y="337" class="mono" fill="#7a859c">idx (document_id, created_at)</text>
+<rect x="14" y="214" width="190" height="134" rx="6" fill="#fff" stroke="#17203a" stroke-width="1.5"/><rect x="14" y="214" width="190" height="22" rx="6" fill="#1b2547"/><text x="109" y="229" class="t-m t-b t-c t-w">deadlines</text>
+<text x="22" y="250" class="mono">document_id, user_id (CASCADE)</text><text x="22" y="263" class="mono">description, source_text</text><text x="22" y="276" class="mono">due_date DATE (nullable)</text><text x="22" y="289" class="mono">period_text (relative)</text><text x="22" y="302" class="mono">status PENDING|DONE</text><text x="22" y="315" class="mono">last_reminder_stage</text><text x="22" y="332" class="mono" fill="#7a859c">partial idx: due_date WHERE PENDING</text>
+<rect x="540" y="214" width="206" height="76" rx="6" fill="#fff" stroke="#17203a" stroke-width="1.5"/><rect x="540" y="214" width="206" height="22" rx="6" fill="#1b2547"/><text x="643" y="229" class="t-m t-b t-c t-w">notification_log</text>
+<text x="548" y="250" class="mono">deadline_id → deadlines (CASCADE)</text><text x="548" y="263" class="mono">channel EMAIL|SMS, success</text><text x="548" y="276" class="mono">detail, created_at</text>
+</g>
+<line x1="184" y1="70" x2="258" y2="70" stroke="#44506b" stroke-width="1.5" marker-end="url(#a6)"/><text x="221" y="64" class="t-s t-c t-g">1 : N</text>
+<line x1="460" y1="70" x2="538" y2="70" stroke="#44506b" stroke-width="1.5" marker-end="url(#a6)"/><text x="499" y="64" class="t-s t-c t-g">1 : N</text>
+<line x1="360" y1="226" x2="360" y2="260" stroke="#44506b" stroke-width="1.5" marker-end="url(#a6)"/><text x="368" y="252" class="t-s t-g">1 : N</text>
+<line x1="260" y1="190" x2="206" y2="260" stroke="#44506b" stroke-width="1.5" marker-end="url(#a6)"/><text x="210" y="205" class="t-s t-g">1 : N</text>
+<line x1="204" y1="240" x2="538" y2="240" stroke="#44506b" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a6)"/><text x="496" y="234" class="t-s t-g">1 : N (log)</text>
+<line x1="99" y1="170" x2="99" y2="212" stroke="#44506b" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#a6)"/>
+</svg>
+<figcaption>Figure 5.2 — Schema <code>public</code> (managed by Flyway migrations V1 and V2). Every child row cascades on delete, so deleting a user or document leaves nothing behind.</figcaption>
+</figure>
+<p><b>Why JSONB for the AI result?</b> The explanation is a document-shaped object (summary, lists of deadlines, references, sources) that the front end consumes whole. Keeping it as JSONB means the AI schema can evolve without a migration, while the fields the backend needs to query (deadlines) are also extracted into a proper relational table with an index.</p>
+
+<h3>5.8 Chat persistence</h3>
+<p><code>ChatService.ask()</code> verifies ownership, refuses if the document has not been read yet (HTTP 409 <code>NOT_READY</code>), enforces a limit of 100 questions per document, loads the last 10 messages as history, calls the AI service and then saves the user’s question and the assistant’s answer. The assistant’s message stores the structured extras (answerable flag, quotes, cited sources, follow-ups, model) in the <code>details</code> JSONB column. The method is intentionally <b>not</b> transactional: an LLM call can take many seconds and must not hold a database connection.</p>
+
+<h3>5.9 Deadlines and reminders</h3>
+<p>Covered with the data flow in section 9.4 and as a feature in section 10.5.</p>
+
+<h3>5.10 Error handling</h3>
+<p><code>GlobalExceptionHandler</code> maps every failure to one JSON shape (<code>timestamp, status, code, message, fieldErrors</code>): validation errors list the offending fields, upload size/type errors have stable codes, unknown routes are 404, and any unexpected exception is logged and reported as a generic 500 without a stack trace.</p>
+
+<div class="qa"><div class="q">What happens if the AI service is down when a user uploads a file?</div><div class="a"><p>Upload still succeeds (the file is stored and the row saved). The background job’s call fails; after one retry the result is marked FAILED with the message “The AI service is not responding right now. Please try again shortly.” The user can press “process again” later. Login, history and deadlines keep working because they never call the AI service.</p></div></div>
+<div class="qa"><div class="q">How do you prevent one user reading another user’s document?</div><div class="a"><p>All reads go through repository methods that include the user id (<code>findByIdAndUserId</code>), and a miss is reported as 404. The id comes from the verified JWT, never from the request. There is an integration test that tries to fetch another user’s document and expects 404.</p></div></div>
+</section>
+
+<section>
+<h2><span class="num">6</span>Service 3 — AI service (FastAPI)</h2>
+<p class="lead">The AI service turns bytes into understanding. It extracts and cleans text, retrieves the relevant law, asks an LLM for a structured explanation, checks that explanation, answers follow-up questions and generates legal drafts. It keeps no user data: everything it needs arrives in the request.</p>
+
+<h3>6.1 Endpoints</h3>
+<table>
+<thead><tr><th style="width:11%">Method</th><th style="width:25%">Path</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td>GET</td><td><code>/health</code></td><td>Public. Database ping, knowledge-base chunk count and ingestion state, embedding model, reranker, LLM provider and fallback chain, OCR engine.</td></tr>
+<tr><td>POST</td><td><code>/v1/extract</code></td><td>File → cleaned text, page count, method (<code>digital</code>, <code>ocr</code>, <code>mixed</code>), language hint, warnings.</td></tr>
+<tr><td>POST</td><td><code>/v1/simplify</code></td><td>Text + language → structured explanation + numbered sources + model name.</td></tr>
+<tr><td>POST</td><td><code>/v1/chat</code></td><td>Document text + question + history → answer, quotes, sources, follow-ups.</td></tr>
+<tr><td>GET · POST</td><td><code>/v1/kb/search</code> · <code>/v1/kb/ingest</code></td><td>Search the knowledge base · add entries at run time.</td></tr>
+<tr><td>GET</td><td><code>/v1/llm/check</code></td><td>One tiny call to each configured model; reports which ones answer.</td></tr>
+<tr><td>POST</td><td><code>/v1/drafts/preview</code> · <code>/v1/drafts/file</code></td><td>Draft generator: blocks as JSON · PDF/Word bytes.</td></tr>
+</tbody></table>
+<p>All <code>/v1/*</code> routes require <code>X-Internal-Token</code>, compared with <code>hmac.compare_digest</code> (constant-time). The service is not published outside the Compose network.</p>
+
+<h3>6.2 Composition root and start-up</h3>
+<p><code>container.py</code> builds, once per process: the embedder, the vector store (<code>PgVectorStore</code> in production, <code>InMemoryStore</code> in tests), the hybrid retriever (store + embedder + reranker), the LLM chain, the simplifier, the document chat and the extractor. At start-up the knowledge base is ingested in a <b>background thread</b> so the service starts answering health checks immediately; <code>/health</code> reports <code>state: running|ready|failed</code>. Ingestion is incremental: chunks whose content hash is unchanged are skipped.</p>
+<p>Provider modes make the service testable anywhere: <code>EMBEDDING_PROVIDER=hash</code> (no model download), <code>RERANKER=lexical</code>, <code>LLM_PROVIDER=mock</code> (extractive demo output) and <code>VECTOR_STORE=memory</code>.</p>
+
+<h3>6.3 Text extraction pipeline</h3>
+<figure>
+<svg viewBox="0 0 760 232" width="760" role="img" aria-label="Extraction pipeline">
+<defs><marker id="a7" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#44506b"/></marker></defs>
+<g class="t-s t-c">
+<rect x="6" y="84" width="92" height="52" rx="7" fill="#fff" stroke="#17203a"/><text x="52" y="106" class="t-b">File bytes</text><text x="52" y="120" class="t-g">sniff type</text>
+<rect x="124" y="20" width="132" height="62" rx="7" fill="#eaf6f0" stroke="#1f7a5a"/><text x="190" y="40" class="t-b">PDF page</text><text x="190" y="54" class="t-g">PyMuPDF get_text</text><text x="190" y="66" class="t-g">(sorted reading order)</text>
+<rect x="124" y="140" width="132" height="62" rx="7" fill="#fdf1dd" stroke="#e8890c"/><text x="190" y="160" class="t-b">Image file</text><text x="190" y="174" class="t-g">every frame</text><text x="190" y="186" class="t-g">goes to OCR</text>
+<rect x="290" y="20" width="150" height="62" rx="7" fill="#fff" stroke="#17203a"/><text x="365" y="38" class="t-b">Good text layer?</text><text x="365" y="52" class="t-g">≥ 40 characters and not</text><text x="365" y="64" class="t-g">garbled (looks_garbled)</text>
+<rect x="290" y="140" width="150" height="62" rx="7" fill="#fdf1dd" stroke="#e8890c"/><text x="365" y="158" class="t-b">OCR (Tesseract)</text><text x="365" y="172" class="t-g">render page at 200 DPI,</text><text x="365" y="184" class="t-g">grayscale, autocontrast, mar+hin+eng</text>
+<rect x="474" y="84" width="130" height="52" rx="7" fill="#eef3fb" stroke="#2c5fa8"/><text x="539" y="104" class="t-b">Clean &amp; join pages</text><text x="539" y="118" class="t-g">headers/footers, wraps</text>
+<rect x="636" y="84" width="118" height="52" rx="7" fill="#fff" stroke="#17203a"/><text x="695" y="104" class="t-b">Result</text><text x="695" y="118" class="t-g">text · pages · method · lang</text>
+</g>
+<line x1="98" y1="104" x2="122" y2="62" stroke="#44506b" stroke-width="1.4" marker-end="url(#a7)"/><line x1="98" y1="116" x2="122" y2="160" stroke="#44506b" stroke-width="1.4" marker-end="url(#a7)"/>
+<line x1="256" y1="51" x2="288" y2="51" stroke="#44506b" stroke-width="1.4" marker-end="url(#a7)"/><line x1="256" y1="171" x2="288" y2="171" stroke="#44506b" stroke-width="1.4" marker-end="url(#a7)"/>
+<line x1="365" y1="82" x2="365" y2="138" stroke="#b23a48" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#a7)"/><text x="372" y="112" class="t-s t-g" style="fill:#b23a48">no → OCR the page</text>
+<line x1="440" y1="52" x2="500" y2="84" stroke="#44506b" stroke-width="1.4" marker-end="url(#a7)"/><text x="470" y="62" class="t-s t-g">yes</text>
+<line x1="440" y1="170" x2="500" y2="136" stroke="#44506b" stroke-width="1.4" marker-end="url(#a7)"/>
+<line x1="604" y1="110" x2="634" y2="110" stroke="#44506b" stroke-width="1.4" marker-end="url(#a7)"/>
+</svg>
+<figcaption>Figure 6.1 — Extraction. The decision is made <i>per page</i>, so a PDF that mixes typed and scanned pages is handled correctly (method <code>mixed</code>).</figcaption>
+</figure>
+<ul>
+<li><b>Type detection from bytes.</b> PDF, PNG, JPEG, TIFF, BMP and WEBP; anything else is a 422 with a helpful message. Password-protected or empty PDFs are rejected clearly; very long PDFs are processed up to 60 pages with a warning.</li>
+<li><b>Broken Marathi text layers.</b> Some Maharashtra gazette PDFs contain a text layer in which vowel signs are doubled and the words are unreadable even though the page looks fine. <code>looks_garbled()</code> detects this pattern and forces OCR for that page, even though the text layer is “long enough”. This was found when ingesting the real gazettes.</li>
+<li><b>OCR.</b> Tesseract with languages <code>mar+hin+eng</code> (only the installed packs are used; missing ones are logged, not fatal). Pages are rendered at 200 DPI (300 DPI for knowledge-base ingestion). A light pre-processing step converts to grayscale, applies autocontrast and up-scales very small images. An optional PaddleOCR engine is wired in but untested here.</li>
+<li><b>Cleaning</b> (<code>processing/cleaning.py</code>): normalises whitespace, removes running headers and footers (short lines repeated on most pages), merges hard-wrapped lines into paragraphs while keeping list items and headings, and is written to be <b>Devanagari-safe</b>. Python’s <code>\w</code> does not match Devanagari vowel signs, so a custom tokenizer is used wherever words are counted.</li>
+<li><b>Language hint</b> (<code>en | mr | hi | unknown</code>) from the ratio of Devanagari characters plus Marathi/Hindi marker words, used by the UI as information (the output language is chosen by the user).</li>
+<li><b>Empty result guard.</b> If fewer than 20 readable characters come out, the user gets “No readable text found. The scan may be too blurry, blank or in an unsupported script.”</li>
+</ul>
+<div class="box green"><div class="t">Measured</div><p>On three synthetic phone-photo style images (rotation, noise, JPEG compression: an English application, an English reply, a Marathi application) Tesseract recovered 98–100% of the words. These images were generated for testing, not real photographs; real photographs will do worse.</p></div>
+
+<h3>6.4 Explanation pipeline (<code>/v1/simplify</code>)</h3>
+<figure>
+<svg viewBox="0 0 760 330" width="760" role="img" aria-label="Simplify pipeline">
+<defs><marker id="a8" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#44506b"/></marker></defs>
+<g class="t-s t-c">
+<rect x="8" y="14" width="130" height="58" rx="7" fill="#fff" stroke="#17203a"/><text x="73" y="34" class="t-b">① Condense?</text><text x="73" y="48" class="t-g">text &gt; 14 000 chars →</text><text x="73" y="60" class="t-g">map-reduce notes</text>
+<rect x="166" y="14" width="140" height="58" rx="7" fill="#eaf6f0" stroke="#1f7a5a"/><text x="236" y="34" class="t-b">② Build queries</text><text x="236" y="48" class="t-g">opening 700 chars · cited</text><text x="236" y="60" class="t-g">sections/Acts · closing 600</text>
+<rect x="334" y="14" width="150" height="58" rx="7" fill="#eaf6f0" stroke="#1f7a5a"/><text x="409" y="34" class="t-b">③ Hybrid retrieval</text><text x="409" y="48" class="t-g">vector + keyword → RRF</text><text x="409" y="60" class="t-g">→ rerank → top 6 sources</text>
+<rect x="512" y="14" width="240" height="58" rx="7" fill="#eef3fb" stroke="#2c5fa8"/><text x="632" y="34" class="t-b">④ Prompt</text><text x="632" y="48" class="t-g">rules + JSON schema + sources (each labelled</text><text x="632" y="60" class="t-g">“official text / unverified summary”) + document</text>
+<rect x="8" y="130" width="150" height="58" rx="7" fill="#fdf1dd" stroke="#e8890c"/><text x="83" y="150" class="t-b">⑤ LLM chain</text><text x="83" y="164" class="t-g">primary → fallbacks,</text><text x="83" y="176" class="t-g">temperature 0.1</text>
+<rect x="186" y="130" width="150" height="58" rx="7" fill="#fff" stroke="#17203a"/><text x="261" y="150" class="t-b">⑥ Parse JSON</text><text x="261" y="164" class="t-g">tolerate fences/chatter,</text><text x="261" y="176" class="t-g">Pydantic validation</text>
+<rect x="364" y="130" width="150" height="58" rx="7" fill="#fbeff0" stroke="#b23a48"/><text x="439" y="150" class="t-b">⑦ Repair retry</text><text x="439" y="164" class="t-g">if invalid: show the error</text><text x="439" y="176" class="t-g">to the model, once</text>
+<rect x="542" y="130" width="210" height="58" rx="7" fill="#eaf6f0" stroke="#1f7a5a"/><text x="647" y="150" class="t-b">⑧ Ground the citations</text><text x="647" y="164" class="t-g">drop source ids that were never</text><text x="647" y="176" class="t-g">retrieved; mark the cited ones</text>
+<rect x="8" y="246" width="744" height="62" rx="7" fill="#fff" stroke="#17203a"/><text x="380" y="268" class="t-m t-b">Response</text><text x="380" y="284" class="t-g">language · document {document_type, title, summary, key_points, deadlines, required_actions, legal_references, caveats} ·</text><text x="380" y="297" class="t-g">sources [S1…S6 with provenance, score, cited] · model that answered · used_map_reduce</text>
+</g>
+<line x1="138" y1="43" x2="164" y2="43" stroke="#44506b" stroke-width="1.4" marker-end="url(#a8)"/><line x1="306" y1="43" x2="332" y2="43" stroke="#44506b" stroke-width="1.4" marker-end="url(#a8)"/><line x1="484" y1="43" x2="510" y2="43" stroke="#44506b" stroke-width="1.4" marker-end="url(#a8)"/>
+<path d="M632 72 L632 100 L83 100 L83 128" fill="none" stroke="#44506b" stroke-width="1.4" marker-end="url(#a8)"/>
+<line x1="158" y1="159" x2="184" y2="159" stroke="#44506b" stroke-width="1.4" marker-end="url(#a8)"/><line x1="336" y1="159" x2="362" y2="159" stroke="#b23a48" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#a8)"/><text x="349" y="150" class="t-s t-g" style="fill:#b23a48">invalid</text>
+<line x1="514" y1="159" x2="540" y2="159" stroke="#44506b" stroke-width="1.4" marker-end="url(#a8)"/>
+<path d="M261 188 L261 212 L400 212 L400 244" fill="none" stroke="#44506b" stroke-width="1.4" marker-end="url(#a8)"/>
+<path d="M647 188 L647 244" fill="none" stroke="#44506b" stroke-width="1.4" marker-end="url(#a8)"/>
+</svg>
+<figcaption>Figure 6.2 — What happens between “text in” and “explanation out”.</figcaption>
+</figure>
+
+<h4>① Map-reduce for long documents</h4>
+<p>Direct prompting is used up to 14 000 characters (<code>max_direct_chars</code>). Longer texts are split into chunks of about 5 400 characters with overlap (at most 24 chunks) using a sentence-aware splitter whose separators include the Devanagari danda “।”. Each chunk is condensed <b>in parallel</b> (at most 4 at a time) into faithful working notes that keep every date, amount, name and citation exactly as written. The notes, not the raw text, go into the final prompt. The response flag <code>used_map_reduce</code> tells the UI this happened.</p>
+<h4>②–③ Retrieval</h4>
+<p>Several query formulations are retrieved together and fused: the document opening, the statutes/sections the document itself cites (found with regular expressions such as “Section 19(1)”, “RTI Act”), and the closing paragraph for long texts. Section 8 explains the retriever itself.</p>
+<h4>④ The prompt (rules the model must follow)</h4>
+<ol>
+<li>Ground every statement in the DOCUMENT or the REFERENCE SOURCES; never invent facts, names, dates, amounts, case numbers or section numbers.</li>
+<li>Write for a reader with no legal training; explain unavoidable terms in brackets.</li>
+<li>Write all free text in the requested language (natural Devanagari Marathi, not transliteration) but keep statute names, numbers and proper nouns exact.</li>
+<li><b>Deadlines:</b> an exact ISO date only when the document states it or it follows unambiguously; otherwise <code>date: null</code> plus a relative <code>period</code>. Never guess. Today’s date is supplied.</li>
+<li>Sources are labelled <i>official text</i> (with “current as of” date, status, OCR flag and reviewer NOTE) or <i>unverified summary</i>. Prefer official text; later Rules or notifications prevail over amounts in an Act; the NOTE must be considered.</li>
+<li>This is an explanation, not legal advice; real uncertainty goes into <code>caveats</code>.</li>
+<li>Reply with one JSON object that matches the schema and nothing else.</li>
+</ol>
+<h4>⑥–⑦ Making the output reliable</h4>
+<p>LLMs often add code fences or a sentence before the JSON. <code>extract_json()</code> finds the first balanced JSON object, and Pydantic validates and normalises it (lenient priorities, string lists, ISO dates parsed or set to null). If parsing or validation fails, the model is shown its own reply plus the error and asked once to answer again with only valid JSON. If that also fails, the request ends in a clear <code>GenerationError</code> (HTTP 502) rather than a half-valid result.</p>
+<h4>⑧ Grounding the citations</h4>
+<p>A model can cite “S9” when only six sources exist. After parsing, every <code>source_id</code> is checked against the sources actually retrieved; unknown ids are removed with a warning, valid ones are marked <code>cited</code>, and cited sources are sorted first. The UI therefore never shows a citation that points at nothing.</p>
+</section>
+
+<section>
+<h3>6.5 Document chat (<code>/v1/chat</code>)</h3>
+<p>A conversation about <i>one</i> document, grounded in that document and in the knowledge base.</p>
+<ul>
+<li><b>Follow-up questions retrieve badly alone</b> (“and what about the second one?”). The retrieval query therefore combines the previous user question with the new one, and the knowledge base is searched with both formulations.</li>
+<li><b>Long documents.</b> If the document is within 14 000 characters it is sent whole. Otherwise a small per-document hybrid index is built in memory (chunks of 900 characters), cached in an LRU of 8 documents so later questions do not re-embed the file, and only the best excerpts (kept in reading order) go into the prompt.</li>
+<li><b>History.</b> The last 8 messages are replayed, each truncated to 1 500 characters, so the model can resolve “it”, “that deadline” and so on.</li>
+<li><b>Output</b> (validated like the explanation): <code>answer</code>, <code>answerable</code> (false when neither the document nor the sources contain the answer), <code>quotes</code>, <code>source_ids</code> and up to three <code>follow_ups</code>.</li>
+<li><b>Verified quotes.</b> The model is asked to quote the document, but quotes are <b>checked</b>: only those that really occur in the document text (ignoring whitespace and case, at least 8 characters) are kept, at most two. A quote cannot be invented.</li>
+<li>Only cited sources are returned, again after the id check.</li>
+</ul>
+
+<h3>6.6 LLM access, fallbacks and error handling</h3>
+<figure>
+<svg viewBox="0 0 760 168" width="760" role="img" aria-label="LLM fallback chain">
+<defs><marker id="a9" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#44506b"/></marker></defs>
+<g class="t-s t-c">
+<rect x="8" y="46" width="130" height="66" rx="7" fill="#fff" stroke="#17203a"/><text x="73" y="68" class="t-b">Simplifier / Chat</text><text x="73" y="82" class="t-g">calls one runnable:</text><text x="73" y="94" class="t-g">llm.invoke(messages)</text>
+<rect x="178" y="14" width="170" height="58" rx="7" fill="#fdf1dd" stroke="#e8890c"/><text x="263" y="34" class="t-b">1 · Primary model</text><text x="263" y="48" class="t-g">LLM_PROVIDER / LLM_MODEL</text><text x="263" y="60" class="t-g">(e.g. Groq, 1 retry first)</text>
+<rect x="388" y="14" width="170" height="58" rx="7" fill="#fdf1dd" stroke="#e8890c"/><text x="473" y="34" class="t-b">2 · Same-provider backups</text><text x="473" y="48" class="t-g">LLM_FALLBACK_MODELS</text><text x="473" y="60" class="t-g">(same key and URL)</text>
+<rect x="588" y="14" width="164" height="58" rx="7" fill="#fdf1dd" stroke="#e8890c"/><text x="670" y="34" class="t-b">3 · Another service</text><text x="670" y="48" class="t-g">FALLBACK_LLM_* with its</text><text x="670" y="60" class="t-g">own key and base URL</text>
+<rect x="178" y="100" width="574" height="52" rx="7" fill="#f6f7fb" stroke="#9aa5c0"/><text x="465" y="120" class="t-b">On failure (503 overloaded · 429 quota · 401 bad key · 404 retired model · timeout · unreachable):</text><text x="465" y="136" class="t-g">log the reason, try the next model; record which model really answered; if all fail → one clear error with an actionable message</text>
+</g>
+<line x1="138" y1="70" x2="176" y2="50" stroke="#44506b" stroke-width="1.4" marker-end="url(#a9)"/>
+<line x1="348" y1="43" x2="386" y2="43" stroke="#b23a48" stroke-dasharray="4 3" stroke-width="1.4" marker-end="url(#a9)"/>
+<line x1="558" y1="43" x2="586" y2="43" stroke="#b23a48" stroke-dasharray="4 3" stroke-width="1.4" marker-end="url(#a9)"/>
+</svg>
+<figcaption>Figure 6.3 — The fallback chain, built with LangChain’s <code>with_fallbacks</code>, so it works unchanged inside prompt pipelines and batch calls.</figcaption>
+</figure>
+<ul>
+<li><b>Providers.</b> <code>anthropic</code>, <code>openai</code> (any OpenAI-compatible endpoint: Groq, Google’s Gemini endpoint, xAI, OpenRouter…), <code>ollama</code> (local) and <code>mock</code>. Switching provider is configuration only.</li>
+<li><b>Key hygiene.</b> API keys and URLs are trimmed of quotes, spaces and a pasted “Bearer ” prefix; an empty base URL is treated as unset.</li>
+<li><b>Actionable errors.</b> <code>llm/errors.py</code> classifies failures (bad key, unknown model, rate limit, overloaded, timeout, unreachable) into short messages that name the setting to check. They travel back as a coded 502/429/503 and the backend shows them to the user, instead of a bare “500”.</li>
+<li><b>Which model answered</b> is tracked per thread and stored with the result, so a fallback answer is never mislabelled as coming from the primary.</li>
+<li><b>Self-diagnosis.</b> <code>python -m app.llm.check</code> and <code>GET /v1/llm/check</code> probe every model in the chain in parallel with a 30-second limit; <code>--list-models</code> prints the model names the configured keys can use (model names are retired often).</li>
+<li><b>Mock mode</b> (<code>LLM_PROVIDER=mock</code>) produces a deterministic extractive summary (dates found by regex, key sentences) so the whole system can be demonstrated and tested without any API key. It does not translate or truly simplify, and the documentation says so.</li>
+</ul>
+
+<h3>6.7 The draft generator (preview)</h3>
+<p>A separate module (<code>app/drafts/</code>) that does <b>not</b> use the LLM: Pydantic models validate the form, deterministic English/Marathi templates build a neutral list of blocks, and two renderers produce the file (PDF with PyMuPDF’s HTML engine, which shapes Devanagari correctly; Word with python-docx). Section 10.7 explains it in full.</p>
+
+<h3>6.8 Source layout</h3>
+<pre><code>ai-service/app
+├─ main.py            routes, exception handlers (draft input errors, LLM call errors)
+├─ container.py       composition root · background KB ingestion
+├─ config.py          typed settings from environment (keys cleaned)
+├─ security.py        internal-token dependency
+├─ schemas.py         Pydantic contracts (requests, SimplifiedDocument, Source, KbEntry, chat)
+├─ extraction/        extractor (PDF/image logic) · ocr (Tesseract, optional Paddle)
+├─ processing/        cleaning (headers, wraps, language hint, garble check) · chunking · Devanagari tokenizer
+├─ rag/               embeddings · store (pgvector/in-memory) · retriever (RRF) · reranker · ingest
+│                     legal_parser (Act/Rules/gazette splitting) · sources (manifest → entries)
+├─ llm/               providers (fallback chain) · prompts · simplifier · chat · errors · check · mock_generator
+├─ drafts/            schemas · templates (en/mr) · render (PDF, Word)
+└─ evaluation/        dataset · metrics · runner · CLI (python -m app.evaluation)
+ai-service/knowledge_base   manifest, source PDFs, proofreadable extracted text, seed JSON
+ai-service/eval             questions.jsonl (60 labelled questions) and results</code></pre>
+
+<div class="qa"><div class="q">Why does the model output JSON instead of free text?</div><div class="a"><p>The product needs structure: deadlines must become rows, actions a checklist, references links to numbered sources. A schema also lets us validate and repair the answer and drop bad citations. The cost is occasional invalid JSON, handled by tolerant extraction and one repair retry.</p></div></div>
+<div class="qa"><div class="q">How do you reduce hallucination here?</div><div class="a"><p>Six layers: (1) a prompt that forbids invented facts and dates; (2) retrieval of real legal text with provenance; (3) sources labelled by trust level and an instruction to prefer official text; (4) schema validation with a repair step; (5) post-hoc grounding that removes citations to sources that were never retrieved, and chat quotes that are not in the document; (6) a visible UI with source badges and caveats so the user can verify. It does not eliminate errors, which is why every page says it is not legal advice.</p></div></div>
+<div class="qa"><div class="q">What if the document is 200 pages?</div><div class="a"><p>Extraction is capped at 60 pages with a warning. Anything over 14 000 characters is condensed with parallel map-reduce into notes first. For chat, a per-document index retrieves only the relevant excerpts for each question.</p></div></div>
+</section>
+
+<section>
+<h2><span class="num">7</span>Service 4 — PostgreSQL and pgvector</h2>
+<p class="lead">One PostgreSQL 16 instance (image <code>pgvector/pgvector:pg16</code>) holds everything that must survive a restart. It is shared by two services that never touch each other’s tables, which is why the data is split into two schemas.</p>
+
+<h3>7.1 Two schemas, two owners</h3>
+<table>
+<thead><tr><th style="width:15%">Schema</th><th style="width:20%">Owner</th><th>Contents and lifecycle</th></tr></thead>
+<tbody>
+<tr><td><code>public</code></td><td>Backend (Flyway)</td><td>users, documents, processing_results, deadlines, notification_log, chat_messages, plus Flyway’s own history table. Created by versioned migrations <code>V1__init.sql</code> and <code>V2__chat.sql</code>.</td></tr>
+<tr><td><code>kb</code></td><td>AI service</td><td><code>kb.kb_chunks</code>: the legal knowledge base. Created and upgraded in code (<code>CREATE TABLE IF NOT EXISTS</code>, <code>ALTER TABLE … ADD COLUMN IF NOT EXISTS</code>) so a new version of the service upgrades an existing database in place.</td></tr>
+</tbody></table>
+<div class="box rose"><div class="t">A real bug this design fixed</div><p>The knowledge-base table was first created in <code>public</code>. Flyway then refused to start with “Found non-empty schema(s) <code>public</code> but no schema history table”, because the AI service had created a table before Flyway ran. The fix was the dedicated <code>kb</code> schema, which makes start-up order irrelevant.</p></div>
+<p><code>db/init.sql</code> runs once when the volume is first created and executes <code>CREATE EXTENSION IF NOT EXISTS vector</code>. The AI service also issues this statement defensively. Data lives in the <code>pgdata</code> named volume; <code>docker compose down</code> keeps it, <code>down -v</code> deletes it.</p>
+
+<h3>7.2 The knowledge-base table</h3>
+<pre><code>kb.kb_chunks
+  id            TEXT PRIMARY KEY          -- "&lt;kb_id&gt;#&lt;chunk number&gt;"
+  kb_id         TEXT NOT NULL             -- the provision, e.g. rti-act-2005-en-s19
+  kind          TEXT                      -- act | rule | notification | judgment | other
+  title, citation, jurisdiction, language, text
+  content_hash  TEXT                      -- sha256 of text + provenance: skip unchanged chunks on re-ingest
+  status        TEXT DEFAULT 'in_force'   -- in_force | superseded | repealed
+  meta          JSONB                     -- provenance: source_type, gazette_ref, version_date, verified_at/by, ocr, notes, origin
+  embedding     vector(384)               -- paraphrase-multilingual-MiniLM-L12-v2
+  tsv           tsvector GENERATED ALWAYS AS (to_tsvector('simple', title||' '||citation||' '||text)) STORED
+  updated_at    TIMESTAMPTZ
+
+  GIN  index on tsv                       -- keyword search
+  HNSW index on embedding (vector_cosine_ops)   -- approximate nearest neighbour</code></pre>
+<ul>
+<li><b>Why a generated <code>tsvector</code> column?</b> The keyword index can never drift from the text; the database maintains it on every write.</li>
+<li><b>Why the <code>simple</code> text-search configuration?</b> It does no stemming or stop-word removal for a specific language, so it behaves the same for English and Marathi. (Postgres ships no Marathi dictionary.)</li>
+<li><b>Why HNSW?</b> Fast approximate nearest-neighbour search with good recall and no training step; cosine distance matches how the embedding model was trained.</li>
+<li><b>Why is status a column, not a deletion?</b> Superseded law (for example the Maharashtra Rules of 12 June 2026, replaced on 7 July 2026) is kept for history but excluded by every retrieval query with <code>status NOT IN ('superseded','repealed')</code>.</li>
+<li><b>Origin tag and pruning.</b> Chunks ingested from files are tagged <code>origin: files</code>; after a directory ingest, chunks of that origin whose entry no longer exists are deleted. Chunks added through the API (<code>origin: api</code>) are never pruned.</li>
+</ul>
+
+<h3>7.3 The two retrieval queries</h3>
+<h4>Vector search</h4>
+<pre><code>SELECT … , 1 - (embedding &lt;=&gt; :query_vec) AS sim
+FROM kb.kb_chunks
+WHERE status NOT IN ('superseded','repealed')
+ORDER BY embedding &lt;=&gt; :query_vec
+LIMIT 20;</code></pre>
+<h4>Keyword search with rarity weighting</h4>
+<p>The query is turned into OR-ed terms (long legal questions would match nothing if every word had to appear). Postgres’ built-in <code>ts_rank_cd</code> weighs all words equally, so filler words like “how” and “days” decided the ranking. The evaluation exposed this (section 13). The replacement computes, for each term, an <b>inverse document frequency</b> from <code>ts_stat</code> (cached until the next write) and scores each chunk as the sum of weights of the terms it contains:</p>
+<pre><code>score(chunk) = Σ  idf(term) · [chunk contains term],     idf(t) = ln(1 + N / df(t))
+SELECT …, ( CASE WHEN tsv @@ to_tsquery('simple', :t1) THEN :w1 ELSE 0 END + … ) AS score
+FROM kb.kb_chunks WHERE tsv @@ to_tsquery('simple', 't1 | t2 | …') AND status NOT IN (…)
+ORDER BY score DESC LIMIT 20;</code></pre>
+
+<h3>7.4 Connection handling and operations</h3>
+<ul>
+<li>The backend uses HikariCP via Spring; the AI service uses a <code>psycopg_pool</code> pool (1–5 connections) with the pgvector type registered on each connection.</li>
+<li>Healthcheck: <code>pg_isready</code>; the AI service and backend wait for <code>service_healthy</code> before starting. The backend does <i>not</i> wait for the AI service to be healthy, only started, so login and history stay available while models load.</li>
+<li>Backup: <code>pg_dump</code> of the database covers both schemas (the knowledge base can also be rebuilt from the repository at any time, which is why losing <code>kb</code> is harmless but losing <code>public</code> is not).</li>
+</ul>
+
+<div class="qa"><div class="q">Why pgvector instead of a dedicated vector database like Pinecone or Qdrant?</div><div class="a"><p>At this scale (hundreds of chunks) a separate system is unnecessary operational weight. Keeping vectors beside the relational data gives one backup, one connection pool, transactional upserts, and lets keyword (full-text) and vector search run in the same database. If the corpus grew to millions of chunks, a dedicated engine or partitioning would be worth discussing.</p></div></div>
+<div class="qa"><div class="q">What is the difference between the two schemas and why does it matter?</div><div class="a"><p>Ownership. Flyway owns <code>public</code> and demands it is empty on first run; the AI service owns <code>kb</code> and manages it in code. Separate schemas remove the start-up race I hit and make it obvious which service may change which table.</p></div></div>
+</section>
+
+<section>
+<h2><span class="num">8</span>The legal knowledge base and RAG in depth</h2>
+<p class="lead">Retrieval-augmented generation means the model is shown the relevant law at question time instead of being trusted to remember it. Nothing is trained or fine-tuned. The quality of the whole product is bounded by two things: what is in the knowledge base, and whether retrieval finds it.</p>
+
+<h3>8.1 What is in the knowledge base</h3>
+<table>
+<thead><tr><th style="width:32%">Source</th><th style="width:13%">Status</th><th style="width:13%">Type</th><th>Entries and notes</th></tr></thead>
+<tbody>
+<tr><td>Maharashtra RTI Rules, notification of <b>7 July 2026</b> (English + Marathi)</td><td><span class="pill g">in force</span></td><td>Official text</td><td>Rules 1–5 + annexures (forms A, B, C). Fees ₹10 application, ₹2 per page, ₹20 appeal; first appeal 30 days, second appeal 90 days.</td></tr>
+<tr><td>Maharashtra RTI Rules, 12 June 2026 (en + mr)</td><td><span class="pill r">superseded</span></td><td>Official text</td><td>27 rules (fees ₹30 / ₹5 / ₹100). Kept for history; never retrieved.</td></tr>
+<tr><td>Maharashtra RTI Rules, 2005</td><td><span class="pill r">superseded</span></td><td>Official text</td><td>5 rules + annexures.</td></tr>
+<tr><td>RTI Act 2005, Marathi text as of 1 Dec 2014</td><td><span class="pill g">in force</span></td><td>Official text (OCR)</td><td>82 paragraph-level entries; section numbers are unreliable after OCR, so no section labels are attached.</td></tr>
+<tr><td>RTI Act 2005, English</td><td><span class="pill g">in force</span></td><td>Government reprint</td><td>Sections 1–31 + Second Schedule, from a 2008 handbook; later amendments (e.g. 2019) not reflected, stated in a note.</td></tr>
+<tr><td>Central RTI fee rules 2005 + 2005/2006 amendments</td><td><span class="pill g">in force</span></td><td>Government reprint</td><td>Rules 1–5 and the amendment notifications; note says Maharashtra authorities follow the Maharashtra Rules.</td></tr>
+<tr><td>Consumer Protection Act, 2019</td><td><span class="pill g">in force</span></td><td>Official text</td><td>107 sections as enacted; note that the 2021 Jurisdiction Rules changed the money limits.</td></tr>
+<tr><td>Seed summaries (JSON)</td><td><span class="pill s">unverified</span></td><td>Summary</td><td>NI Act s.138–142, Limitation Act, BNS/BNSS provisions, Legal Services Authorities Act s.12, Central RTI Rules 2012, RTI online portal, four Supreme Court judgments, a few Marathi summaries.</td></tr>
+</tbody></table>
+<p>At the time of the last run the knowledge base held <b>318 entries stored as 467 chunks</b>.</p>
+
+<h3>8.2 From a gazette PDF to a retrievable, citable entry</h3>
+<figure>
+<svg viewBox="0 0 760 120" width="760" role="img" aria-label="Ingestion pipeline">
+<defs><marker id="ab" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#44506b"/></marker></defs>
+<g class="t-s t-c">
+<rect x="4" y="30" width="108" height="56" rx="7" fill="#fff" stroke="#17203a"/><text x="58" y="52" class="t-b">manifest.json</text><text x="58" y="66" class="t-g">one record per source</text>
+<rect x="136" y="30" width="116" height="56" rx="7" fill="#fdf1dd" stroke="#e8890c"/><text x="194" y="50" class="t-b">extract / OCR</text><text x="194" y="64" class="t-g">→ extracted/*.txt</text><text x="194" y="76" class="t-g">(human-proofreadable)</text>
+<rect x="276" y="30" width="116" height="56" rx="7" fill="#eaf6f0" stroke="#1f7a5a"/><text x="334" y="50" class="t-b">split provisions</text><text x="334" y="64" class="t-g">numbered · numbered_margin</text><text x="334" y="76" class="t-g">paragraphs · single</text>
+<rect x="416" y="30" width="116" height="56" rx="7" fill="#eef3fb" stroke="#2c5fa8"/><text x="474" y="50" class="t-b">checks</text><text x="474" y="64" class="t-g">expected_provisions count,</text><text x="474" y="76" class="t-g">sequential numbering</text>
+<rect x="556" y="30" width="100" height="56" rx="7" fill="#eef3fb" stroke="#2c5fa8"/><text x="606" y="50" class="t-b">chunk + embed</text><text x="606" y="64" class="t-g">1200 chars, 150 overlap</text>
+<rect x="676" y="30" width="80" height="56" rx="7" fill="#fff" stroke="#17203a"/><text x="716" y="54" class="t-b">kb.kb_chunks</text><text x="716" y="68" class="t-g">+ provenance</text>
+</g>
+<line x1="112" y1="58" x2="134" y2="58" stroke="#44506b" stroke-width="1.4" marker-end="url(#ab)"/><line x1="252" y1="58" x2="274" y2="58" stroke="#44506b" stroke-width="1.4" marker-end="url(#ab)"/><line x1="392" y1="58" x2="414" y2="58" stroke="#44506b" stroke-width="1.4" marker-end="url(#ab)"/><line x1="532" y1="58" x2="554" y2="58" stroke="#44506b" stroke-width="1.4" marker-end="url(#ab)"/><line x1="656" y1="58" x2="674" y2="58" stroke="#44506b" stroke-width="1.4" marker-end="url(#ab)"/>
+</svg>
+<figcaption>Figure 8.1 — Manifest-driven ingestion of official sources.</figcaption>
+</figure>
+<ul>
+<li><b>Manifest.</b> Each source records: title, kind, language, jurisdiction, <b>status</b>, <b>version_date</b>, gazette reference, parser, expected provision count, notes, verification fields (<code>verified_at</code>, <code>verified_by</code>, currently empty) and a <code>source_type</code>.</li>
+<li><b>Proofreadable middle step.</b> Extracted text is written to a plain file the team can read and correct (OCR confuses Devanagari digits, for example “११९.” for “११.”). The corrected file, not the PDF, is what is ingested. Several such corrections were made by hand while loading the real gazettes.</li>
+<li><b>Parsers.</b> <code>numbered</code>: rule headings with a dash (“3. Procedure.–”), with strict sequential numbering so a stray “7.” inside a sentence is not a new rule. <code>numbered_margin</code>: Acts whose marginal notes are interleaved in the text. <code>paragraphs</code>: noisy scans where numbers cannot be trusted. <code>single</code>: a schedule or amendment notification kept whole.</li>
+<li><b>Safety net.</b> <code>expected_provisions</code> turns a silent mis-parse into a loud error: “parsed 72 provisions, expected 107” stopped ingestion until the parser was fixed.</li>
+<li><b>Provenance on every chunk</b>: source type, title, gazette reference, version date, verification, OCR flag and notes. The notes carry caveats such as “later Rules prevail over these amounts”, and the prompt instructs the model to consider them.</li>
+</ul>
+
+<h3>8.3 Retrieval: hybrid search with reranking</h3>
+<figure>
+<svg viewBox="0 0 760 232" width="760" role="img" aria-label="Retrieval pipeline">
+<defs><marker id="ac" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#44506b"/></marker></defs>
+<g class="t-s t-c">
+<rect x="6" y="84" width="104" height="56" rx="7" fill="#fff" stroke="#17203a"/><text x="58" y="106" class="t-b">Query / queries</text><text x="58" y="120" class="t-g">question, or</text><text x="58" y="132" class="t-g">document slices</text>
+<rect x="150" y="22" width="170" height="64" rx="7" fill="#eaf6f0" stroke="#1f7a5a"/><text x="235" y="42" class="t-b">Dense (semantic)</text><text x="235" y="56" class="t-g">embed → pgvector HNSW</text><text x="235" y="68" class="t-g">cosine, top 20</text><text x="235" y="80" class="t-g">finds paraphrases</text>
+<rect x="150" y="138" width="170" height="64" rx="7" fill="#eaf6f0" stroke="#1f7a5a"/><text x="235" y="158" class="t-b">Sparse (keyword)</text><text x="235" y="172" class="t-g">Postgres full-text, IDF-</text><text x="235" y="184" class="t-g">weighted, top 20</text><text x="235" y="196" class="t-g">finds exact terms (“250”)</text>
+<rect x="362" y="84" width="136" height="56" rx="7" fill="#eef3fb" stroke="#2c5fa8"/><text x="430" y="104" class="t-b">Reciprocal Rank Fusion</text><text x="430" y="118" class="t-g">Σ 1 / (60 + rank)</text><text x="430" y="130" class="t-g">keep best 16</text>
+<rect x="540" y="84" width="120" height="56" rx="7" fill="#fdf1dd" stroke="#e8890c"/><text x="600" y="104" class="t-b">Cross-encoder</text><text x="600" y="118" class="t-g">jina-reranker-v2</text><text x="600" y="130" class="t-g">(lexical fallback)</text>
+<rect x="690" y="84" width="64" height="56" rx="7" fill="#fff" stroke="#17203a"/><text x="722" y="108" class="t-b">top k</text><text x="722" y="122" class="t-g">6 (chat 4)</text>
+</g>
+<line x1="110" y1="106" x2="148" y2="64" stroke="#44506b" stroke-width="1.4" marker-end="url(#ac)"/><line x1="110" y1="120" x2="148" y2="168" stroke="#44506b" stroke-width="1.4" marker-end="url(#ac)"/>
+<line x1="320" y1="58" x2="360" y2="102" stroke="#44506b" stroke-width="1.4" marker-end="url(#ac)"/><line x1="320" y1="170" x2="360" y2="124" stroke="#44506b" stroke-width="1.4" marker-end="url(#ac)"/>
+<line x1="498" y1="112" x2="538" y2="112" stroke="#44506b" stroke-width="1.4" marker-end="url(#ac)"/><line x1="660" y1="112" x2="688" y2="112" stroke="#44506b" stroke-width="1.4" marker-end="url(#ac)"/>
+</svg>
+<figcaption>Figure 8.2 — Both retrievers only see <code>in_force</code> chunks. With several queries, all ranked lists are fused together.</figcaption>
+</figure>
+<table>
+<thead><tr><th style="width:22%">Stage</th><th>What it contributes</th></tr></thead>
+<tbody>
+<tr><td>Dense retrieval</td><td>Understands meaning across wording and languages (“How long do I have to appeal?” ≈ “within thirty days … first appeal”). Weak on exact numbers and rare terms.</td></tr>
+<tr><td>Keyword retrieval</td><td>Exact terms: section numbers, amounts, names. Weak on paraphrase.</td></tr>
+<tr><td>RRF fusion</td><td>Combines two ranked lists without needing their scores to be comparable: a document ranked well in both rises to the top.</td></tr>
+<tr><td>Cross-encoder rerank</td><td>Reads query and passage <i>together</i> and judges relevance more precisely than a vector comparison. Costly, so only 16 candidates are reranked. If the model cannot load, a lexical reranker (term and bigram overlap) takes over.</td></tr>
+<tr><td>Status filter</td><td>Superseded/repealed law is excluded in SQL, so a fee that has since changed cannot be quoted as current.</td></tr>
+</tbody></table>
+
+<h3>8.4 The trust model in one paragraph</h3>
+<p>Three kinds of source, shown to the user as badges and to the model as labels: <b>official text</b> (from a gazette), <b>government reprint</b> (from an official handbook, possibly stale) and <b>unverified summary</b> (written for the project). The model is told to prefer official text and to treat a NOTE as binding context. The user sees the same distinctions, the date each text is current as of, and whether a human has verified it. Verification fields exist in the manifest but are still empty: this is a known gap (section 15).</p>
+
+<div class="qa"><div class="q">What is the difference between RAG and fine-tuning, and why RAG here?</div><div class="a"><p>Fine-tuning changes the model’s weights; RAG supplies knowledge at query time. Law changes (the Maharashtra fees changed twice in 2026), must be citable, and must show its source. RAG allows updating the knowledge base without retraining, makes each statement traceable to a provision, and lets superseded rules be switched off with a status flag.</p></div></div>
+<div class="qa"><div class="q">Why hybrid search rather than just embeddings?</div><div class="a"><p>Legal questions often hinge on exact tokens: “Section 8(1)(j)”, “₹250 per day”, “30 days”. Embeddings blur such details; keyword search finds them but misses paraphrases and cross-language matches. Fusing both and reranking was measurably better than either alone (section 13).</p></div></div>
+<div class="qa"><div class="q">How do you make sure an outdated rule is not quoted?</div><div class="a"><p>Every chunk has a <code>status</code>. Retrieval queries exclude superseded and repealed chunks. Fee questions are tested to return the 7 July 2026 Rules and never the 12 June 2026 ones, and the evaluation reports “superseded text returned: 0%”.</p></div></div>
+</section>
+
+<section>
+<h2><span class="num">9</span>End-to-end data flows</h2>
+<p class="lead">Six flows cover everything the system does. Each diagram is a sequence: time runs downward, solid arrows are calls, dashed arrows are replies, and a yellow box is a note. The orange numbers show the order of the calls.</p>
+
+<h3>9.1 Upload and explanation (the core flow)</h3>
+<figure><svg viewBox="0 0 760 720" width="760" role="img" aria-label="upload"><defs><marker id="sa" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#44506b"/></marker><marker id="sr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8a94ab"/></marker></defs><line x1="62.0" y1="40" x2="62.0" y2="712" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="14.0" y="6" width="96" height="30" rx="6" fill="#fdf1dd" stroke="#e8890c" stroke-width="1.4"/><text x="62.0" y="25" class="t-m t-b t-c">Browser</text><line x1="189.2" y1="40" x2="189.2" y2="712" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="141.2" y="6" width="96" height="30" rx="6" fill="#fdf1dd" stroke="#e8890c" stroke-width="1.4"/><text x="189.2" y="25" class="t-m t-b t-c">nginx</text><line x1="316.4" y1="40" x2="316.4" y2="712" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="268.4" y="6" width="96" height="30" rx="6" fill="#eef3fb" stroke="#2c5fa8" stroke-width="1.4"/><text x="316.4" y="25" class="t-m t-b t-c">Backend</text><line x1="443.6" y1="40" x2="443.6" y2="712" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="395.6" y="6" width="96" height="30" rx="6" fill="#ffffff" stroke="#17203a" stroke-width="1.4"/><text x="443.6" y="25" class="t-m t-b t-c">Postgres</text><line x1="570.8" y1="40" x2="570.8" y2="712" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="522.8" y="6" width="96" height="30" rx="6" fill="#eaf6f0" stroke="#1f7a5a" stroke-width="1.4"/><text x="570.8" y="25" class="t-m t-b t-c">AI service</text><line x1="698.0" y1="40" x2="698.0" y2="712" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="650.0" y="6" width="96" height="30" rx="6" fill="#f3eefb" stroke="#7b52b8" stroke-width="1.4"/><text x="698.0" y="25" class="t-m t-b t-c">LLM</text><line x1="62.0" y1="63.8" x2="189.2" y2="63.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="125.6" y="58.8" class="t-s t-c">POST /api/documents (file, language) + JWT</text><text x="70.0" y="75.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">1</text><line x1="189.2" y1="96.8" x2="316.4" y2="96.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="252.8" y="91.8" class="t-s t-c">proxy /api/*  (Host header preserved)</text><text x="197.2" y="108.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">2</text><path d="M316.4 120.8 h26 v14 h-24" fill="none" stroke="#44506b" stroke-width="1.4" marker-end="url(#sa)"/><text x="348.4" y="126.8" class="t-s">verify JWT · size · magic bytes · store · SHA-256</text><text x="305.4" y="128.8" class="t-s t-b" style="fill:#e8890c">3</text><line x1="316.4" y1="162.8" x2="443.6" y2="162.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="380.0" y="157.8" class="t-s t-c">INSERT document (UPLOADED) + result row PROCESSING</text><text x="324.4" y="174.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">4</text><line x1="316.4" y1="195.8" x2="62.0" y2="195.8" stroke="#8a94ab" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#sr)"/><text x="189.2" y="190.8" class="t-s t-c">201 + document (status PROCESSING)</text><rect x="276.4" y="216.8" width="80.0" height="20" rx="4" fill="#fffbea" stroke="#e8c76b"/><text x="316.4" y="227.8" class="t-s t-c">@Async job starts on documentExecutor</text><line x1="316.4" y1="261.8" x2="570.8" y2="261.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="443.6" y="256.8" class="t-s t-c">POST /v1/extract (file) + X-Internal-Token</text><text x="324.4" y="273.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">5</text><path d="M570.8 285.8 h-26 v14 h24" fill="none" stroke="#44506b" stroke-width="1.4" marker-end="url(#sa)"/><text x="538.8" y="291.8" class="t-s" style="text-anchor:end">sniff type · PDF text or OCR per page · clean</text><text x="576.8" y="293.8" class="t-s t-b" style="fill:#e8890c">6</text><line x1="570.8" y1="327.8" x2="316.4" y2="327.8" stroke="#8a94ab" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#sr)"/><text x="443.6" y="322.8" class="t-s t-c">text · pages · method · language hint</text><line x1="316.4" y1="360.8" x2="443.6" y2="360.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="380.0" y="355.8" class="t-s t-c">save extracted_text, page_count, method</text><text x="324.4" y="372.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">7</text><line x1="316.4" y1="393.8" x2="570.8" y2="393.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="443.6" y="388.8" class="t-s t-c">POST /v1/simplify (text, language)</text><text x="324.4" y="405.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">8</text><line x1="570.8" y1="426.8" x2="443.6" y2="426.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="507.2" y="421.8" class="t-s t-c">hybrid retrieval on kb.kb_chunks (status = in_force)</text><text x="562.8" y="438.8" class="t-s t-b" style="fill:#e8890c;text-anchor:end">9</text><line x1="570.8" y1="459.8" x2="698.0" y2="459.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="634.4" y="454.8" class="t-s t-c">prompt: rules + sources + document</text><text x="578.8" y="471.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">10</text><line x1="698.0" y1="492.8" x2="570.8" y2="492.8" stroke="#8a94ab" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#sr)"/><text x="634.4" y="487.8" class="t-s t-c">JSON explanation</text><path d="M570.8 516.8 h-26 v14 h24" fill="none" stroke="#44506b" stroke-width="1.4" marker-end="url(#sa)"/><text x="538.8" y="522.8" class="t-s" style="text-anchor:end">validate · repair once · ground citations</text><text x="576.8" y="524.8" class="t-s t-b" style="fill:#e8890c">11</text><line x1="570.8" y1="558.8" x2="316.4" y2="558.8" stroke="#8a94ab" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#sr)"/><text x="443.6" y="553.8" class="t-s t-c">document + sources + model + map-reduce flag</text><line x1="316.4" y1="591.8" x2="443.6" y2="591.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="380.0" y="586.8" class="t-s t-c">save result JSONB · capture deadlines · COMPLETED</text><text x="324.4" y="603.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">12</text><line x1="62.0" y1="624.8" x2="316.4" y2="624.8" stroke="#8a94ab" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#sr)"/><text x="189.2" y="619.8" class="t-s t-c">GET /api/documents/{id} every 2.5–3 s  →  COMPLETED</text><line x1="62.0" y1="657.8" x2="316.4" y2="657.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="189.2" y="652.8" class="t-s t-c">GET /api/documents/{id}/results/{lang}</text><text x="70.0" y="669.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">13</text></svg><figcaption>Figure 9.1 — From file to explanation. The browser gets its answer in milliseconds (the 201 reply after call 4) and then polls; the slow work happens in the background.</figcaption></figure>
+<ol>
+<li><i>(calls 1–2)</i> The browser sends the file and the chosen output language to <code>/api/documents</code> with the JWT in the <code>Authorization</code> header. nginx proxies it to the backend with the original <code>Host</code> header.</li>
+<li><i>(calls 3–4)</i> The backend authenticates, validates (size, magic bytes), stores the file under a random name, computes SHA-256, and saves the <code>documents</code> row plus a <code>processing_results</code> row in state PROCESSING. It returns <b>201 immediately</b>.</li>
+<li><i>(call 5)</i> A background job calls the AI service’s <code>/v1/extract</code> with the stored file. The AI service decides page by page between the PDF text layer and OCR, cleans the text and returns it with metadata.</li>
+<li><i>(calls 7–8)</i> The backend saves the extracted text (so later languages and chat never re-run OCR) and calls <code>/v1/simplify</code>.</li>
+<li><i>(calls 9–11)</i> The AI service retrieves the relevant legal sources from <code>kb.kb_chunks</code>, builds the prompt, calls the LLM chain, validates and repairs the JSON, grounds the citations and returns the explanation.</li>
+<li><i>(calls 12–13)</i> The backend stores the result as JSONB, captures deadlines into their own table, and sets the status to COMPLETED. Meanwhile the browser polls the document every 2.5–3 seconds and then fetches the result for the chosen language.</li>
+</ol>
+<p><b>What crosses which boundary:</b> the file bytes go browser → backend → AI service (once); the extracted text goes backend ↔ AI service; the text and retrieved sources go to the LLM provider (the only data that leaves your infrastructure); the browser never talks to the AI service or the database.</p>
+
+<h3>9.2 A chat turn</h3>
+<figure><svg viewBox="0 0 760 456" width="760" role="img" aria-label="chat"><defs><marker id="sa" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#44506b"/></marker><marker id="sr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8a94ab"/></marker></defs><line x1="62.0" y1="40" x2="62.0" y2="448" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="14.0" y="6" width="96" height="30" rx="6" fill="#fdf1dd" stroke="#e8890c" stroke-width="1.4"/><text x="62.0" y="25" class="t-m t-b t-c">Browser</text><line x1="221.0" y1="40" x2="221.0" y2="448" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="173.0" y="6" width="96" height="30" rx="6" fill="#eef3fb" stroke="#2c5fa8" stroke-width="1.4"/><text x="221.0" y="25" class="t-m t-b t-c">Backend</text><line x1="380.0" y1="40" x2="380.0" y2="448" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="332.0" y="6" width="96" height="30" rx="6" fill="#ffffff" stroke="#17203a" stroke-width="1.4"/><text x="380.0" y="25" class="t-m t-b t-c">Postgres</text><line x1="539.0" y1="40" x2="539.0" y2="448" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="491.0" y="6" width="96" height="30" rx="6" fill="#eaf6f0" stroke="#1f7a5a" stroke-width="1.4"/><text x="539.0" y="25" class="t-m t-b t-c">AI service</text><line x1="698.0" y1="40" x2="698.0" y2="448" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="650.0" y="6" width="96" height="30" rx="6" fill="#f3eefb" stroke="#7b52b8" stroke-width="1.4"/><text x="698.0" y="25" class="t-m t-b t-c">LLM</text><line x1="62.0" y1="63.8" x2="221.0" y2="63.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="141.5" y="58.8" class="t-s t-c">POST /api/documents/{id}/chat {question, language}</text><text x="70.0" y="75.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">1</text><line x1="221.0" y1="96.8" x2="380.0" y2="96.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="300.5" y="91.8" class="t-s t-c">owned(user, doc) · extracted_text · last 10 messages</text><text x="229.0" y="108.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">2</text><line x1="221.0" y1="129.8" x2="539.0" y2="129.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="380.0" y="124.8" class="t-s t-c">POST /v1/chat (text, question, history)</text><text x="229.0" y="141.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">3</text><path d="M539.0 153.8 h-26 v14 h24" fill="none" stroke="#44506b" stroke-width="1.4" marker-end="url(#sa)"/><text x="507.0" y="159.8" class="t-s" style="text-anchor:end">query = previous question + this one</text><text x="507.0" y="170.8" class="t-s" style="text-anchor:end">long doc → in-memory excerpt index</text><text x="545.0" y="161.8" class="t-s t-b" style="fill:#e8890c">4</text><line x1="539.0" y1="201.8" x2="380.0" y2="201.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="459.5" y="196.8" class="t-s t-c">hybrid retrieval of legal sources (top 4)</text><text x="531.0" y="213.8" class="t-s t-b" style="fill:#e8890c;text-anchor:end">5</text><line x1="539.0" y1="234.8" x2="698.0" y2="234.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="618.5" y="229.8" class="t-s t-c">system rules + history + excerpts + sources + question</text><text x="547.0" y="246.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">6</text><line x1="698.0" y1="267.8" x2="539.0" y2="267.8" stroke="#8a94ab" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#sr)"/><text x="618.5" y="262.8" class="t-s t-c">{answer, answerable, quotes, source_ids, follow_ups}</text><path d="M539.0 291.8 h-26 v14 h24" fill="none" stroke="#44506b" stroke-width="1.4" marker-end="url(#sa)"/><text x="507.0" y="297.8" class="t-s" style="text-anchor:end">keep only quotes found in the document</text><text x="507.0" y="308.8" class="t-s" style="text-anchor:end">drop unknown source ids</text><text x="545.0" y="299.8" class="t-s t-b" style="fill:#e8890c">7</text><line x1="539.0" y1="339.8" x2="221.0" y2="339.8" stroke="#8a94ab" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#sr)"/><text x="380.0" y="334.8" class="t-s t-c">answer · quotes · cited sources · follow-ups · model</text><line x1="221.0" y1="372.8" x2="380.0" y2="372.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="300.5" y="367.8" class="t-s t-c">INSERT user message + assistant message (details JSONB)</text><text x="229.0" y="384.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">8</text><line x1="221.0" y1="405.8" x2="62.0" y2="405.8" stroke="#8a94ab" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#sr)"/><text x="141.5" y="400.8" class="t-s t-c">exchange (both messages)</text></svg><figcaption>Figure 9.2 — One question and answer. The backend owns history and persistence; the AI service owns reasoning.</figcaption></figure>
+<p>The backend sends the stored document text and the last 10 messages; the AI service replays the most recent 8 to the model, combines the previous question with the new one for retrieval, and returns an answer whose quotes were verified against the document and whose source ids were checked against what was retrieved. The AI service stores nothing; the backend writes both messages in one go after the AI call succeeds, so a failed call leaves no half-turn behind.</p>
+
+<h3>9.3 Knowledge-base ingestion at start-up</h3>
+<figure><svg viewBox="0 0 760 390" width="760" role="img" aria-label="kb"><defs><marker id="sa" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#44506b"/></marker><marker id="sr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8a94ab"/></marker></defs><line x1="62.0" y1="40" x2="62.0" y2="382" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="14.0" y="6" width="96" height="30" rx="6" fill="#eaf6f0" stroke="#1f7a5a" stroke-width="1.4"/><text x="62.0" y="25" class="t-m t-b t-c">AI service</text><line x1="274.0" y1="40" x2="274.0" y2="382" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="226.0" y="6" width="96" height="30" rx="6" fill="#ffffff" stroke="#17203a" stroke-width="1.4"/><text x="274.0" y="25" class="t-m t-b t-c">Files</text><line x1="486.0" y1="40" x2="486.0" y2="382" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="438.0" y="6" width="96" height="30" rx="6" fill="#eaf6f0" stroke="#1f7a5a" stroke-width="1.4"/><text x="486.0" y="25" class="t-m t-b t-c">Embedder</text><line x1="698.0" y1="40" x2="698.0" y2="382" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="650.0" y="6" width="96" height="30" rx="6" fill="#ffffff" stroke="#17203a" stroke-width="1.4"/><text x="698.0" y="25" class="t-m t-b t-c">Postgres</text><path d="M62.0 54.8 h26 v14 h-24" fill="none" stroke="#44506b" stroke-width="1.4" marker-end="url(#sa)"/><text x="94.0" y="60.8" class="t-s">start: build container (store, embedder, LLM chain)</text><text x="94.0" y="71.8" class="t-s">serve /health at once; ingest in a background thread</text><text x="51.0" y="62.8" class="t-s t-b" style="fill:#e8890c">1</text><line x1="62.0" y1="102.8" x2="274.0" y2="102.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="168.0" y="97.8" class="t-s t-c">read manifest.json + extracted/*.txt + seed JSON</text><text x="70.0" y="114.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">2</text><path d="M62.0 126.8 h26 v14 h-24" fill="none" stroke="#44506b" stroke-width="1.4" marker-end="url(#sa)"/><text x="94.0" y="132.8" class="t-s">split into provisions · check expected counts · attach provenance</text><text x="51.0" y="134.8" class="t-s t-b" style="fill:#e8890c">3</text><line x1="62.0" y1="168.8" x2="698.0" y2="168.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="380.0" y="163.8" class="t-s t-c">SELECT id, content_hash FROM kb.kb_chunks</text><text x="70.0" y="180.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">4</text><line x1="62.0" y1="201.8" x2="486.0" y2="201.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="274.0" y="196.8" class="t-s t-c">embed only chunks that are new or changed</text><text x="70.0" y="213.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">5</text><line x1="486.0" y1="234.8" x2="62.0" y2="234.8" stroke="#8a94ab" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#sr)"/><text x="274.0" y="229.8" class="t-s t-c">384-dimension vectors</text><line x1="62.0" y1="267.8" x2="698.0" y2="267.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="380.0" y="262.8" class="t-s t-c">UPSERT chunks (text, tsvector, vector, status, meta)</text><text x="70.0" y="279.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">6</text><line x1="62.0" y1="300.8" x2="698.0" y2="300.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="380.0" y="295.8" class="t-s t-c">PRUNE file-origin chunks that no longer exist</text><text x="70.0" y="312.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">7</text><rect x="22.0" y="321.8" width="80.0" height="20" rx="4" fill="#fffbea" stroke="#e8c76b"/><text x="62.0" y="332.8" class="t-s t-c">/health → knowledge_base.state = ready (467 chunks)</text></svg><figcaption>Figure 9.3 — Incremental, background ingestion. Only changed chunks are embedded.</figcaption></figure>
+<p>Because chunks are keyed by id and carry a content hash, a restart costs a few queries instead of re-embedding everything. After a text correction (for example fixing an OCR digit in <code>extracted/*.txt</code>) only the affected chunks are re-embedded, and chunks that disappeared from the files are pruned.</p>
+
+<h3>9.4 Deadline reminders</h3>
+<figure><svg viewBox="0 0 760 291" width="760" role="img" aria-label="alert"><defs><marker id="sa" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#44506b"/></marker><marker id="sr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8a94ab"/></marker></defs><line x1="62.0" y1="40" x2="62.0" y2="283" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="14.0" y="6" width="96" height="30" rx="6" fill="#eef3fb" stroke="#2c5fa8" stroke-width="1.4"/><text x="62.0" y="25" class="t-m t-b t-c">Scheduler</text><line x1="380.0" y1="40" x2="380.0" y2="283" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="332.0" y="6" width="96" height="30" rx="6" fill="#ffffff" stroke="#17203a" stroke-width="1.4"/><text x="380.0" y="25" class="t-m t-b t-c">Postgres</text><line x1="698.0" y1="40" x2="698.0" y2="283" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="650.0" y="6" width="96" height="30" rx="6" fill="#f3eefb" stroke="#7b52b8" stroke-width="1.4"/><text x="698.0" y="25" class="t-m t-b t-c">Email/SMS</text><path d="M62.0 54.8 h26 v14 h-24" fill="none" stroke="#44506b" stroke-width="1.4" marker-end="url(#sa)"/><text x="94.0" y="60.8" class="t-s">cron 0 0 8 * * * (Asia/Kolkata), only if ALERTS_ENABLED</text><text x="51.0" y="62.8" class="t-s t-b" style="fill:#e8890c">1</text><line x1="62.0" y1="96.8" x2="380.0" y2="96.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="221.0" y="91.8" class="t-s t-c">PENDING deadlines due within today … today + 7</text><text x="70.0" y="108.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">2</text><path d="M62.0 120.8 h26 v14 h-24" fill="none" stroke="#44506b" stroke-width="1.4" marker-end="url(#sa)"/><text x="94.0" y="126.8" class="t-s">stage = smallest offset ≥ days left (7, 3, 1, 0)</text><text x="94.0" y="137.8" class="t-s">skip if last_reminder_stage ≤ stage</text><text x="51.0" y="128.8" class="t-s t-b" style="fill:#e8890c">3</text><line x1="62.0" y1="168.8" x2="380.0" y2="168.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="221.0" y="163.8" class="t-s t-c">load user (language, channels) + document name</text><text x="70.0" y="180.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">4</text><line x1="62.0" y1="201.8" x2="698.0" y2="201.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="380.0" y="196.8" class="t-s t-c">send bilingual reminder (e-mail and/or SMS)</text><text x="70.0" y="213.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">5</text><line x1="62.0" y1="234.8" x2="380.0" y2="234.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="221.0" y="229.8" class="t-s t-c">INSERT notification_log (success/failure) · save stage</text><text x="70.0" y="246.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">6</text></svg><figcaption>Figure 9.4 — The optional daily job (enabled with <code>ALERTS_ENABLED=true</code>).</figcaption></figure>
+<p>Reminder stages default to 7, 3, 1 and 0 days. A deadline due in 5 days is in stage 7; the next run at 3 days moves it to stage 3. If the server was down for a day, the next run sends the reminder for the stage the deadline is <i>currently</i> in rather than skipping it, and <code>last_reminder_stage</code> guarantees the same stage is never sent twice. One user’s failure never stops the batch, and every attempt, successful or not, is written to <code>notification_log</code>.</p>
+
+<h3>9.5 Draft generation</h3>
+<figure><svg viewBox="0 0 760 456" width="760" role="img" aria-label="draft"><defs><marker id="sa" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#44506b"/></marker><marker id="sr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8a94ab"/></marker></defs><line x1="62.0" y1="40" x2="62.0" y2="448" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="14.0" y="6" width="96" height="30" rx="6" fill="#fdf1dd" stroke="#e8890c" stroke-width="1.4"/><text x="62.0" y="25" class="t-m t-b t-c">Browser</text><line x1="380.0" y1="40" x2="380.0" y2="448" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="332.0" y="6" width="96" height="30" rx="6" fill="#eef3fb" stroke="#2c5fa8" stroke-width="1.4"/><text x="380.0" y="25" class="t-m t-b t-c">Backend</text><line x1="698.0" y1="40" x2="698.0" y2="448" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="650.0" y="6" width="96" height="30" rx="6" fill="#eaf6f0" stroke="#1f7a5a" stroke-width="1.4"/><text x="698.0" y="25" class="t-m t-b t-c">AI service</text><line x1="62.0" y1="63.8" x2="380.0" y2="63.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="221.0" y="58.8" class="t-s t-c">POST /api/drafts/preview  (form as JSON)</text><text x="70.0" y="75.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">1</text><path d="M380.0 87.8 h26 v14 h-24" fill="none" stroke="#44506b" stroke-width="1.4" marker-end="url(#sa)"/><text x="412.0" y="93.8" class="t-s">JWT · kind whitelisted · size ≤ 30 000 chars</text><text x="369.0" y="95.8" class="t-s t-b" style="fill:#e8890c">2</text><line x1="380.0" y1="129.8" x2="698.0" y2="129.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="539.0" y="124.8" class="t-s t-c">POST /v1/drafts/preview</text><text x="388.0" y="141.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">3</text><path d="M698.0 153.8 h-26 v14 h24" fill="none" stroke="#44506b" stroke-width="1.4" marker-end="url(#sa)"/><text x="666.0" y="159.8" class="t-s" style="text-anchor:end">pick model by kind → validate → build blocks (en | mr)</text><text x="666.0" y="170.8" class="t-s" style="text-anchor:end">compute dates and warnings</text><text x="704.0" y="161.8" class="t-s t-b" style="fill:#e8890c">4</text><line x1="698.0" y1="201.8" x2="380.0" y2="201.8" stroke="#8a94ab" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#sr)"/><text x="539.0" y="196.8" class="t-s t-c">blocks · warnings · notes · last_date   (422 = field problems)</text><line x1="380.0" y1="234.8" x2="62.0" y2="234.8" stroke="#8a94ab" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#sr)"/><text x="221.0" y="229.8" class="t-s t-c">preview JSON (or a readable 422 message)</text><line x1="62.0" y1="267.8" x2="380.0" y2="267.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="221.0" y="262.8" class="t-s t-c">POST /api/drafts/file?format=pdf|docx</text><text x="70.0" y="279.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">5</text><line x1="380.0" y1="300.8" x2="698.0" y2="300.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="539.0" y="295.8" class="t-s t-c">POST /v1/drafts/file?format=…</text><text x="388.0" y="312.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">6</text><path d="M698.0 324.8 h-26 v14 h24" fill="none" stroke="#44506b" stroke-width="1.4" marker-end="url(#sa)"/><text x="666.0" y="330.8" class="t-s" style="text-anchor:end">render PDF (PyMuPDF) or Word (python-docx)</text><text x="704.0" y="332.8" class="t-s t-b" style="fill:#e8890c">7</text><line x1="698.0" y1="366.8" x2="62.0" y2="366.8" stroke="#8a94ab" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#sr)"/><text x="380.0" y="361.8" class="t-s t-c">file bytes + Content-Disposition (via Backend)</text><rect x="22.0" y="387.8" width="80.0" height="20" rx="4" fill="#fffbea" stroke="#e8c76b"/><text x="62.0" y="398.8" class="t-s t-c">blob → download (nothing stored on the server)</text></svg><figcaption>Figure 9.5 — Stateless: nothing typed into the form is stored; the file is built on request and downloaded through a blob URL.</figcaption></figure>
+
+<h3>9.6 Authentication</h3>
+<figure><svg viewBox="0 0 760 324" width="760" role="img" aria-label="auth"><defs><marker id="sa" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#44506b"/></marker><marker id="sr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#8a94ab"/></marker></defs><line x1="62.0" y1="40" x2="62.0" y2="316" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="14.0" y="6" width="96" height="30" rx="6" fill="#fdf1dd" stroke="#e8890c" stroke-width="1.4"/><text x="62.0" y="25" class="t-m t-b t-c">Browser</text><line x1="380.0" y1="40" x2="380.0" y2="316" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="332.0" y="6" width="96" height="30" rx="6" fill="#eef3fb" stroke="#2c5fa8" stroke-width="1.4"/><text x="380.0" y="25" class="t-m t-b t-c">Backend</text><line x1="698.0" y1="40" x2="698.0" y2="316" stroke="#c2c9d8" stroke-dasharray="3 4"/><rect x="650.0" y="6" width="96" height="30" rx="6" fill="#ffffff" stroke="#17203a" stroke-width="1.4"/><text x="698.0" y="25" class="t-m t-b t-c">Postgres</text><line x1="62.0" y1="63.8" x2="380.0" y2="63.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="221.0" y="58.8" class="t-s t-c">POST /api/auth/login {email, password}</text><text x="70.0" y="75.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">1</text><path d="M380.0 87.8 h26 v14 h-24" fill="none" stroke="#44506b" stroke-width="1.4" marker-end="url(#sa)"/><text x="412.0" y="93.8" class="t-s">LoginThrottle: ≤ 5 failures / 15 min per (email + IP)</text><text x="369.0" y="95.8" class="t-s t-b" style="fill:#e8890c">2</text><line x1="380.0" y1="129.8" x2="698.0" y2="129.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="539.0" y="124.8" class="t-s t-c">find user by lower(email)</text><text x="388.0" y="141.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">3</text><path d="M380.0 153.8 h26 v14 h-24" fill="none" stroke="#44506b" stroke-width="1.4" marker-end="url(#sa)"/><text x="412.0" y="159.8" class="t-s">BCrypt verify · sign JWT (sub = user id, 12 h)</text><text x="369.0" y="161.8" class="t-s t-b" style="fill:#e8890c">4</text><line x1="380.0" y1="195.8" x2="62.0" y2="195.8" stroke="#8a94ab" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#sr)"/><text x="221.0" y="190.8" class="t-s t-c">{token, expiresAt, user}</text><rect x="22.0" y="216.8" width="80.0" height="20" rx="4" fill="#fffbea" stroke="#e8c76b"/><text x="62.0" y="227.8" class="t-s t-c">store session; Axios adds  Authorization: Bearer …</text><line x1="62.0" y1="261.8" x2="380.0" y2="261.8" stroke="#44506b" stroke-width="1.5" marker-end="url(#sa)"/><text x="221.0" y="256.8" class="t-s t-c">any /api/* call → JwtAuthenticationFilter → AuthUser</text><text x="70.0" y="273.8" class="t-s t-b" style="fill:#e8890c;text-anchor:start">5</text></svg><figcaption>Figure 9.6 — Login and the stateless session.</figcaption></figure>
+
+<h3>9.7 Where each kind of data lives</h3>
+<table>
+<thead><tr><th style="width:26%">Data</th><th style="width:22%">Stored in</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Accounts, password hashes</td><td>Postgres <code>public.users</code></td><td>BCrypt hash only; e-mail unique case-insensitively.</td></tr>
+<tr><td>Original uploads</td><td>Docker volume <code>uploads</code></td><td>Random file names under a per-user folder; served only through an authenticated endpoint.</td></tr>
+<tr><td>Extracted text</td><td>Postgres <code>documents.extracted_text</code></td><td>Reused for new languages and chat; deleted with the document.</td></tr>
+<tr><td>Explanations</td><td>Postgres <code>processing_results.result</code> (JSONB)</td><td>One row per document and language.</td></tr>
+<tr><td>Deadlines, reminder log</td><td>Postgres tables</td><td>Deadlines are extracted from the result into rows for querying and reminders.</td></tr>
+<tr><td>Chat history</td><td>Postgres <code>chat_messages</code></td><td>With structured details (quotes, sources, model).</td></tr>
+<tr><td>Legal knowledge base</td><td>Postgres <code>kb.kb_chunks</code></td><td>Rebuildable from the repository.</td></tr>
+<tr><td>Models (embedding, reranker)</td><td>AI service image <code>/opt/models</code></td><td>Baked in at build time so start-up is offline-safe.</td></tr>
+<tr><td>Drafts</td><td>Nowhere</td><td>Generated and returned; the form never reaches a database.</td></tr>
+<tr><td>JWT</td><td>Browser <code>localStorage</code></td><td>Not stored on the server (stateless).</td></tr>
+</tbody></table>
+</section>
+
+<section>
+<h2><span class="num">10</span>Functionality walk-through (interview view)</h2>
+<p class="lead">Each feature below is described the way you would explain it when asked “walk me through how this works”: what the user sees, what happens inside, the design decisions and trade-offs, edge cases that were handled, and the questions you should expect.</p>
+
+<h3>10.1 Registration, login and sessions</h3>
+<p><b>User sees:</b> a registration form (name, e-mail, password, optional phone and preferred language) and a login form. <b>Inside:</b> Bean-Validation on the DTOs (valid e-mail, password 8–72 characters, phone in international format <code>+91…</code>), BCrypt(12) hashing, a case-insensitive unique e-mail index, a JWT returned with the profile, and the browser attaching it to every call.</p>
+<ul>
+<li><b>Brute force:</b> <code>LoginThrottle</code> (5 failures per e-mail+IP in 15 minutes → 429). Same generic message for “unknown e-mail” and “wrong password” so accounts cannot be enumerated.</li>
+<li><b>Expiry:</b> the JWT lives 12 hours; the front end logs out when it expires and on any 401.</li>
+<li><b>Edge case fixed:</b> Spring needs an explicit <code>@Autowired</code> on the public constructor when a class has two constructors (one for tests with an injectable clock); the first run failed with “No default constructor found”.</li>
+</ul>
+<div class="qa"><div class="q">Walk me through what happens when a request arrives with a JWT.</div><div class="a"><p>nginx proxies it to Spring. <code>JwtAuthenticationFilter</code> runs before the standard username/password filter, extracts the bearer token, verifies the HS256 signature and expiry with <code>JwtService</code>, and puts an <code>AuthUser</code> (id, email, role) in the security context. Controllers receive it with <code>@AuthenticationPrincipal</code>. If the token is missing or invalid, <code>RestAuthenticationEntryPoint</code> returns a JSON 401 and the front end logs the user out.</p></div></div>
+
+<h3>10.2 Upload, validation and extraction</h3>
+<p><b>User sees:</b> a drop zone, a file chip, an output-language switch and a progress bar. <b>Inside:</b> section 5.4 (validation, atomic storage) and section 6.3 (extraction).</p>
+<ul>
+<li><b>Accepted:</b> PDF, PNG, JPEG, TIFF, BMP, WEBP up to 25 MB, identified by content. <b>Rejected:</b> everything else with a specific message (a renamed <code>.exe</code> is refused even if called <code>.pdf</code>).</li>
+<li><b>Mixed documents:</b> per-page choice between text layer and OCR; <code>method</code> is <code>digital</code>, <code>ocr</code> or <code>mixed</code>.</li>
+<li><b>Marathi specifics:</b> broken text layers detected and OCR’d; Devanagari-safe cleaning and tokenization; Tesseract <code>mar+hin+eng</code>.</li>
+<li><b>Failure modes handled:</b> password-protected PDF, zero-page PDF, unreadable scan (“No readable text found”), huge PDF (first 60 pages with a warning), AI service unreachable (retryable failure).</li>
+</ul>
+<div class="qa"><div class="q">How does your OCR cope with a Marathi photo?</div><div class="a"><p>Tesseract runs with Marathi, Hindi and English models together, after grayscale conversion, autocontrast and up-scaling of small images. On synthetic noisy photos it recovered 98–100% of words; real photographs with shadows and perspective will be worse, so the UI warns when OCR was used and the knowledge-base sources flag OCR text. A natural improvement is deskewing, adaptive thresholding and an OCR confidence score shown to the user.</p></div></div>
+
+<h3>10.3 Bilingual explanation with citations</h3>
+<p><b>User sees:</b> a title, a short summary, key points, an action checklist with priorities, a deadline timeline, legal references linked to numbered sources, sources with trust badges, and caveats, in English or Marathi, switchable without re-upload.</p>
+<ul>
+<li><b>Structured output</b> is a Pydantic model (<code>SimplifiedDocument</code>): <code>document_type, title, summary, key_points, deadlines, required_actions, legal_references, caveats</code>.</li>
+<li><b>Language switch</b> re-runs only the explanation step on the stored text; each language has its own result row and status.</li>
+<li><b>Deadline discipline:</b> exact ISO date only when the document states or implies it; else a relative period such as “within 30 days of receiving this reply” plus the original sentence, so the user can verify.</li>
+<li><b>Citations:</b> checked against retrieved sources; cited sources sorted first; trust badges and notes shown (section 4.4).</li>
+</ul>
+<div class="qa"><div class="q">Show me an example of the system being careful about law that changed.</div><div class="a"><p>Maharashtra notified RTI Rules twice in 2026. The 12 June notification set fees at ₹30, ₹5 and ₹100; the 7 July notification replaced it with ₹10, ₹2 and ₹20 and appeal periods of 30 and 90 days. Both are in the knowledge base, but the 12 June one is marked <code>superseded</code> and excluded by every retrieval query. A test asserts that a fee question returns the 7 July rules and nothing from the superseded set.</p></div></div>
+
+<h3>10.4 Continuous Q&amp;A about a document</h3>
+<p><b>User sees:</b> a chat that remembers the conversation, suggested follow-ups, quotes from the document and cited sources, and a distinct “this document does not say” answer when applicable. <b>Inside:</b> sections 5.8, 6.5 and 9.2.</p>
+<ul>
+<li>History persists across reloads and is private to the user; the conversation can be cleared; at most 100 questions per document.</li>
+<li>Follow-ups are made retrievable by prepending the previous question.</li>
+<li>Quotes are verified against the document; invented quotes are dropped.</li>
+<li><code>answerable: false</code> is an explicit contract, so “I could not find it” is not disguised as an answer.</li>
+</ul>
+<div class="qa"><div class="q">How does the chat know what “it” refers to?</div><div class="a"><p>Two mechanisms. The last turns are sent to the model so it can resolve references. And retrieval uses the previous question plus the current one, so “what about the second one?” still finds the right passage in the document and the right law.</p></div></div>
+
+<h3>10.5 Deadline tracking and reminders</h3>
+<p><b>User sees:</b> a Deadlines page grouped as Overdue, Next 7 days, Later, No fixed date and Done; a checkbox to mark items done; optional e-mail/SMS reminders in the user’s language. <b>Inside:</b> section 9.4.</p>
+<ul>
+<li><b>Capture:</b> from the first processed language only, so translating does not duplicate rows. A deadline can have a date, a relative period, or both, plus the source sentence.</li>
+<li><b>Reminder logic:</b> stage-based (7, 3, 1, 0 days, configurable), idempotent through <code>last_reminder_stage</code>, resilient to downtime, per-channel logging.</li>
+<li><b>Time zone:</b> scheduled at 08:00 <code>Asia/Kolkata</code>, with “today” computed in IST so a late-night run does not shift the day.</li>
+<li><b>Channels:</b> SMTP e-mail (Spring Mail) and Twilio SMS; each is enabled only when configured and when the user opted in.</li>
+</ul>
+<div class="qa"><div class="q">What would break if you ran two backend instances?</div><div class="a"><p>Two things are per-instance: the login throttle (in memory) and the scheduler (it would send reminders twice, though <code>last_reminder_stage</code> limits duplicates). The fix is a shared store (Redis) for the throttle and a scheduler lock (for example ShedLock on a database row) or running the scheduler in one replica only, as the code comment says.</p></div></div>
+
+<h3>10.6 Trust: provenance, supersession and the knowledge base</h3>
+<p>Described in sections 7 and 8. In interview terms: the knowledge base is <i>data with metadata</i>, and the metadata is a product feature. Source type, current-as-of date, status, gazette reference, OCR flag, reviewer notes and verification state travel from the manifest, through the database, through the LLM prompt, to the badge the user sees.</p>
+<ul>
+<li><b>Evidence of care:</b> hand-corrected OCR in the extracted gazette text; parser checks that fail loudly; separate notes for known staleness (2008 reprint, 2021 Rules changing consumer limits).</li>
+<li><b>Honesty:</b> nothing is marked verified; seed summaries are labelled unverified.</li>
+</ul>
+
+<h3>10.7 Draft generator: RTI application, first appeal, fee-payment reply</h3>
+<p><b>User sees:</b> a Drafts page with three cards, a form tailored to the chosen document, a language switch (English / Marathi), a preview on a “paper”, warnings and filing notes, and buttons for PDF and Word. <b>Why it exists:</b> understanding a notice is only half the problem; the user then has to write something correct and on time.</p>
+<table>
+<thead><tr><th style="width:19%">Draft</th><th>Content and built-in logic</th></tr></thead>
+<tbody>
+<tr><td><b>RTI application</b><br><span class="pill s">Annexure “A”</span></td><td>Follows the official form: applicant, office, subject, period, numbered description, post or in person (and type of post), BPL status with proof, fee paid by stamp/cash/draft/banker’s cheque. Adds the ₹10 stamp box when relevant; if the applicant is below the poverty line, states that no fee applies (Section 7(5) proviso). <b>Warns</b> when the request exceeds 150 words (the Maharashtra rule says one subject, ordinarily within 150 words).</td></tr>
+<tr><td><b>First appeal</b><br><span class="pill s">Annexure “B”, s.19(1)</span></td><td>Inputs: appellate authority, PIO, application date, decision date (if any), grounds, information sought, fee mode, optional delay reason. <b>Computes the last date:</b> decision received + 30 days; or, if no reply, application date + 30 days (the PIO’s time) + 30 days. <b>Warns</b> if the PIO still has time to reply (premature appeal), if the period has already ended and no delay reason is given, or if grounds contradict the dates. <b>Adds a “request to condone delay”</b> using the proviso to Section 19(1) when late. Each selected ground is written out citing its section (7(1)/7(2), 8/9/10, 7(3)(a)). The prayer asks for the information, for it free of charge if the time limit was missed (Section 7(6)), and for any other order; it deliberately does <b>not</b> ask for a penalty, which only the Information Commission can impose (Section 20) — a filing note says so.</td></tr>
+<tr><td><b>Reply to a fee demand</b><br><span class="pill s">s.7(3)</span></td><td>Confirms payment (amount, mode, reference, date), asks for the information and notes the period between intimation and payment is excluded (7(3)(a)). If the user gives the page count and the amount demanded differs from pages × ₹2, it asks the PIO for the calculation and reserves the right to seek a review (7(3)(b)). <b>Warns</b> if the payment is less or more than the amount demanded.</td></tr>
+</tbody></table>
+<h4>How it is built</h4>
+<ul>
+<li><b>Deterministic templates, not an LLM.</b> A legal form must say exactly what was entered. Templates exist in English and Marathi (with Devanagari numerals for dates and amounts generated by the template). The Marathi wording is based on the official Marathi forms and needs review by a Marathi speaker before real use.</li>
+<li><b>Validation.</b> Pydantic models, selected by <code>kind</code> (one model per document type): required fields, length limits, control-character stripping, date sanity (not in the future, with one day of slack for time zones; letter after application; payment after letter), fee reference required for cash/draft/cheque. Errors come back as one readable line per field (“application_date: is in the future – check that the day and month are the right way round”), and the front end replaces field names by the labels on the form.</li>
+<li><b>Rendering.</b> A neutral list of blocks (title, paragraph, rows, numbered list, signature…) feeds two renderers. The PDF uses PyMuPDF’s HTML engine, which does proper Devanagari shaping with built-in fonts (no font installation), with explicit point widths because that engine ignores percentage table widths. The Word file uses python-docx with the <i>Mangal</i> font for Marathi (installed with Windows) and sets all four font slots so complex-script text renders correctly. User text is HTML-escaped in the PDF path.</li>
+<li><b>Privacy.</b> Stateless end to end; the backend only whitelists the <code>kind</code>, limits the size, and proxies.</li>
+</ul>
+<div class="box rose"><div class="t">A bug worth telling in an interview</div><p>After release, the first-appeal and fee-reply forms failed with a wall of “RtiApplication… FeePaymentReply…” errors. Two causes: (1) the framework had stopped honouring the discriminated union, so the form was validated against every document type and all errors were reported together; and (2) the real problem, “application_date is in the future”, came from a date check with no time-zone slack on a UTC server, and from day/month confusion in the browser’s date field. Fixes: select the model by <code>kind</code> explicitly, accept dates one day ahead, block future dates in the picker, spell the chosen date out under the field, and map server field names to form labels. The lesson was that my earlier browser test had opened but never submitted those forms; the new end-to-end test submits all three.</p></div>
+<div class="qa"><div class="q">Why templates and not the LLM for drafting?</div><div class="a"><p>Accuracy, auditability and availability. A legal document must contain exactly the entered facts and the correct provisions; an LLM can rephrase a date or invent a section. Templates are testable (there are tests for every branch), cheap, instant and work when the LLM is down. An LLM could still be added for optional “polish my description” help, with the template as the safe default.</p></div></div>
+
+<h3>10.8 Settings, privacy and account deletion</h3>
+<ul>
+<li>Profile edits (name, phone, preferred language) and per-channel reminder toggles.</li>
+<li><b>Delete my account</b> removes the user and, through <code>ON DELETE CASCADE</code>, every document, result, deadline, reminder log and chat message, and the user’s upload directory. A test covers erasure.</li>
+</ul>
+
+<h3>10.9 Resilience and self-diagnosis of the LLM connection</h3>
+<p>Hosted LLMs fail in ordinary ways: a model is overloaded (503), a quota is reached (429), a model name is retired (404), a key is wrong (401). During development all four happened. The response was a <b>fallback chain</b>, clear error classification, and a diagnostic command. Section 6.6 has the design. The user-visible result: instead of “We couldn’t finish this document (500)”, a failed document says “The AI model rejected the API key… check <code>.env</code> and run <code>docker compose up -d</code>”, and in the common overload case the user does not notice at all because a backup model answers.</p>
+
+<h3>10.10 Evaluation harness</h3>
+<p>A reproducible way to measure retrieval quality: 60 labelled questions (40 English, 17 Marathi, 3 out of scope), each with the provisions that contain the answer and, for some, required facts. <code>python -m app.evaluation retrieval</code> compares five methods and writes Markdown and JSON with bootstrap confidence intervals; <code>… answers</code> scores fact recall, citation hit/precision, numbers grounded in the cited text and refusal of out-of-scope questions when a real LLM is configured. Results are in section 13.</p>
+</section>
+
+<section>
+<h2><span class="num">11</span>Security and privacy</h2>
+<p class="lead">The system handles personal legal documents. The security design assumes the browser is untrusted, the AI service is internal, and the LLM provider is a third party.</p>
+
+<h3>11.1 Threat → mitigation</h3>
+<table>
+<thead><tr><th style="width:23%">Threat</th><th>Mitigation in this system</th></tr></thead>
+<tbody>
+<tr><td>Reading another user’s data</td><td>Ownership-scoped repository methods (<code>findByIdAndUserId</code>); user id taken from the verified JWT; misses return 404; integration tests try cross-user reads, deletes and chat.</td></tr>
+<tr><td>Stolen or forged token</td><td>HS256 with a secret of at least 32 bytes (start-up fails otherwise); 12-hour expiry; front-end logout at expiry. Residual risk: token in <code>localStorage</code> (XSS) — see 4.3.</td></tr>
+<tr><td>Password attacks</td><td>BCrypt cost 12; 5-failure throttle per e-mail+IP; same message for unknown user and wrong password, and a dummy hash is compared for unknown e-mails so timing does not reveal whether an account exists.</td></tr>
+<tr><td>Malicious uploads</td><td>Content-based type check (magic bytes), size cap, random stored names, path-traversal check, atomic writes, non-root containers; PDFs are only parsed by PyMuPDF/Tesseract in the AI service, never executed or served inline from the upload directory.</td></tr>
+<tr><td>Direct access to the AI service</td><td>Not published to the host; every route requires <code>X-Internal-Token</code>, compared in constant time; only the backend knows it.</td></tr>
+<tr><td>SQL injection</td><td>JPA / parameterised queries everywhere. The one dynamically built SQL (IDF keyword search) only interpolates placeholders; the terms and weights are bound parameters, and terms come from a tokenizer that yields only letters and digits.</td></tr>
+<tr><td>XSS / clickjacking</td><td>React escapes output; no raw HTML injection; CSP restricts scripts to the same origin; <code>X-Frame-Options: DENY</code>; <code>nosniff</code>; <code>Referrer-Policy: no-referrer</code>.</td></tr>
+<tr><td>CSRF</td><td>No cookies are used for authentication, so there is no ambient credential to abuse; CORS lists only allowed origins.</td></tr>
+<tr><td>Prompt injection via a document</td><td>The model’s output is parsed against a strict schema and never executed; it cannot call tools or write data; citations and quotes are verified. A hostile document could still try to bias the summary, which is why the UI shows sources and caveats and says this is not legal advice.</td></tr>
+<tr><td>Output injection into PDFs/Word</td><td>User text is HTML-escaped for the PDF renderer; Word receives plain runs; control characters are stripped by validation.</td></tr>
+<tr><td>Secret leakage</td><td>Secrets live in <code>.env</code> (git-ignored; only <code>.env.example</code> is committed); API errors never echo keys; the AI service strips quotes/spaces from keys and error messages name the setting, not the value.</td></tr>
+<tr><td>Denial of service</td><td>Upload size cap and nginx body limit; bounded async queue (overflow becomes a clear “server busy”); per-document chat limit; bounded form sizes for drafts; timeouts on every outbound call. (There is no global rate limiter — see limitations.)</td></tr>
+</tbody></table>
+
+<h3>11.2 Privacy considerations</h3>
+<ul>
+<li><b>What leaves the system.</b> The extracted text of a document (and the retrieved legal sources) is sent to the configured LLM provider. Hosted providers may log or, on free tiers, train on inputs. For sensitive material use a local model (<code>ollama</code>) or a paid tier with a no-training policy. This should be disclosed to users in a real deployment.</li>
+<li><b>What does not.</b> Passwords (hashed), other users’ data, and draft forms.</li>
+<li><b>Data minimisation and erasure.</b> Users can delete a document or the whole account with cascading deletion of rows and files. Draft forms are never stored.</li>
+<li><b>Planned improvement.</b> Detect and mask phone numbers, Aadhaar numbers and e-mail addresses before text is sent to the LLM, and show the user what was masked.</li>
+</ul>
+
+<h3>11.3 Container hardening</h3>
+<ul>
+<li>Backend and AI service run as a non-root user (<code>uid 10001</code>); the backend and front end use multi-stage builds so build tools stay out of the runtime image; health checks on all services.</li>
+<li>Only port 3000 is published. Database, backend and AI service ports are internal to the Compose network.</li>
+</ul>
+
+<div class="qa"><div class="q">What is the biggest security weakness today?</div><div class="a"><p>Honest answer: the JWT in <code>localStorage</code> and the missing global rate limiter. The first is mitigated by CSP but a refresh-token-in-HttpOnly-cookie design would be stronger; the second means an authenticated user could submit many expensive jobs (bounded only by the queue and the file-size cap). I would add per-user rate limits, a Redis-backed throttle, and an account-enumeration review of the registration response (it reports “e-mail taken”).</p></div></div>
+</section>
+
+<section>
+<h2><span class="num">12</span>Deployment and operations</h2>
+
+<h3>12.1 Compose file in plain words</h3>
+<table>
+<thead><tr><th style="width:14%">Service</th><th style="width:24%">Image / build</th><th>Wiring</th></tr></thead>
+<tbody>
+<tr><td><code>postgres</code></td><td><code>pgvector/pgvector:pg16</code></td><td>Volume <code>pgdata</code>; <code>db/init.sql</code> creates the <code>vector</code> extension on first start; <code>pg_isready</code> health check; the password is required (<code>POSTGRES_PASSWORD</code>).</td></tr>
+<tr><td><code>ai-service</code></td><td>build <code>./ai-service</code> (Python 3.12-slim + Tesseract mar/hin/eng; models baked in)</td><td>Depends on healthy Postgres; environment for database URL, internal token, LLM provider/model/keys/fallbacks, embedding and reranker models; <code>expose: 8000</code> only; <code>host.docker.internal</code> mapped so a local Ollama can be reached.</td></tr>
+<tr><td><code>backend</code></td><td>build <code>./backend</code> (Maven build stage, JRE 21 runtime)</td><td>Depends on healthy Postgres and <i>started</i> AI service; JWT secret and internal token required; <code>uploads</code> volume at <code>/data/uploads</code>; alert and mail/SMS settings; <code>expose: 8080</code>.</td></tr>
+<tr><td><code>frontend</code></td><td>build <code>./frontend</code> (Node 22 build, nginx runtime)</td><td>Depends on healthy backend; publishes <code>${FRONTEND_PORT:-3000}:80</code>.</td></tr>
+</tbody></table>
+<p>Start-up order: Postgres becomes healthy → AI service and backend start (the backend runs Flyway migrations) → frontend starts when the backend is healthy. The AI service loads models and the knowledge base in the background; <code>/health</code> reports progress.</p>
+
+<h3>12.2 Configuration (twelve-factor)</h3>
+<p>All settings are environment variables read into typed classes (<code>AppProperties</code> in Java, <code>Settings</code> in Python); <code>.env.example</code> documents them. The ones people change most:</p>
+<table>
+<thead><tr><th style="width:30%">Variable</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>POSTGRES_PASSWORD</code>, <code>JWT_SECRET</code>, <code>INTERNAL_TOKEN</code></td><td>Required secrets (the stack refuses to start without them).</td></tr>
+<tr><td><code>LLM_PROVIDER</code>, <code>LLM_MODEL</code>, <code>OPENAI_API_KEY</code>, <code>OPENAI_BASE_URL</code>, <code>ANTHROPIC_API_KEY</code></td><td>Primary model; <code>openai</code> works with any OpenAI-compatible endpoint (Groq, Gemini…).</td></tr>
+<tr><td><code>LLM_FALLBACK_MODELS</code>, <code>FALLBACK_LLM_PROVIDER/MODEL/API_KEY/BASE_URL</code></td><td>Backup models on the same provider, then a second provider.</td></tr>
+<tr><td><code>EMBEDDING_PROVIDER</code>, <code>RERANKER</code></td><td><code>fastembed</code>/<code>cross-encoder</code> in production; <code>hash</code>/<code>lexical</code> for offline tests.</td></tr>
+<tr><td><code>ALERTS_ENABLED</code>, <code>ALERTS_CRON</code>, <code>MAIL_*</code>, <code>SMS_PROVIDER</code>, <code>TWILIO_*</code></td><td>Optional reminder job and channels.</td></tr>
+<tr><td><code>FRONTEND_PORT</code>, <code>CORS_ALLOWED_ORIGINS</code>, <code>MAX_UPLOAD_MB</code></td><td>Web settings.</td></tr>
+</tbody></table>
+
+<h3>12.3 Local development without Docker for every service</h3>
+<pre><code># database with pgvector (one container, or a local Postgres + CREATE EXTENSION vector)
+docker run -d -p 5432:5432 -e POSTGRES_USER=nyayasetu -e POSTGRES_PASSWORD=nyayasetu -e POSTGRES_DB=nyayasetu pgvector/pgvector:pg16
+# AI service (needs tesseract-ocr + mar/hin packs)
+cd ai-service &amp;&amp; pip install -r requirements.txt &amp;&amp; INTERNAL_TOKEN=dev uvicorn app.main:app --port 8000
+# backend
+cd backend &amp;&amp; JWT_SECRET=&lt;32+ chars&gt; AI_INTERNAL_TOKEN=dev mvn spring-boot:run
+# frontend (proxies /api to :8080)
+cd frontend &amp;&amp; npm install &amp;&amp; npm run dev</code></pre>
+
+<h3>12.4 Images, size and rebuilds</h3>
+<ul>
+<li>The AI service image is the largest (several GB): Python packages (ONNX runtime, fastembed, PyMuPDF…) plus about 1 GB of baked models. A complete set of images is roughly 8–10 GB.</li>
+<li>The Dockerfile installs the ML libraries and downloads the models <i>before</i> the other requirements, so editing <code>requirements.txt</code> or the code does not re-download the models. Without this ordering, each rebuild left a multi-gigabyte unused layer behind (a real disk-space problem on a Windows laptop).</li>
+<li>Housekeeping: <code>docker image prune</code> and <code>docker builder prune</code> after rebuilds; never <code>docker volume prune</code> (it deletes <code>pgdata</code>). On Windows with WSL2, freed space returns to drive C: only after the Docker disk file is compacted.</li>
+</ul>
+
+<h3>12.5 Continuous integration</h3>
+<p>GitHub Actions runs three jobs on every push: <b>ai-service</b> (installs Tesseract with Marathi/Hindi packs, starts a pgvector Postgres and runs pytest including the real-OCR and real-pgvector tests), <b>backend</b> (<code>mvn verify</code> against Postgres) and <b>frontend</b> (<code>npm ci &amp;&amp; npm test &amp;&amp; npm run build</code>).</p>
+
+<h3>12.6 Observability and diagnostics</h3>
+<ul>
+<li><code>/actuator/health</code> (backend, including an AI-service indicator) and <code>/health</code> (AI service: database, chunk count, ingestion state, models, LLM chain).</li>
+<li><code>docker compose exec ai-service python -m app.llm.check</code> → which models answer; <code>--list-models</code> → names the keys can use.</li>
+<li>Logs name the failing step and model on every fallback (“LLM openai:… failed (llm_overloaded)”); no secrets are logged.</li>
+</ul>
+</section>
+
+<section>
+<h2><span class="num">13</span>Testing and evaluation (with real results)</h2>
+
+<h3>13.1 Automated tests</h3>
+<table>
+<thead><tr><th style="width:17%">Code base</th><th style="width:10%">Tests</th><th>What they cover</th></tr></thead>
+<tbody>
+<tr><td>AI service (pytest)</td><td><b>101</b></td><td>Text cleaning and Devanagari tokenizer; PDF and image extraction including <b>real Tesseract OCR</b> on generated Marathi/English images; garbled-text detection; chunking; hybrid retrieval, RRF and the reranker; <b>real pgvector</b> retrieval and idempotent re-ingestion; official-source parsers (rule counts, supersession chain, July 2026 fees, Consumer Protection sections, provenance reaching the prompt); simplifier (JSON repair, hallucinated-source removal, map-reduce); chat (history, quote verification, unanswerable); LLM fallback chain against a scripted OpenAI-style server (503, 429, 401, 404, chain order, batch use); error classification; evaluation metrics; the draft generator (every branch of the templates, validation, date rules, PDF/Word output, OCR of the Marathi PDF to prove glyph shaping, HTML escaping, API errors).</td></tr>
+<tr><td>Backend (JUnit + MockMvc)</td><td><b>27</b></td><td>Registration/login validation, JWT, throttle, file-type sniffing and storage, <b>full-stack tests on a real PostgreSQL with Flyway</b> (upload → process → results → deadlines; users cannot see each other’s documents; AI failure is reported and retryable; non-document uploads rejected; account erasure; persisted private chat; chat requires extracted text; drafts proxy), and the reminder-stage logic.</td></tr>
+<tr><td>Frontend (Vitest)</td><td><b>11</b></td><td>Date formatting and deadline grouping; draft form rules: required fields, hidden fields, payload building, future-date detection, field-label mapping.</td></tr>
+<tr><td>Browser end-to-end (Playwright, scripted)</td><td>—</td><td>Run during development with the real stack (backend jar, AI service, Vite) and a scripted stand-in for the LLM: registration, upload of PDFs/photos, summary, Marathi, chat, deadlines, provenance badges, and all three draft forms with downloads. These scripts are not part of CI.</td></tr>
+</tbody></table>
+<div class="box blue"><div class="t">What the tests deliberately do not prove</div><p>The real embedding model, the real reranker and any real LLM cannot be exercised in the CI environment’s offline mode. They were exercised separately: the retrieval evaluation below ran with the real models on a local machine; answer quality with a real LLM was checked by hand on sample documents, not scored.</p></div>
+
+<h3>13.2 Retrieval evaluation: method</h3>
+<ul>
+<li><b>Question set:</b> 60 questions in <code>ai-service/eval/questions.jsonl</code>: 40 English and 17 Marathi answerable questions across RTI procedure, consumer law and other laws, 12 of them phrased informally (“I filed an RTI and got no reply…”), plus 3 out-of-scope questions (not scored for retrieval).</li>
+<li><b>Gold labels:</b> for each question, the knowledge-base provisions that contain the answer, assigned by reading the source text (not by looking at what the retriever returned). A test fails if a label points at a missing or superseded provision.</li>
+<li><b>Metrics:</b> <b>Hit@k</b> = a gold provision is among the top k results; <b>MRR</b> = mean of 1/rank of the first gold provision (depth 10); 95% bootstrap confidence interval; and “superseded text returned”.</li>
+<li><b>Ablation:</b> each method adds one component to the previous one.</li>
+</ul>
+
+<h3>13.3 Retrieval evaluation: results</h3>
+<p>57 scored questions, real models (<code>paraphrase-multilingual-MiniLM-L12-v2</code> embeddings and <code>jina-reranker-v2-base-multilingual</code>), 467 chunks, run on 14 October 2026.</p>
+<figure><svg viewBox="0 0 760 318" width="760" role="img" aria-label="Retrieval quality by method"><text x="190" y="20" class="t-s t-b">MRR (bar, whiskers = 95% CI)</text><text x="190" y="34" class="t-s t-g">Hit@3 shown as the figure on the right</text><line x1="190.0" y1="44" x2="190.0" y2="284" stroke="#e3e7f0"/><text x="190.0" y="298" class="t-s t-c t-g">0.0</text><line x1="296.0" y1="44" x2="296.0" y2="284" stroke="#e3e7f0"/><text x="296.0" y="298" class="t-s t-c t-g">0.2</text><line x1="402.0" y1="44" x2="402.0" y2="284" stroke="#e3e7f0"/><text x="402.0" y="298" class="t-s t-c t-g">0.4</text><line x1="508.0" y1="44" x2="508.0" y2="284" stroke="#e3e7f0"/><text x="508.0" y="298" class="t-s t-c t-g">0.6</text><line x1="614.0" y1="44" x2="614.0" y2="284" stroke="#e3e7f0"/><text x="614.0" y="298" class="t-s t-c t-g">0.8</text><line x1="720.0" y1="44" x2="720.0" y2="284" stroke="#e3e7f0"/><text x="720.0" y="298" class="t-s t-c t-g">1.0</text><text x="180" y="69" class="t-m t-c" style="text-anchor:end">Vector only</text><rect x="190" y="52" width="296.3" height="26" rx="3" fill="#7a859c"/><line x1="431.2" y1="65" x2="542.2" y2="65" stroke="#fff" stroke-width="2"/><line x1="431.2" y1="58" x2="431.2" y2="72" stroke="#fff" stroke-width="2"/><line x1="542.2" y1="58" x2="542.2" y2="72" stroke="#fff" stroke-width="2"/><text x="200.0" y="70" class="t-m t-b" style="fill:#fff">0.559</text><text x="754" y="70" class="t-m t-b" style="text-anchor:end">Hit@3 67%</text><text x="180" y="113" class="t-m t-c" style="text-anchor:end">Keyword only</text><rect x="190" y="96" width="197.9" height="26" rx="3" fill="#1b2547"/><line x1="336.6" y1="109" x2="443.2" y2="109" stroke="#fff" stroke-width="2"/><line x1="336.6" y1="102" x2="336.6" y2="116" stroke="#fff" stroke-width="2"/><line x1="443.2" y1="102" x2="443.2" y2="116" stroke="#fff" stroke-width="2"/><text x="200.0" y="114" class="t-m t-b" style="fill:#fff">0.373</text><text x="754" y="114" class="t-m t-b" style="text-anchor:end">Hit@3 44%</text><text x="180" y="157" class="t-m t-c" style="text-anchor:end">Hybrid (RRF)</text><rect x="190" y="140" width="312.3" height="26" rx="3" fill="#1b2547"/><line x1="443.1" y1="153" x2="560.0" y2="153" stroke="#fff" stroke-width="2"/><line x1="443.1" y1="146" x2="443.1" y2="160" stroke="#fff" stroke-width="2"/><line x1="560.0" y1="146" x2="560.0" y2="160" stroke="#fff" stroke-width="2"/><text x="200.0" y="158" class="t-m t-b" style="fill:#fff">0.589</text><text x="754" y="158" class="t-m t-b" style="text-anchor:end">Hit@3 63%</text><text x="180" y="201" class="t-m t-c" style="text-anchor:end">Hybrid + lexical rerank</text><rect x="190" y="184" width="343.4" height="26" rx="3" fill="#1b2547"/><line x1="474.5" y1="197" x2="588.1" y2="197" stroke="#fff" stroke-width="2"/><line x1="474.5" y1="190" x2="474.5" y2="204" stroke="#fff" stroke-width="2"/><line x1="588.1" y1="190" x2="588.1" y2="204" stroke="#fff" stroke-width="2"/><text x="200.0" y="202" class="t-m t-b" style="fill:#fff">0.648</text><text x="754" y="202" class="t-m t-b" style="text-anchor:end">Hit@3 72%</text><text x="180" y="245" class="t-m t-c" style="text-anchor:end">Hybrid + cross-encoder rerank</text><rect x="190" y="228" width="372.3" height="26" rx="3" fill="#e8890c"/><line x1="506.5" y1="241" x2="613.1" y2="241" stroke="#fff" stroke-width="2"/><line x1="506.5" y1="234" x2="506.5" y2="248" stroke="#fff" stroke-width="2"/><line x1="613.1" y1="234" x2="613.1" y2="248" stroke="#fff" stroke-width="2"/><text x="200.0" y="246" class="t-m t-b" style="fill:#fff">0.702</text><text x="754" y="246" class="t-m t-b" style="text-anchor:end">Hit@3 82%</text></svg><figcaption>Figure 13.1 — Retrieval quality of the five methods (57 questions, real models). Source: eval-results/retrieval-2026-10-14.json.</figcaption></figure>
+<table>
+<thead><tr><th style="width:36%">Method</th><th>Hit@1</th><th>Hit@3</th><th>Hit@5</th><th>MRR (95% CI)</th><th>Superseded returned</th></tr></thead>
+<tbody>
+<tr><td>vector only</td><td>42%</td><td>67%</td><td>72%</td><td>0.559 (0.46–0.66)</td><td>0%</td></tr><tr><td>keyword only (FTS)</td><td>26%</td><td>44%</td><td>51%</td><td>0.373 (0.28–0.48)</td><td>0%</td></tr><tr><td>hybrid (RRF)</td><td>49%</td><td>63%</td><td>74%</td><td>0.589 (0.48–0.70)</td><td>0%</td></tr><tr><td>hybrid + lexical rerank</td><td>54%</td><td>72%</td><td>81%</td><td>0.648 (0.54–0.75)</td><td>0%</td></tr><tr><td>hybrid + cross-encoder rerank (jina)</td><td>60%</td><td>82%</td><td>84%</td><td>0.702 (0.60–0.80)</td><td>0%</td></tr>
+</tbody></table>
+<h4>What the results show</h4>
+<ul>
+<li>Each added component helped: <b>MRR 0.559 → 0.589 → 0.648 → 0.702</b> from vector-only to the full pipeline, and the correct provision was in the top three for <b>82%</b> of questions with the cross-encoder.</li>
+<li><b>Superseded law was never returned</b> by any method (0%).</li>
+<li><b>English is stronger than Marathi</b> (full pipeline MRR 0.744 vs 0.605). Several Marathi misses are questions whose answer sits in the noisy scanned Marathi Act.</li>
+<li><b>Direct questions beat informal ones</b> (MRR 0.766 vs 0.465).</li>
+<li>The confidence intervals are wide (about ±0.1) because there are only 57 questions: small differences between neighbouring methods should not be over-interpreted.</li>
+</ul>
+<div class="box rose"><div class="t">The evaluation found a real bug</div><p>The keyword-only score (MRR 0.373) was far below what the same keyword code had scored in an earlier offline run (0.695). The cause: the in-memory store weighted terms by rarity, but the Postgres query used <code>ts_rank_cd</code>, which treats “how”, “many” and “days” the same as “poverty” or “penalty”. Reproducing the gap against the local Postgres confirmed it, and the fix (IDF-weighted scoring, section 7.3) raised keyword-only MRR from 0.373 to 0.661 and hybrid from 0.480 to 0.594 in the offline-embedder run. The fixed system has not yet been re-measured with the real models, so the table above shows the <i>before-fix</i> numbers for the keyword and hybrid rows.</p></div>
+
+<h3>13.4 Answer-quality evaluation (built, partly run)</h3>
+<p>The harness also scores answers from a real LLM: required facts present (fact recall), whether a relevant provision was cited (citation hit and precision), whether every number in the answer appears in the cited text, and whether out-of-scope questions are declined. The scoring logic is unit-tested with a stub model. It was not run at scale against a real LLM for this report, so no answer-quality numbers are claimed. The string checks flag likely errors but cannot prove an answer correct; a human reviewer should read a sample.</p>
+
+<h3>13.5 Other measurements</h3>
+<ul>
+<li><b>OCR:</b> 98–100% word recall on three synthetic noisy phone-photo images (English and Marathi).</li>
+<li><b>Draft PDFs:</b> Marathi PDF shaping verified by rendering the PDF to an image and OCR-ing it with the Marathi model, plus visual inspection.</li>
+</ul>
+
+<div class="qa"><div class="q">How do you know your RAG pipeline works?</div><div class="a"><p>I measured it. I wrote 57 scored questions with gold provisions, compared five retrieval methods with confidence intervals, and found that hybrid plus a cross-encoder reranker reached MRR 0.70 and top-3 hit rate 82%, with zero superseded results. The evaluation also exposed a defect in my keyword ranking, which I then fixed and added a regression test for. I am explicit about the limits: a small set, labels I assigned myself, and answer quality not yet scored at scale.</p></div></div>
+<div class="qa"><div class="q">Why MRR and Hit@k rather than accuracy?</div><div class="a"><p>Retrieval returns a ranked list, and what matters downstream is whether the right provision is near the top, because only the top few sources go into the LLM prompt. Hit@k answers “is it in the prompt?”, MRR rewards ranking it higher.</p></div></div>
+</section>
+
+<section>
+<h2><span class="num">14</span>Problems faced and how they were solved</h2>
+<p class="lead">Interviewers like specific stories. Each row is a real problem from the build: symptom, root cause, fix and lesson.</p>
+<table>
+<thead><tr><th style="width:17%">Problem</th><th style="width:25%">Root cause</th><th style="width:30%">Fix</th><th>Lesson</th></tr></thead>
+<tbody>
+<tr><td>Backend refused to start: “non-empty schema public”</td><td>The AI service created <code>kb_chunks</code> in <code>public</code> before Flyway’s first run.</td><td>Knowledge base moved to its own <code>kb</code> schema.</td><td>Give each service its own schema; start-up order must not matter.</td></tr>
+<tr><td>Uploads from the backend corrupted at the AI service</td><td>The JDK HTTP client attempted an HTTP/2 cleartext upgrade that uvicorn mishandled for multipart bodies.</td><td>Force HTTP/1.1 in the client.</td><td>Protocol negotiation can break “working” requests.</td></tr>
+<tr><td>Browser POSTs got 403</td><td>The proxy rewrote <code>Host</code>, so Origin and Host differed and Spring’s CORS check failed.</td><td>nginx <code>proxy_set_header Host $http_host</code>; Vite <code>changeOrigin: false</code>.</td><td>Same-origin design is simpler than CORS configuration.</td></tr>
+<tr><td>Marathi gazette text unreadable though PDFs looked fine</td><td>A broken text layer (doubled vowel signs).</td><td><code>looks_garbled()</code> → OCR fallback per page.</td><td>“Has text” does not mean “has good text”.</td></tr>
+<tr><td>Wrong rule numbers from OCR (“११९.” instead of “११.”)</td><td>OCR digit confusion in Devanagari.</td><td>Reviewable extracted text files, hand corrections, sequential-number parsing, expected-count checks.</td><td>Put a human-checkable step between OCR and the database.</td></tr>
+<tr><td>Fees quoted wrongly (₹30 vs ₹10)</td><td>Two notifications in one month; the older was loaded as current.</td><td>Status field and supersession chain; retrieval excludes superseded text; a test pins the current fees.</td><td>Law has versions; model them.</td></tr>
+<tr><td>Citations to non-existent sources</td><td>LLMs can cite ids that were never provided.</td><td>Grounding pass drops unknown source ids; chat quotes are verified against the document.</td><td>Validate model output; do not trust it.</td></tr>
+<tr><td>Python <code>\w</code> broke Marathi words</td><td>Devanagari vowel signs are not word characters in Python’s regex.</td><td>Custom tokenizer that keeps matras; language detection by script ratio.</td><td>Test with the real script, not just Latin text.</td></tr>
+<tr><td>LLM calls failing: 401, 404, 503 “high demand”</td><td>Wrong key type, retired model name, overloaded provider.</td><td>Coded error messages, key cleaning, fallback chain, <code>llm.check</code> and <code>--list-models</code>.</td><td>Treat the LLM as an unreliable dependency; design for failure and diagnosability.</td></tr>
+<tr><td>Keyword search weaker on Postgres than in memory</td><td><code>ts_rank_cd</code> ignores term rarity.</td><td>IDF-weighted scoring from <code>ts_stat</code>; regression test.</td><td>Measure; the evaluation caught what unit tests could not.</td></tr>
+<tr><td>Drafts failed with a long list of errors</td><td>Framework no longer honoured the discriminated union; date check lacked time-zone slack; day/month confusion in date input.</td><td>Model chosen by <code>kind</code>; one-day tolerance; future dates blocked; chosen date spelled out; field labels in errors.</td><td>Test the whole path through the UI, including submission.</td></tr>
+<tr><td>Docker disk usage grew 8–10 GB per run</td><td>Model download layer invalidated whenever <code>requirements.txt</code> changed.</td><td>Reordered Dockerfile layers; documented pruning.</td><td>Order layers from least to most frequently changed.</td></tr>
+<tr><td>“No default constructor” for a security bean</td><td>Two constructors (one for tests) and no <code>@Autowired</code> marker.</td><td>Annotate the public constructor.</td><td>Testability hooks can change how the framework wires beans.</td></tr>
+</tbody></table>
+</section>
+
+<section>
+<h2><span class="num">15</span>Limitations and future work</h2>
+<h3>15.1 Known limitations (say these first in a viva)</h3>
+<ul>
+<li><b>Not legal advice, and not verified law.</b> The knowledge base is not human-verified (all <code>verified_by</code> fields are empty). The Marathi RTI Act is OCR text; the English Act is a 2008 reprint that lacks later amendments; the other laws are short unverified summaries.</li>
+<li><b>Marathi retrieval is weaker than English</b> (MRR 0.61 vs 0.74), partly because the Marathi source is noisy; a multilingual query step that also searches in English would help.</li>
+<li><b>Answer quality depends on the LLM.</b> A small or non-Marathi-focused model can produce weak or incomplete Marathi, or miss a deadline. Answer-level scoring has not been run at scale.</li>
+<li><b>OCR on real photographs</b> (shadows, perspective, handwriting) will be worse than the clean tests; there is no confidence display or deskew step.</li>
+<li><b>Single-instance assumptions:</b> in-memory login throttle and a scheduler that must run in one replica.</li>
+<li><b>Privacy:</b> document text is sent to a third-party LLM; no PII masking yet.</li>
+<li><b>Jurisdiction:</b> Maharashtra and central RTI rules only; drafts follow the Maharashtra forms.</li>
+<li><b>Jobs are in memory:</b> a restart loses queued jobs (they are marked failed and can be retried).</li>
+<li><b>No refresh tokens, no global rate limiting, registration reveals existing e-mails.</b></li>
+</ul>
+<h3>15.2 Roadmap</h3>
+<table>
+<thead><tr><th style="width:28%">Idea</th><th>Why and how</th></tr></thead>
+<tbody>
+<tr><td>Human verification workflow</td><td>Fill <code>verified_by/at</code> after a reviewer checks each source; show it in the UI (already supported).</td></tr>
+<tr><td>More official texts</td><td>Consumer Jurisdiction Rules 2021, Central RTI Rules 2012, a current English RTI Act, Limitation Act, NI Act, BNS/BNSS.</td></tr>
+<tr><td>Cross-language retrieval</td><td>Translate or expand Marathi queries to English and merge results.</td></tr>
+<tr><td>PII masking before the LLM</td><td>Regex/NER for phone, Aadhaar, e-mail; show what was masked.</td></tr>
+<tr><td>Voice and accessibility</td><td>Read-aloud and voice input in Marathi (browser speech APIs), larger-type mode.</td></tr>
+<tr><td>Feedback loop</td><td>“This answer is wrong” button that stores the case and grows the evaluation set.</td></tr>
+<tr><td>Case tracker</td><td>One RTI journey (application → reply → appeal) with status and deadlines linked.</td></tr>
+<tr><td>Scale-out</td><td>Redis throttle, scheduler lock, a durable job queue, refresh-token auth, per-user rate limits.</td></tr>
+<tr><td>Streaming answers</td><td>Token streaming in chat for responsiveness.</td></tr>
+</tbody></table>
+</section>
+
+<section>
+<h2><span class="num">16</span>Interview question bank</h2>
+<p class="lead">Short model answers to questions that are likely in a viva or a technical interview on this project. Longer explanations are in the sections referenced.</p>
+
+<h3>16.1 Big picture</h3>
+<div class="qa"><div class="q">Describe the project in 30 seconds.</div><div class="a"><p>NyayaSetu helps ordinary people understand legal and RTI documents in English or Marathi. You upload a PDF or a phone photo; the system reads it (with OCR if needed), retrieves the relevant sections of Indian law from a knowledge base, and uses an LLM to produce a plain-language summary, deadlines, next steps and cited sources. You can ask follow-up questions, get reminders before deadlines, and generate ready-to-file RTI drafts. It runs as four containers: React front end, Spring Boot gateway, a FastAPI AI service, and PostgreSQL with pgvector.</p></div></div>
+<div class="qa"><div class="q">What is the hardest technical problem in it?</div><div class="a"><p>Trustworthiness. Getting an LLM to produce fluent text is easy; making sure it is grounded, current and verifiable is the work: OCR on Marathi scans, a knowledge base with provenance and supersession, retrieval that finds the right provision, output validation and citation grounding, and an evaluation that measures it.</p></div></div>
+<div class="qa"><div class="q">What is your own contribution versus libraries?</div><div class="a"><p>The libraries do OCR, embeddings, PDF parsing and LLM transport. My work is the architecture, the legal-text parsers and manifest, the hybrid retrieval and its IDF keyword scoring, the prompt and validation/grounding layers, the fallback chain, the deadline and reminder logic, the draft generator with its legal rules, the security design, and the test and evaluation harness.</p></div></div>
+
+<h3>16.2 Architecture and design</h3>
+<div class="qa"><div class="q">Why a Java gateway in front of a Python service?</div><div class="a"><p>Each language does what its ecosystem is best at, and the browser never reaches the AI code. The gateway gives authentication, ownership checks, validated storage, job orchestration and graceful degradation; the AI service stays stateless and replaceable. The cost is one extra network hop and two code bases to maintain.</p></div></div>
+<div class="qa"><div class="q">Why asynchronous processing with polling?</div><div class="a"><p>OCR plus an LLM call can take tens of seconds. Holding an HTTP request open that long is fragile. The API returns immediately; a background job updates a status row; the UI polls. It is simple and robust. Jobs are kept in memory, so a restart loses queued work (marked failed and retryable); a durable queue would be the next step.</p></div></div>
+<div class="qa"><div class="q">How is the AI service protected?</div><div class="a"><p>It is not published outside the Docker network and requires a shared secret header verified in constant time. Only the backend knows the secret.</p></div></div>
+<div class="qa"><div class="q">What is idempotency in this system and where do you use it?</div><div class="a"><p>Starting a job twice must not do the work twice: <code>beginProcessing</code> refuses a second concurrent job and a repeat of a completed one unless forced. Knowledge-base ingestion is idempotent through content hashes. Reminders are idempotent through <code>last_reminder_stage</code>.</p></div></div>
+<div class="qa"><div class="q">Why JSONB for results but tables for deadlines?</div><div class="a"><p>The explanation is a document consumed whole, so JSONB allows the AI schema to change without migrations. Deadlines are queried, filtered, sorted and used by the scheduler, so they belong in a normal table with indexes (including a partial index on pending deadlines).</p></div></div>
+
+<h3>16.3 AI and RAG</h3>
+<div class="qa"><div class="q">Explain RRF.</div><div class="a"><p>Reciprocal Rank Fusion scores a document as the sum over rankings of 1/(60 + rank). It needs only ranks, so lists with incomparable scores (cosine similarity and a keyword score) can be merged, and a document ranked well in both rises.</p></div></div>
+<div class="qa"><div class="q">Bi-encoder versus cross-encoder?</div><div class="a"><p>A bi-encoder embeds query and passage separately, so passages can be pre-computed and searched fast, but it compares only two vectors. A cross-encoder reads query and passage together and judges relevance directly: more accurate, but it must run per pair, so I use it only on the 16 fused candidates.</p></div></div>
+<div class="qa"><div class="q">Why chunk the knowledge base, and at what size?</div><div class="a"><p>Embeddings represent a limited span well, and the prompt has limited room. Entries (a section or rule) are split into 1 200-character chunks with 150 overlap; most sections fit in one chunk. Each chunk keeps the provision id, so retrieval results can be grouped back to a citation.</p></div></div>
+<div class="qa"><div class="q">What if the retriever returns nothing relevant?</div><div class="a"><p>The prompt allows an empty source list; the model then explains from the document only and puts uncertainty in caveats. In chat, <code>answerable: false</code> is returned when neither the document nor the sources contain the answer.</p></div></div>
+<div class="qa"><div class="q">How do you handle a long document?</div><div class="a"><p>Map-reduce: split into chunks, condense each in parallel into fact-preserving notes, and summarise from the notes. Chat uses a per-document index to fetch only relevant excerpts.</p></div></div>
+<div class="qa"><div class="q">Temperature and why 0.1?</div><div class="a"><p>Low temperature makes extraction of dates, amounts and sections more deterministic. This is not creative writing.</p></div></div>
+<div class="qa"><div class="q">What do you do about the model returning invalid JSON?</div><div class="a"><p>Tolerant extraction of the first balanced JSON object, Pydantic validation with lenient normalisation, one repair retry that shows the model its error, then a clear 502 if it still fails.</p></div></div>
+<div class="qa"><div class="q">How would you evaluate answer quality, not just retrieval?</div><div class="a"><p>A labelled question set with required facts, scoring fact recall, whether the answer cites a relevant provision, whether numbers appear in the cited text, and refusals on out-of-scope questions. Plus human review of a sample, because string checks cannot prove correctness. The harness exists; the large-scale run is future work.</p></div></div>
+
+<h3>16.4 Backend and data</h3>
+<div class="qa"><div class="q">How do you stop path traversal and fake file types?</div><div class="a"><p>Type is decided from the first bytes; stored names are random UUIDs; every resolved path is checked to stay under the storage root; files are written to a temp file and moved atomically.</p></div></div>
+<div class="qa"><div class="q">Why is chat <code>ask()</code> not <code>@Transactional</code>?</div><div class="a"><p>It calls a slow external service. A transaction would hold a database connection for the whole call and exhaust the pool under load. Persistence happens in short steps before and after the call.</p></div></div>
+<div class="qa"><div class="q">What is Flyway and why use it?</div><div class="a"><p>A schema-migration tool: versioned SQL files (V1, V2…) applied in order and recorded in a history table. It makes the database schema reproducible and reviewable, instead of letting the ORM guess.</p></div></div>
+<div class="qa"><div class="q">How do you delete a user’s data completely?</div><div class="a"><p><code>ON DELETE CASCADE</code> on every child table (documents, results, deadlines, reminders, chat) plus deleting the user’s upload directory.</p></div></div>
+
+<h3>16.5 Frontend</h3>
+<div class="qa"><div class="q">How does the UI show Marathi correctly?</div><div class="a"><p>Marathi strings are UTF-8 in the bundle; the browser shapes the text. The UI language and the AI output language are independent settings. Draft PDFs are shaped server-side by MuPDF’s engine; Word files rely on the Mangal font.</p></div></div>
+<div class="qa"><div class="q">How do you avoid re-render and polling waste?</div><div class="a"><p><code>usePolling</code> runs only while a job is active and the tab is visible, always calling the latest callback through a ref.</p></div></div>
+
+<h3>16.6 Testing and process</h3>
+<div class="qa"><div class="q">Give an example of a bug your tests caught and one they missed.</div><div class="a"><p>Caught: OCR misreading rule numbers, via the expected-count parser checks; a hallucinated source id, via the grounding test. Missed: the first-appeal and fee-reply form errors; my browser test opened those forms but never submitted them. After that I added end-to-end submission tests for all three drafts and API tests for every document type in both languages.</p></div></div>
+<div class="qa"><div class="q">What would you do differently?</div><div class="a"><p>Start the evaluation harness earlier (it found the keyword-scoring defect), build a human-verification workflow for the legal texts from the beginning, choose a durable job queue, and test with real phone photographs sooner.</p></div></div>
+<div class="qa"><div class="q">How would you scale this to a million users?</div><div class="a"><p>Move jobs to a durable queue with worker pods; run several stateless backend and AI replicas behind a load balancer; shared Redis for throttling and caching; a scheduler lock; object storage instead of a local volume; partition or move the vector index if the corpus grows; per-user rate limits and cost controls on LLM calls; a read replica for history.</p></div></div>
+
+<h3>16.7 Product and ethics</h3>
+<div class="qa"><div class="q">Is this legal advice?</div><div class="a"><p>No, and the system says so in the UI and every prompt. It explains documents and points to sources. For important decisions users should consult a lawyer or the District Legal Services Authority.</p></div></div>
+<div class="qa"><div class="q">What are the risks of an AI explaining legal documents?</div><div class="a"><p>Hallucinated facts, outdated law, mistranslation and overconfidence. The design addresses them with grounding, provenance and supersession, citation checks, caveats and visible uncertainty, but it cannot remove them, which is why evaluation and human verification are on the roadmap.</p></div></div>
+<div class="qa"><div class="q">What data does a third-party LLM see?</div><div class="a"><p>The extracted document text and the retrieved legal sources. Users should be told this; for sensitive documents a local model or a no-training plan is advisable, and PII masking is a planned feature.</p></div></div>
+</section>
+
+<section>
+<h2><span class="num">A</span>Appendix</h2>
+
+<h3>A.1 Numbers worth remembering</h3>
+<table>
+<thead><tr><th style="width:38%">Item</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td>Services / published ports</td><td>4 containers; only the front end is published (3000 → 80)</td></tr>
+<tr><td>Upload limit · file types</td><td>25 MB · PDF, PNG, JPEG, TIFF, BMP, WEBP (by content)</td></tr>
+<tr><td>JWT lifetime · password · throttle</td><td>12 h · BCrypt cost 12, 8–72 chars · 5 failures / 15 min per e-mail+IP</td></tr>
+<tr><td>Async job pool</td><td>2 core / 4 max threads, queue 100; one retry after 2 s for transient errors</td></tr>
+<tr><td>OCR</td><td>Tesseract mar+hin+eng · 200 DPI (300 for KB) · up to 60 pages</td></tr>
+<tr><td>Direct-prompt limit · map-reduce</td><td>14 000 characters · chunks ≈ 5 400, ≤ 24, 4 in parallel</td></tr>
+<tr><td>Knowledge base</td><td>318 entries → 467 chunks · 1 200-character chunks, 150 overlap · vector(384)</td></tr>
+<tr><td>Retrieval</td><td>20 vector + 20 keyword candidates → RRF (k = 60) → 16 → rerank → top 6 (chat 4)</td></tr>
+<tr><td>LLM</td><td>temperature 0.1 · max tokens 4096 · timeout 120 s · 1 retry per model when fallbacks exist</td></tr>
+<tr><td>Chat</td><td>10 messages loaded · 8 replayed · each ≤ 1 500 chars · ≤ 100 questions per document · ≤ 2 verified quotes</td></tr>
+<tr><td>Reminders</td><td>7, 3, 1, 0 days · daily 08:00 Asia/Kolkata</td></tr>
+<tr><td>RTI periods used by the drafts</td><td>PIO reply 30 days (s.7(1)); first appeal 30 days (s.19(1)); second appeal 90 days (s.19(3))</td></tr>
+<tr><td>Maharashtra fees (rules of 7 July 2026)</td><td>₹10 application · ₹2 per page · ₹20 appeal</td></tr>
+<tr><td>Tests</td><td>101 AI service · 27 backend · 11 front end</td></tr>
+<tr><td>Best retrieval result</td><td>MRR 0.702 · Hit@3 82% · 0% superseded text</td></tr>
+</tbody></table>
+
+<h3>A.2 Glossary</h3>
+<table>
+<thead><tr><th style="width:24%">Term</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td>RTI</td><td>Right to Information Act, 2005: citizens may request information from public authorities.</td></tr>
+<tr><td>PIO / SPIO / CPIO</td><td>(State / Central) Public Information Officer: the officer who answers RTI applications.</td></tr>
+<tr><td>First Appellate Authority</td><td>Senior officer in the same authority who hears the first appeal (Section 19(1)).</td></tr>
+<tr><td>Information Commission</td><td>Central or State body for second appeals and complaints; the only body that can impose the Section 20 penalty.</td></tr>
+<tr><td>Deemed refusal</td><td>No reply within the time limit is treated as a refusal (Section 7(2)).</td></tr>
+<tr><td>Section 8 / 9 / 10</td><td>Exemptions from disclosure · grounds of copyright · severability (release the non-exempt part).</td></tr>
+<tr><td>Superseded</td><td>Replaced by a later rule or notification. Kept for history, excluded from retrieval.</td></tr>
+<tr><td>Gazette</td><td>The government’s official publication of Acts, Rules and notifications.</td></tr>
+<tr><td>RAG</td><td>Retrieval-augmented generation: retrieve relevant text, then let the model answer using it.</td></tr>
+<tr><td>Embedding</td><td>A vector representing the meaning of a text; similar meanings give nearby vectors.</td></tr>
+<tr><td>HNSW</td><td>Hierarchical Navigable Small World: an approximate nearest-neighbour index used by pgvector.</td></tr>
+<tr><td>RRF</td><td>Reciprocal Rank Fusion: merge ranked lists by summing 1/(k + rank).</td></tr>
+<tr><td>Cross-encoder</td><td>A model that scores a (query, passage) pair jointly; used to rerank.</td></tr>
+<tr><td>IDF</td><td>Inverse document frequency: weights rare words more than common ones.</td></tr>
+<tr><td>MRR / Hit@k</td><td>Mean reciprocal rank of the first correct result · share of questions with a correct result in the top k.</td></tr>
+<tr><td>JWT</td><td>JSON Web Token: a signed token carrying the user’s identity.</td></tr>
+<tr><td>Flyway</td><td>Database migration tool that applies versioned SQL scripts.</td></tr>
+<tr><td>OCR</td><td>Optical character recognition: turning an image of text into text.</td></tr>
+</tbody></table>
+
+<h3>A.3 Useful commands</h3>
+<pre><code>docker compose up -d                                   # start (add --build only when code changed)
+docker compose up -d --build ai-service                # rebuild one service
+docker compose exec ai-service python -m app.llm.check               # which LLMs answer
+docker compose exec ai-service python -m app.llm.check --list-models # model names the keys can use
+docker compose exec ai-service python -m app.evaluation retrieval    # retrieval evaluation
+docker compose logs --tail 50 ai-service               # recent AI-service logs
+docker image prune -f &amp;&amp; docker builder prune -f       # reclaim disk (never prune volumes)
+# tests
+cd ai-service &amp;&amp; TEST_DATABASE_URL=postgresql://… pytest -q
+cd backend    &amp;&amp; TEST_DB_URL=jdbc:postgresql://localhost:5432/nyayasetu_test mvn test
+cd frontend   &amp;&amp; npm test</code></pre>
+</section>
+</body></html>

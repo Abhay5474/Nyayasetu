@@ -1,0 +1,36 @@
+<section>
+<h2><span class="num">1</span>Problem, goals and scope</h2>
+<p class="lead">Most people who receive an RTI reply, a legal notice or a court order cannot read it. The language is technical, the document is often a scan or a phone photo, and the deadline that matters (usually 30 days) is buried in a paragraph. Missing it can mean losing the right to appeal.</p>
+
+<h3>1.1 The problem in concrete terms</h3>
+<ul>
+<li><b>Language barrier.</b> Official text is dense English or formal Marathi. A citizen needs plain language in the language they think in.</li>
+<li><b>Format barrier.</b> Documents arrive as digital PDFs, scanned pages, or photographs taken on a phone, sometimes with broken Marathi text layers.</li>
+<li><b>Time-bound consequences.</b> The Right to Information Act, 2005 gives 30 days for a first appeal (Section 19(1)) and 90 days for a second appeal (Section 19(3)). A missed date is expensive.</li>
+<li><b>Trust.</b> A summary that invents a section number or states an outdated fee does harm. The system must ground its statements in real law and show where each statement comes from.</li>
+</ul>
+
+<h3>1.2 What NyayaSetu does</h3>
+<table>
+<thead><tr><th style="width:24%">Capability</th><th>What the user gets</th></tr></thead>
+<tbody>
+<tr><td><b>Understand</b></td><td>Upload a PDF or photo. The system extracts the text (OCR when needed), checks it against a legal knowledge base, and returns a plain-language summary, key points, deadlines, required actions and legal references with source citations, in English or Marathi.</td></tr>
+<tr><td><b>Ask</b></td><td>A continuous, multi-turn chat about the uploaded document. Answers are grounded in the document text and the legal knowledge base, with verbatim quotes and a clear “not answerable from this document” signal.</td></tr>
+<tr><td><b>Track</b></td><td>Deadlines found in documents are stored per user, grouped by urgency, and can trigger e-mail and SMS reminders 7, 3 and 1 day before and on the day.</td></tr>
+<tr><td><b>Act</b></td><td>A draft generator produces a ready-to-file RTI application, first appeal or reply to a fee demand in English or Marathi as PDF or Word, with checks such as the computed last date to appeal.</td></tr>
+<tr><td><b>Trust</b></td><td>Every citation is labelled “Official text”, “Government reprint” or “Unverified summary”, with the date the text is current as of, the verification status and reviewer notes. Superseded rules are never used.</td></tr>
+</tbody></table>
+
+<h3>1.3 Design goals</h3>
+<ol>
+<li><b>Correctness over fluency.</b> Ground every statement in the document or in cited law; refuse to guess dates.</li>
+<li><b>Works with imperfect inputs.</b> Scans, photos, broken text layers, mixed English and Marathi.</li>
+<li><b>Privacy by default.</b> Each user sees only their own documents; drafts are not stored; secrets stay server-side.</li>
+<li><b>Operable by a student on a laptop.</b> One command (<code>docker compose up</code>) starts everything; offline modes exist for tests.</li>
+<li><b>Honest about limits.</b> The product explains documents; it does not give legal advice, and says so in the UI and in every prompt.</li>
+</ol>
+
+<h3>1.4 Scope boundaries</h3>
+<p>The knowledge base focuses on the RTI Act 2005, the Maharashtra RTI Rules (2005 and the 2026 notifications), the Central fee rules, the Consumer Protection Act 2019, plus summaries of a few other laws and judgments. It is a major-project prototype: the legal texts are not human-verified, the Marathi RTI Act text is OCR-derived, and Section 15 lists what a production system would still need.</p>
+<div class="box"><div class="t">Interview framing</div><p>“It is a retrieval-augmented generation system with a product layer around it. The LLM is the smallest part of the codebase. Most of the engineering is about getting trustworthy text in (OCR, cleaning), trustworthy law in (knowledge base with provenance), and trustworthy output out (schema validation, grounding, deadlines, drafts).”</p></div>
+</section>

@@ -1,0 +1,54 @@
+<section>
+<h2><span class="num">12</span>Deployment and operations</h2>
+
+<h3>12.1 Compose file in plain words</h3>
+<table>
+<thead><tr><th style="width:14%">Service</th><th style="width:24%">Image / build</th><th>Wiring</th></tr></thead>
+<tbody>
+<tr><td><code>postgres</code></td><td><code>pgvector/pgvector:pg16</code></td><td>Volume <code>pgdata</code>; <code>db/init.sql</code> creates the <code>vector</code> extension on first start; <code>pg_isready</code> health check; the password is required (<code>POSTGRES_PASSWORD</code>).</td></tr>
+<tr><td><code>ai-service</code></td><td>build <code>./ai-service</code> (Python 3.12-slim + Tesseract mar/hin/eng; models baked in)</td><td>Depends on healthy Postgres; environment for database URL, internal token, LLM provider/model/keys/fallbacks, embedding and reranker models; <code>expose: 8000</code> only; <code>host.docker.internal</code> mapped so a local Ollama can be reached.</td></tr>
+<tr><td><code>backend</code></td><td>build <code>./backend</code> (Maven build stage, JRE 21 runtime)</td><td>Depends on healthy Postgres and <i>started</i> AI service; JWT secret and internal token required; <code>uploads</code> volume at <code>/data/uploads</code>; alert and mail/SMS settings; <code>expose: 8080</code>.</td></tr>
+<tr><td><code>frontend</code></td><td>build <code>./frontend</code> (Node 22 build, nginx runtime)</td><td>Depends on healthy backend; publishes <code>${FRONTEND_PORT:-3000}:80</code>.</td></tr>
+</tbody></table>
+<p>Start-up order: Postgres becomes healthy → AI service and backend start (the backend runs Flyway migrations) → frontend starts when the backend is healthy. The AI service loads models and the knowledge base in the background; <code>/health</code> reports progress.</p>
+
+<h3>12.2 Configuration (twelve-factor)</h3>
+<p>All settings are environment variables read into typed classes (<code>AppProperties</code> in Java, <code>Settings</code> in Python); <code>.env.example</code> documents them. The ones people change most:</p>
+<table>
+<thead><tr><th style="width:30%">Variable</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>POSTGRES_PASSWORD</code>, <code>JWT_SECRET</code>, <code>INTERNAL_TOKEN</code></td><td>Required secrets (the stack refuses to start without them).</td></tr>
+<tr><td><code>LLM_PROVIDER</code>, <code>LLM_MODEL</code>, <code>OPENAI_API_KEY</code>, <code>OPENAI_BASE_URL</code>, <code>ANTHROPIC_API_KEY</code></td><td>Primary model; <code>openai</code> works with any OpenAI-compatible endpoint (Groq, Gemini…).</td></tr>
+<tr><td><code>LLM_FALLBACK_MODELS</code>, <code>FALLBACK_LLM_PROVIDER/MODEL/API_KEY/BASE_URL</code></td><td>Backup models on the same provider, then a second provider.</td></tr>
+<tr><td><code>EMBEDDING_PROVIDER</code>, <code>RERANKER</code></td><td><code>fastembed</code>/<code>cross-encoder</code> in production; <code>hash</code>/<code>lexical</code> for offline tests.</td></tr>
+<tr><td><code>ALERTS_ENABLED</code>, <code>ALERTS_CRON</code>, <code>MAIL_*</code>, <code>SMS_PROVIDER</code>, <code>TWILIO_*</code></td><td>Optional reminder job and channels.</td></tr>
+<tr><td><code>FRONTEND_PORT</code>, <code>CORS_ALLOWED_ORIGINS</code>, <code>MAX_UPLOAD_MB</code></td><td>Web settings.</td></tr>
+</tbody></table>
+
+<h3>12.3 Local development without Docker for every service</h3>
+<pre><code># database with pgvector (one container, or a local Postgres + CREATE EXTENSION vector)
+docker run -d -p 5432:5432 -e POSTGRES_USER=nyayasetu -e POSTGRES_PASSWORD=nyayasetu -e POSTGRES_DB=nyayasetu pgvector/pgvector:pg16
+# AI service (needs tesseract-ocr + mar/hin packs)
+cd ai-service &amp;&amp; pip install -r requirements.txt &amp;&amp; INTERNAL_TOKEN=dev uvicorn app.main:app --port 8000
+# backend
+cd backend &amp;&amp; JWT_SECRET=&lt;32+ chars&gt; AI_INTERNAL_TOKEN=dev mvn spring-boot:run
+# frontend (proxies /api to :8080)
+cd frontend &amp;&amp; npm install &amp;&amp; npm run dev</code></pre>
+
+<h3>12.4 Images, size and rebuilds</h3>
+<ul>
+<li>The AI service image is the largest (several GB): Python packages (ONNX runtime, fastembed, PyMuPDF…) plus about 1 GB of baked models. A complete set of images is roughly 8–10 GB.</li>
+<li>The Dockerfile installs the ML libraries and downloads the models <i>before</i> the other requirements, so editing <code>requirements.txt</code> or the code does not re-download the models. Without this ordering, each rebuild left a multi-gigabyte unused layer behind (a real disk-space problem on a Windows laptop).</li>
+<li>Housekeeping: <code>docker image prune</code> and <code>docker builder prune</code> after rebuilds; never <code>docker volume prune</code> (it deletes <code>pgdata</code>). On Windows with WSL2, freed space returns to drive C: only after the Docker disk file is compacted.</li>
+</ul>
+
+<h3>12.5 Continuous integration</h3>
+<p>GitHub Actions runs three jobs on every push: <b>ai-service</b> (installs Tesseract with Marathi/Hindi packs, starts a pgvector Postgres and runs pytest including the real-OCR and real-pgvector tests), <b>backend</b> (<code>mvn verify</code> against Postgres) and <b>frontend</b> (<code>npm ci &amp;&amp; npm test &amp;&amp; npm run build</code>).</p>
+
+<h3>12.6 Observability and diagnostics</h3>
+<ul>
+<li><code>/actuator/health</code> (backend, including an AI-service indicator) and <code>/health</code> (AI service: database, chunk count, ingestion state, models, LLM chain).</li>
+<li><code>docker compose exec ai-service python -m app.llm.check</code> → which models answer; <code>--list-models</code> → names the keys can use.</li>
+<li>Logs name the failing step and model on every fallback (“LLM openai:… failed (llm_overloaded)”); no secrets are logged.</li>
+</ul>
+</section>

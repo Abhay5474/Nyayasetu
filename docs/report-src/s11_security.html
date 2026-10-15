@@ -1,0 +1,38 @@
+<section>
+<h2><span class="num">11</span>Security and privacy</h2>
+<p class="lead">The system handles personal legal documents. The security design assumes the browser is untrusted, the AI service is internal, and the LLM provider is a third party.</p>
+
+<h3>11.1 Threat → mitigation</h3>
+<table>
+<thead><tr><th style="width:23%">Threat</th><th>Mitigation in this system</th></tr></thead>
+<tbody>
+<tr><td>Reading another user’s data</td><td>Ownership-scoped repository methods (<code>findByIdAndUserId</code>); user id taken from the verified JWT; misses return 404; integration tests try cross-user reads, deletes and chat.</td></tr>
+<tr><td>Stolen or forged token</td><td>HS256 with a secret of at least 32 bytes (start-up fails otherwise); 12-hour expiry; front-end logout at expiry. Residual risk: token in <code>localStorage</code> (XSS) — see 4.3.</td></tr>
+<tr><td>Password attacks</td><td>BCrypt cost 12; 5-failure throttle per e-mail+IP; same message for unknown user and wrong password, and a dummy hash is compared for unknown e-mails so timing does not reveal whether an account exists.</td></tr>
+<tr><td>Malicious uploads</td><td>Content-based type check (magic bytes), size cap, random stored names, path-traversal check, atomic writes, non-root containers; PDFs are only parsed by PyMuPDF/Tesseract in the AI service, never executed or served inline from the upload directory.</td></tr>
+<tr><td>Direct access to the AI service</td><td>Not published to the host; every route requires <code>X-Internal-Token</code>, compared in constant time; only the backend knows it.</td></tr>
+<tr><td>SQL injection</td><td>JPA / parameterised queries everywhere. The one dynamically built SQL (IDF keyword search) only interpolates placeholders; the terms and weights are bound parameters, and terms come from a tokenizer that yields only letters and digits.</td></tr>
+<tr><td>XSS / clickjacking</td><td>React escapes output; no raw HTML injection; CSP restricts scripts to the same origin; <code>X-Frame-Options: DENY</code>; <code>nosniff</code>; <code>Referrer-Policy: no-referrer</code>.</td></tr>
+<tr><td>CSRF</td><td>No cookies are used for authentication, so there is no ambient credential to abuse; CORS lists only allowed origins.</td></tr>
+<tr><td>Prompt injection via a document</td><td>The model’s output is parsed against a strict schema and never executed; it cannot call tools or write data; citations and quotes are verified. A hostile document could still try to bias the summary, which is why the UI shows sources and caveats and says this is not legal advice.</td></tr>
+<tr><td>Output injection into PDFs/Word</td><td>User text is HTML-escaped for the PDF renderer; Word receives plain runs; control characters are stripped by validation.</td></tr>
+<tr><td>Secret leakage</td><td>Secrets live in <code>.env</code> (git-ignored; only <code>.env.example</code> is committed); API errors never echo keys; the AI service strips quotes/spaces from keys and error messages name the setting, not the value.</td></tr>
+<tr><td>Denial of service</td><td>Upload size cap and nginx body limit; bounded async queue (overflow becomes a clear “server busy”); per-document chat limit; bounded form sizes for drafts; timeouts on every outbound call. (There is no global rate limiter — see limitations.)</td></tr>
+</tbody></table>
+
+<h3>11.2 Privacy considerations</h3>
+<ul>
+<li><b>What leaves the system.</b> The extracted text of a document (and the retrieved legal sources) is sent to the configured LLM provider. Hosted providers may log or, on free tiers, train on inputs. For sensitive material use a local model (<code>ollama</code>) or a paid tier with a no-training policy. This should be disclosed to users in a real deployment.</li>
+<li><b>What does not.</b> Passwords (hashed), other users’ data, and draft forms.</li>
+<li><b>Data minimisation and erasure.</b> Users can delete a document or the whole account with cascading deletion of rows and files. Draft forms are never stored.</li>
+<li><b>Planned improvement.</b> Detect and mask phone numbers, Aadhaar numbers and e-mail addresses before text is sent to the LLM, and show the user what was masked.</li>
+</ul>
+
+<h3>11.3 Container hardening</h3>
+<ul>
+<li>Backend and AI service run as a non-root user (<code>uid 10001</code>); the backend and front end use multi-stage builds so build tools stay out of the runtime image; health checks on all services.</li>
+<li>Only port 3000 is published. Database, backend and AI service ports are internal to the Compose network.</li>
+</ul>
+
+<div class="qa"><div class="q">What is the biggest security weakness today?</div><div class="a"><p>Honest answer: the JWT in <code>localStorage</code> and the missing global rate limiter. The first is mitigated by CSP but a refresh-token-in-HttpOnly-cookie design would be stronger; the second means an authenticated user could submit many expensive jobs (bounded only by the queue and the file-size cap). I would add per-user rate limits, a Redis-backed throttle, and an account-enumeration review of the registration response (it reports “e-mail taken”).</p></div></div>
+</section>

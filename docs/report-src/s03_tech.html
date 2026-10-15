@@ -1,0 +1,18 @@
+<section>
+<h2><span class="num">3</span>Technology choices and why</h2>
+<table>
+<thead><tr><th style="width:17%">Layer</th><th style="width:25%">Choice</th><th>Why this and not the alternative</th></tr></thead>
+<tbody>
+<tr><td>UI</td><td>React 18, Vite 5, Tailwind CSS 3, Axios, react-router, lucide-react</td><td>Component model suits a stateful results page and chat; Vite gives fast builds; Tailwind keeps styling consistent without a design system; Axios interceptors centralise the auth header and 401 handling.</td></tr>
+<tr><td>Web server</td><td>nginx 1.27 (alpine)</td><td>Serves static files efficiently, adds security headers/CSP, and proxies <code>/api</code> so the browser sees one origin (no CORS in production).</td></tr>
+<tr><td>Gateway</td><td>Spring Boot 3.3.5, Java 21, Spring Security, Spring Data JPA, Flyway, jjwt 0.12.6, BCrypt(12), RestClient</td><td>Mature security and transaction model; Flyway gives versioned schema migrations; RestClient is the modern synchronous HTTP client.</td></tr>
+<tr><td>AI service</td><td>FastAPI + uvicorn, Pydantic v2, LangChain core, PyMuPDF, Tesseract (mar+hin+eng), fastembed (ONNX), psycopg 3 + pgvector, python-docx</td><td>Pydantic gives strict, self-documenting JSON contracts; PyMuPDF is fast and also renders the draft PDFs; Tesseract has Marathi/Hindi models; fastembed runs multilingual embeddings and a cross-encoder without PyTorch (smaller image).</td></tr>
+<tr><td>Database</td><td>PostgreSQL 16 with pgvector</td><td>One database for relational data, full-text search and vectors; avoids running a separate vector database; transactional and easy to back up.</td></tr>
+<tr><td>Embeddings</td><td><code>paraphrase-multilingual-MiniLM-L12-v2</code> (384 dimensions)</td><td>Small, CPU-friendly, covers English/Hindi/Marathi well enough for retrieval.</td></tr>
+<tr><td>Reranker</td><td><code>jina-reranker-v2-base-multilingual</code> cross-encoder (lexical fallback)</td><td>A cross-encoder reads query and passage together and corrects the first-stage ranking; it was the largest single gain in the evaluation.</td></tr>
+<tr><td>LLM access</td><td>LangChain chat models: Anthropic, OpenAI-compatible (Groq, Gemini, xAI…), Ollama, plus a mock</td><td>Provider-agnostic: any OpenAI-compatible endpoint works by changing a URL and key. A fallback chain protects against outages.</td></tr>
+<tr><td>Packaging</td><td>Docker Compose, GitHub Actions CI</td><td>Reproducible start-up and automated tests for all three code bases.</td></tr>
+</tbody></table>
+
+<div class="box blue"><div class="t">Interview question this answers</div><p><b>“Why not do everything in one Python app?”</b> It would be shorter, yes. The split shows a real service boundary: the identity, storage and transaction logic lives in the stack built for it, while the AI-specific work is isolated behind a narrow, token-protected API. It also let the gateway degrade gracefully when the AI side is slow or down.</p></div>
+</section>

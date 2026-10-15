@@ -1,0 +1,50 @@
+<section>
+<h2><span class="num">9</span>End-to-end data flows</h2>
+<p class="lead">Six flows cover everything the system does. Each diagram is a sequence: time runs downward, solid arrows are calls, dashed arrows are replies, and a yellow box is a note. The orange numbers show the order of the calls.</p>
+
+<h3>9.1 Upload and explanation (the core flow)</h3>
+<figure><!--SEQ:upload--><figcaption>Figure 9.1 — From file to explanation. The browser gets its answer in milliseconds (the 201 reply after call 4) and then polls; the slow work happens in the background.</figcaption></figure>
+<ol>
+<li><i>(calls 1–2)</i> The browser sends the file and the chosen output language to <code>/api/documents</code> with the JWT in the <code>Authorization</code> header. nginx proxies it to the backend with the original <code>Host</code> header.</li>
+<li><i>(calls 3–4)</i> The backend authenticates, validates (size, magic bytes), stores the file under a random name, computes SHA-256, and saves the <code>documents</code> row plus a <code>processing_results</code> row in state PROCESSING. It returns <b>201 immediately</b>.</li>
+<li><i>(call 5)</i> A background job calls the AI service’s <code>/v1/extract</code> with the stored file. The AI service decides page by page between the PDF text layer and OCR, cleans the text and returns it with metadata.</li>
+<li><i>(calls 7–8)</i> The backend saves the extracted text (so later languages and chat never re-run OCR) and calls <code>/v1/simplify</code>.</li>
+<li><i>(calls 9–11)</i> The AI service retrieves the relevant legal sources from <code>kb.kb_chunks</code>, builds the prompt, calls the LLM chain, validates and repairs the JSON, grounds the citations and returns the explanation.</li>
+<li><i>(calls 12–13)</i> The backend stores the result as JSONB, captures deadlines into their own table, and sets the status to COMPLETED. Meanwhile the browser polls the document every 2.5–3 seconds and then fetches the result for the chosen language.</li>
+</ol>
+<p><b>What crosses which boundary:</b> the file bytes go browser → backend → AI service (once); the extracted text goes backend ↔ AI service; the text and retrieved sources go to the LLM provider (the only data that leaves your infrastructure); the browser never talks to the AI service or the database.</p>
+
+<h3>9.2 A chat turn</h3>
+<figure><!--SEQ:chat--><figcaption>Figure 9.2 — One question and answer. The backend owns history and persistence; the AI service owns reasoning.</figcaption></figure>
+<p>The backend sends the stored document text and the last 10 messages; the AI service replays the most recent 8 to the model, combines the previous question with the new one for retrieval, and returns an answer whose quotes were verified against the document and whose source ids were checked against what was retrieved. The AI service stores nothing; the backend writes both messages in one go after the AI call succeeds, so a failed call leaves no half-turn behind.</p>
+
+<h3>9.3 Knowledge-base ingestion at start-up</h3>
+<figure><!--SEQ:kb--><figcaption>Figure 9.3 — Incremental, background ingestion. Only changed chunks are embedded.</figcaption></figure>
+<p>Because chunks are keyed by id and carry a content hash, a restart costs a few queries instead of re-embedding everything. After a text correction (for example fixing an OCR digit in <code>extracted/*.txt</code>) only the affected chunks are re-embedded, and chunks that disappeared from the files are pruned.</p>
+
+<h3>9.4 Deadline reminders</h3>
+<figure><!--SEQ:alert--><figcaption>Figure 9.4 — The optional daily job (enabled with <code>ALERTS_ENABLED=true</code>).</figcaption></figure>
+<p>Reminder stages default to 7, 3, 1 and 0 days. A deadline due in 5 days is in stage 7; the next run at 3 days moves it to stage 3. If the server was down for a day, the next run sends the reminder for the stage the deadline is <i>currently</i> in rather than skipping it, and <code>last_reminder_stage</code> guarantees the same stage is never sent twice. One user’s failure never stops the batch, and every attempt, successful or not, is written to <code>notification_log</code>.</p>
+
+<h3>9.5 Draft generation</h3>
+<figure><!--SEQ:draft--><figcaption>Figure 9.5 — Stateless: nothing typed into the form is stored; the file is built on request and downloaded through a blob URL.</figcaption></figure>
+
+<h3>9.6 Authentication</h3>
+<figure><!--SEQ:auth--><figcaption>Figure 9.6 — Login and the stateless session.</figcaption></figure>
+
+<h3>9.7 Where each kind of data lives</h3>
+<table>
+<thead><tr><th style="width:26%">Data</th><th style="width:22%">Stored in</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Accounts, password hashes</td><td>Postgres <code>public.users</code></td><td>BCrypt hash only; e-mail unique case-insensitively.</td></tr>
+<tr><td>Original uploads</td><td>Docker volume <code>uploads</code></td><td>Random file names under a per-user folder; served only through an authenticated endpoint.</td></tr>
+<tr><td>Extracted text</td><td>Postgres <code>documents.extracted_text</code></td><td>Reused for new languages and chat; deleted with the document.</td></tr>
+<tr><td>Explanations</td><td>Postgres <code>processing_results.result</code> (JSONB)</td><td>One row per document and language.</td></tr>
+<tr><td>Deadlines, reminder log</td><td>Postgres tables</td><td>Deadlines are extracted from the result into rows for querying and reminders.</td></tr>
+<tr><td>Chat history</td><td>Postgres <code>chat_messages</code></td><td>With structured details (quotes, sources, model).</td></tr>
+<tr><td>Legal knowledge base</td><td>Postgres <code>kb.kb_chunks</code></td><td>Rebuildable from the repository.</td></tr>
+<tr><td>Models (embedding, reranker)</td><td>AI service image <code>/opt/models</code></td><td>Baked in at build time so start-up is offline-safe.</td></tr>
+<tr><td>Drafts</td><td>Nowhere</td><td>Generated and returned; the form never reaches a database.</td></tr>
+<tr><td>JWT</td><td>Browser <code>localStorage</code></td><td>Not stored on the server (stateless).</td></tr>
+</tbody></table>
+</section>

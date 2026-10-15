@@ -1,0 +1,73 @@
+<section>
+<h2><span class="num">4</span>Service 1 — Frontend (React + nginx)</h2>
+<p class="lead">The front end is a single-page application. Its job is to make a slow, multi-step backend feel simple: upload, wait with feedback, read a result, ask follow-up questions, draft a reply.</p>
+
+<h3>4.1 Structure of the code</h3>
+<pre><code>frontend/src
+├─ App.jsx                routes: / · /login · /register · /app (protected) · 404
+├─ pages/                 Landing · AuthPages · Dashboard · DocumentDetail · Deadlines · Drafts · SettingsPage
+├─ components/            Layout/Navbar · Dropzone · ChatPanel · StatusBadge · ui.jsx (Alert, Field, Segmented…)
+│  └─ results/            Sections (summary, key points, checklist, deadline timeline, references, sources),
+│                         Provenance (trust badges), ProcessingPanel (progress while the job runs)
+│  └─ drafts/             DraftPaper (on-screen preview of a draft)
+├─ context/               AuthContext (session, login, logout, auto-expiry) · I18nContext (en/mr)
+├─ api/                   client.js (Axios instance, interceptors) · endpoints.js (typed API modules)
+├─ i18n/                  strings.js (UI text en + mr) · drafts.js (draft-form text)
+├─ utils/                 format.js (dates, deadline grouping) · draftForms.js (form rules + payload builder)
+└─ hooks.js               usePolling (only while the tab is visible)</code></pre>
+
+<h3>4.2 How the main screens work</h3>
+<h4>Dashboard — upload and history</h4>
+<p>A drag-and-drop zone accepts a PDF or image (client-side type and size hints; the real validation is on the server). The user picks the output language with a segmented control (English / मराठी) and submits. The upload shows a progress bar (Axios <code>onUploadProgress</code>), then the document appears in the history list with a status badge. While any document is <code>UPLOADED</code> or <code>PROCESSING</code>, the list polls every 3 seconds; polling stops when nothing is active and pauses when the browser tab is hidden.</p>
+<h4>Document detail — the result</h4>
+<p>Two tabs: <b>Explanation</b> and <b>Ask questions</b> (the active tab is kept in the URL, <code>?tab=ask</code>, so a refresh keeps it). While processing, a progress panel is shown and the page polls every 2.5 seconds. When complete, the explanation is rendered in sections:</p>
+<ul>
+<li><b>Summary card</b> and <b>key points</b>;</li>
+<li><b>Action checklist</b> with priorities (high, medium, low);</li>
+<li><b>Deadline timeline</b> — each deadline shows the exact date or the relative period, the original sentence it came from, days remaining, and a toggle to mark it done (this calls the backend and updates the deadlines page);</li>
+<li><b>Legal references</b>, each linked to a numbered source (S1, S2…) with a “Cited” marker;</li>
+<li><b>Sources &amp; citations</b>, each with a trust badge and an expandable provenance panel (section 4.4);</li>
+<li><b>Caveats</b>, where the model lists uncertainty.</li>
+</ul>
+<p>The user can switch output language without re-uploading: the backend re-runs only the AI explanation step on the already-extracted text. The original file can be viewed (fetched with the auth header and shown through a blob URL, because a plain link would not carry the JWT), and the page can be printed with a print stylesheet that hides navigation.</p>
+<h4>Chat tab</h4>
+<p>A message list with “You” and “NyayaSetu” bubbles, suggested follow-up questions returned by the model, an answer-language selector, Enter to send and Shift+Enter for a new line. Each answer shows verbatim quotes from the document and the cited sources; if the model says it cannot answer from the document, that is displayed distinctly rather than as a confident answer. History is loaded from the backend, so a conversation survives a page reload.</p>
+<h4>Deadlines page</h4>
+<p>All deadlines across documents, grouped by <code>groupDeadlines()</code> into Overdue, Next 7 days, Later, No fixed date, and Done, each linking back to its source document.</p>
+<h4>Drafts page</h4>
+<p>Choose a document type, fill a form whose fields depend on the type, preview the generated document on screen (rendered from the server’s blocks), read warnings and filing notes, and download PDF or Word. Details are in section 10.7.</p>
+<h4>Settings</h4>
+<p>Profile (name, phone, preferred language), e-mail and SMS reminder toggles, and account deletion (which cascades to all of the user’s data).</p>
+
+<h3>4.3 Cross-cutting front-end design</h3>
+<table>
+<thead><tr><th style="width:22%">Concern</th><th>Implementation</th></tr></thead>
+<tbody>
+<tr><td>Authentication state</td><td><code>AuthContext</code> keeps <code>{token, expiresAt, user}</code> in <code>localStorage</code> (guarded by try/catch for private windows). A timer logs the user out at expiry; the Axios response interceptor logs out on any 401 except on <code>/auth/*</code>. <code>ProtectedLayout</code> redirects anonymous users to <code>/login</code> and remembers where they came from.</td></tr>
+<tr><td>API layer</td><td>One Axios instance with <code>baseURL: '/api'</code> and a request interceptor adding <code>Authorization: Bearer …</code>. <code>errorMessage()</code> converts any failure (timeout, no network, field errors, server message) into a short safe string.</td></tr>
+<tr><td>Internationalisation</td><td><code>I18nContext</code> exposes <code>t</code> (UI strings) and <code>lang</code>. The UI language is separate from the language of the AI output, because a user may read the interface in English but want a Marathi explanation. The choice is persisted.</td></tr>
+<tr><td>Accessibility</td><td><code>Field</code> associates labels with inputs through <code>useId</code> and <code>cloneElement</code>; the language control uses <code>role="radiogroup"</code>; tabs use <code>role="tablist"</code>; alerts use <code>role="alert"</code>/<code>status</code>.</td></tr>
+<tr><td>Performance</td><td>Hashed assets cached for a year by nginx; the SPA fallback is never cached; polling is conditional on visibility.</td></tr>
+<tr><td>Same-origin design</td><td>In production the browser only talks to its own origin. nginx forwards <code>/api/</code> to the backend preserving the original <code>Host</code> header, so Spring’s CORS check sees matching Origin and Host. In development, Vite proxies <code>/api</code> to port 8080 with <code>changeOrigin: false</code> for the same reason.</td></tr>
+</tbody></table>
+
+<h3>4.4 Trust badges (a feature worth explaining)</h3>
+<p>Each retrieved source carries its provenance from the knowledge base. The UI turns that into:</p>
+<table>
+<thead><tr><th style="width:22%">Badge</th><th>Meaning</th><th style="width:34%">Extra detail shown</th></tr></thead>
+<tbody>
+<tr><td><span class="pill g">Official text</span></td><td>Parsed from a gazette PDF</td><td>“Text as of <i>date</i>”, verification status, gazette reference, OCR warning, notes, link</td></tr>
+<tr><td><span class="pill b">Government reprint</span></td><td>Official text as reprinted in a government handbook (not the gazette)</td><td>Same, plus a note that later amendments may be missing</td></tr>
+<tr><td><span class="pill s">Unverified summary</span></td><td>A summary written for this project</td><td>A warning to confirm before relying on it</td></tr>
+</tbody></table>
+
+<h3>4.5 nginx: the other half of the front-end container</h3>
+<ul>
+<li>Serves the built bundle from <code>/usr/share/nginx/html</code> with <code>try_files … /index.html</code> so deep links work.</li>
+<li>Proxies <code>/api/</code> to <code>backend:8080</code> with 300-second read/send timeouts (uploads plus OCR are slow), request buffering off, and a 26 MB body limit (the application limit is 25 MB).</li>
+<li>Sets <code>Content-Security-Policy</code> (only own origin plus Google Fonts), <code>X-Frame-Options: DENY</code>, <code>X-Content-Type-Options: nosniff</code>, <code>Referrer-Policy: no-referrer</code> and a restrictive <code>Permissions-Policy</code>.</li>
+</ul>
+
+<div class="qa"><div class="q">Why store the JWT in localStorage instead of an HttpOnly cookie?</div><div class="a"><p>It keeps the API stateless and avoids CSRF entirely (no ambient credentials), which is why CSRF protection is disabled on the backend. The trade-off is exposure to XSS, which is mitigated by a strict Content-Security-Policy (<code>script-src 'self'</code>), React’s escaping, and no use of <code>dangerouslySetInnerHTML</code>. A production hardening step would be short-lived access tokens plus a refresh token in an HttpOnly cookie.</p></div></div>
+<div class="qa"><div class="q">Why poll instead of using WebSockets or Server-Sent Events?</div><div class="a"><p>A job takes seconds to a minute and the status changes only a few times. Polling every 2.5–3 seconds is simple, works through any proxy and needs no extra server state. The hook polls only while something is active and the tab is visible, so the cost is small. SSE would be the next step if jobs became longer or more numerous.</p></div></div>
+</section>

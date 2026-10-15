@@ -1,0 +1,29 @@
+<section>
+<h2><span class="num">15</span>Limitations and future work</h2>
+<h3>15.1 Known limitations (say these first in a viva)</h3>
+<ul>
+<li><b>Not legal advice, and not verified law.</b> The knowledge base is not human-verified (all <code>verified_by</code> fields are empty). The Marathi RTI Act is OCR text; the English Act is a 2008 reprint that lacks later amendments; the other laws are short unverified summaries.</li>
+<li><b>Marathi retrieval is weaker than English</b> (MRR 0.61 vs 0.74), partly because the Marathi source is noisy; a multilingual query step that also searches in English would help.</li>
+<li><b>Answer quality depends on the LLM.</b> A small or non-Marathi-focused model can produce weak or incomplete Marathi, or miss a deadline. Answer-level scoring has not been run at scale.</li>
+<li><b>OCR on real photographs</b> (shadows, perspective, handwriting) will be worse than the clean tests; there is no confidence display or deskew step.</li>
+<li><b>Single-instance assumptions:</b> in-memory login throttle and a scheduler that must run in one replica.</li>
+<li><b>Privacy:</b> document text is sent to a third-party LLM; no PII masking yet.</li>
+<li><b>Jurisdiction:</b> Maharashtra and central RTI rules only; drafts follow the Maharashtra forms.</li>
+<li><b>Jobs are in memory:</b> a restart loses queued jobs (they are marked failed and can be retried).</li>
+<li><b>No refresh tokens, no global rate limiting, registration reveals existing e-mails.</b></li>
+</ul>
+<h3>15.2 Roadmap</h3>
+<table>
+<thead><tr><th style="width:28%">Idea</th><th>Why and how</th></tr></thead>
+<tbody>
+<tr><td>Human verification workflow</td><td>Fill <code>verified_by/at</code> after a reviewer checks each source; show it in the UI (already supported).</td></tr>
+<tr><td>More official texts</td><td>Consumer Jurisdiction Rules 2021, Central RTI Rules 2012, a current English RTI Act, Limitation Act, NI Act, BNS/BNSS.</td></tr>
+<tr><td>Cross-language retrieval</td><td>Translate or expand Marathi queries to English and merge results.</td></tr>
+<tr><td>PII masking before the LLM</td><td>Regex/NER for phone, Aadhaar, e-mail; show what was masked.</td></tr>
+<tr><td>Voice and accessibility</td><td>Read-aloud and voice input in Marathi (browser speech APIs), larger-type mode.</td></tr>
+<tr><td>Feedback loop</td><td>“This answer is wrong” button that stores the case and grows the evaluation set.</td></tr>
+<tr><td>Case tracker</td><td>One RTI journey (application → reply → appeal) with status and deadlines linked.</td></tr>
+<tr><td>Scale-out</td><td>Redis throttle, scheduler lock, a durable job queue, refresh-token auth, per-user rate limits.</td></tr>
+<tr><td>Streaming answers</td><td>Token streaming in chat for responsiveness.</td></tr>
+</tbody></table>
+</section>

@@ -1,0 +1,21 @@
+<section>
+<h2><span class="num">14</span>Problems faced and how they were solved</h2>
+<p class="lead">Interviewers like specific stories. Each row is a real problem from the build: symptom, root cause, fix and lesson.</p>
+<table>
+<thead><tr><th style="width:17%">Problem</th><th style="width:25%">Root cause</th><th style="width:30%">Fix</th><th>Lesson</th></tr></thead>
+<tbody>
+<tr><td>Backend refused to start: “non-empty schema public”</td><td>The AI service created <code>kb_chunks</code> in <code>public</code> before Flyway’s first run.</td><td>Knowledge base moved to its own <code>kb</code> schema.</td><td>Give each service its own schema; start-up order must not matter.</td></tr>
+<tr><td>Uploads from the backend corrupted at the AI service</td><td>The JDK HTTP client attempted an HTTP/2 cleartext upgrade that uvicorn mishandled for multipart bodies.</td><td>Force HTTP/1.1 in the client.</td><td>Protocol negotiation can break “working” requests.</td></tr>
+<tr><td>Browser POSTs got 403</td><td>The proxy rewrote <code>Host</code>, so Origin and Host differed and Spring’s CORS check failed.</td><td>nginx <code>proxy_set_header Host $http_host</code>; Vite <code>changeOrigin: false</code>.</td><td>Same-origin design is simpler than CORS configuration.</td></tr>
+<tr><td>Marathi gazette text unreadable though PDFs looked fine</td><td>A broken text layer (doubled vowel signs).</td><td><code>looks_garbled()</code> → OCR fallback per page.</td><td>“Has text” does not mean “has good text”.</td></tr>
+<tr><td>Wrong rule numbers from OCR (“११९.” instead of “११.”)</td><td>OCR digit confusion in Devanagari.</td><td>Reviewable extracted text files, hand corrections, sequential-number parsing, expected-count checks.</td><td>Put a human-checkable step between OCR and the database.</td></tr>
+<tr><td>Fees quoted wrongly (₹30 vs ₹10)</td><td>Two notifications in one month; the older was loaded as current.</td><td>Status field and supersession chain; retrieval excludes superseded text; a test pins the current fees.</td><td>Law has versions; model them.</td></tr>
+<tr><td>Citations to non-existent sources</td><td>LLMs can cite ids that were never provided.</td><td>Grounding pass drops unknown source ids; chat quotes are verified against the document.</td><td>Validate model output; do not trust it.</td></tr>
+<tr><td>Python <code>\w</code> broke Marathi words</td><td>Devanagari vowel signs are not word characters in Python’s regex.</td><td>Custom tokenizer that keeps matras; language detection by script ratio.</td><td>Test with the real script, not just Latin text.</td></tr>
+<tr><td>LLM calls failing: 401, 404, 503 “high demand”</td><td>Wrong key type, retired model name, overloaded provider.</td><td>Coded error messages, key cleaning, fallback chain, <code>llm.check</code> and <code>--list-models</code>.</td><td>Treat the LLM as an unreliable dependency; design for failure and diagnosability.</td></tr>
+<tr><td>Keyword search weaker on Postgres than in memory</td><td><code>ts_rank_cd</code> ignores term rarity.</td><td>IDF-weighted scoring from <code>ts_stat</code>; regression test.</td><td>Measure; the evaluation caught what unit tests could not.</td></tr>
+<tr><td>Drafts failed with a long list of errors</td><td>Framework no longer honoured the discriminated union; date check lacked time-zone slack; day/month confusion in date input.</td><td>Model chosen by <code>kind</code>; one-day tolerance; future dates blocked; chosen date spelled out; field labels in errors.</td><td>Test the whole path through the UI, including submission.</td></tr>
+<tr><td>Docker disk usage grew 8–10 GB per run</td><td>Model download layer invalidated whenever <code>requirements.txt</code> changed.</td><td>Reordered Dockerfile layers; documented pruning.</td><td>Order layers from least to most frequently changed.</td></tr>
+<tr><td>“No default constructor” for a security bean</td><td>Two constructors (one for tests) and no <code>@Autowired</code> marker.</td><td>Annotate the public constructor.</td><td>Testability hooks can change how the framework wires beans.</td></tr>
+</tbody></table>
+</section>

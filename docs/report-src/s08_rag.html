@@ -1,0 +1,78 @@
+<section>
+<h2><span class="num">8</span>The legal knowledge base and RAG in depth</h2>
+<p class="lead">Retrieval-augmented generation means the model is shown the relevant law at question time instead of being trusted to remember it. Nothing is trained or fine-tuned. The quality of the whole product is bounded by two things: what is in the knowledge base, and whether retrieval finds it.</p>
+
+<h3>8.1 What is in the knowledge base</h3>
+<table>
+<thead><tr><th style="width:32%">Source</th><th style="width:13%">Status</th><th style="width:13%">Type</th><th>Entries and notes</th></tr></thead>
+<tbody>
+<tr><td>Maharashtra RTI Rules, notification of <b>7 July 2026</b> (English + Marathi)</td><td><span class="pill g">in force</span></td><td>Official text</td><td>Rules 1–5 + annexures (forms A, B, C). Fees ₹10 application, ₹2 per page, ₹20 appeal; first appeal 30 days, second appeal 90 days.</td></tr>
+<tr><td>Maharashtra RTI Rules, 12 June 2026 (en + mr)</td><td><span class="pill r">superseded</span></td><td>Official text</td><td>27 rules (fees ₹30 / ₹5 / ₹100). Kept for history; never retrieved.</td></tr>
+<tr><td>Maharashtra RTI Rules, 2005</td><td><span class="pill r">superseded</span></td><td>Official text</td><td>5 rules + annexures.</td></tr>
+<tr><td>RTI Act 2005, Marathi text as of 1 Dec 2014</td><td><span class="pill g">in force</span></td><td>Official text (OCR)</td><td>82 paragraph-level entries; section numbers are unreliable after OCR, so no section labels are attached.</td></tr>
+<tr><td>RTI Act 2005, English</td><td><span class="pill g">in force</span></td><td>Government reprint</td><td>Sections 1–31 + Second Schedule, from a 2008 handbook; later amendments (e.g. 2019) not reflected, stated in a note.</td></tr>
+<tr><td>Central RTI fee rules 2005 + 2005/2006 amendments</td><td><span class="pill g">in force</span></td><td>Government reprint</td><td>Rules 1–5 and the amendment notifications; note says Maharashtra authorities follow the Maharashtra Rules.</td></tr>
+<tr><td>Consumer Protection Act, 2019</td><td><span class="pill g">in force</span></td><td>Official text</td><td>107 sections as enacted; note that the 2021 Jurisdiction Rules changed the money limits.</td></tr>
+<tr><td>Seed summaries (JSON)</td><td><span class="pill s">unverified</span></td><td>Summary</td><td>NI Act s.138–142, Limitation Act, BNS/BNSS provisions, Legal Services Authorities Act s.12, Central RTI Rules 2012, RTI online portal, four Supreme Court judgments, a few Marathi summaries.</td></tr>
+</tbody></table>
+<p>At the time of the last run the knowledge base held <b>318 entries stored as 467 chunks</b>.</p>
+
+<h3>8.2 From a gazette PDF to a retrievable, citable entry</h3>
+<figure>
+<svg viewBox="0 0 760 120" width="760" role="img" aria-label="Ingestion pipeline">
+<defs><marker id="ab" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#44506b"/></marker></defs>
+<g class="t-s t-c">
+<rect x="4" y="30" width="108" height="56" rx="7" fill="#fff" stroke="#17203a"/><text x="58" y="52" class="t-b">manifest.json</text><text x="58" y="66" class="t-g">one record per source</text>
+<rect x="136" y="30" width="116" height="56" rx="7" fill="#fdf1dd" stroke="#e8890c"/><text x="194" y="50" class="t-b">extract / OCR</text><text x="194" y="64" class="t-g">→ extracted/*.txt</text><text x="194" y="76" class="t-g">(human-proofreadable)</text>
+<rect x="276" y="30" width="116" height="56" rx="7" fill="#eaf6f0" stroke="#1f7a5a"/><text x="334" y="50" class="t-b">split provisions</text><text x="334" y="64" class="t-g">numbered · numbered_margin</text><text x="334" y="76" class="t-g">paragraphs · single</text>
+<rect x="416" y="30" width="116" height="56" rx="7" fill="#eef3fb" stroke="#2c5fa8"/><text x="474" y="50" class="t-b">checks</text><text x="474" y="64" class="t-g">expected_provisions count,</text><text x="474" y="76" class="t-g">sequential numbering</text>
+<rect x="556" y="30" width="100" height="56" rx="7" fill="#eef3fb" stroke="#2c5fa8"/><text x="606" y="50" class="t-b">chunk + embed</text><text x="606" y="64" class="t-g">1200 chars, 150 overlap</text>
+<rect x="676" y="30" width="80" height="56" rx="7" fill="#fff" stroke="#17203a"/><text x="716" y="54" class="t-b">kb.kb_chunks</text><text x="716" y="68" class="t-g">+ provenance</text>
+</g>
+<line x1="112" y1="58" x2="134" y2="58" stroke="#44506b" stroke-width="1.4" marker-end="url(#ab)"/><line x1="252" y1="58" x2="274" y2="58" stroke="#44506b" stroke-width="1.4" marker-end="url(#ab)"/><line x1="392" y1="58" x2="414" y2="58" stroke="#44506b" stroke-width="1.4" marker-end="url(#ab)"/><line x1="532" y1="58" x2="554" y2="58" stroke="#44506b" stroke-width="1.4" marker-end="url(#ab)"/><line x1="656" y1="58" x2="674" y2="58" stroke="#44506b" stroke-width="1.4" marker-end="url(#ab)"/>
+</svg>
+<figcaption>Figure 8.1 — Manifest-driven ingestion of official sources.</figcaption>
+</figure>
+<ul>
+<li><b>Manifest.</b> Each source records: title, kind, language, jurisdiction, <b>status</b>, <b>version_date</b>, gazette reference, parser, expected provision count, notes, verification fields (<code>verified_at</code>, <code>verified_by</code>, currently empty) and a <code>source_type</code>.</li>
+<li><b>Proofreadable middle step.</b> Extracted text is written to a plain file the team can read and correct (OCR confuses Devanagari digits, for example “११९.” for “११.”). The corrected file, not the PDF, is what is ingested. Several such corrections were made by hand while loading the real gazettes.</li>
+<li><b>Parsers.</b> <code>numbered</code>: rule headings with a dash (“3. Procedure.–”), with strict sequential numbering so a stray “7.” inside a sentence is not a new rule. <code>numbered_margin</code>: Acts whose marginal notes are interleaved in the text. <code>paragraphs</code>: noisy scans where numbers cannot be trusted. <code>single</code>: a schedule or amendment notification kept whole.</li>
+<li><b>Safety net.</b> <code>expected_provisions</code> turns a silent mis-parse into a loud error: “parsed 72 provisions, expected 107” stopped ingestion until the parser was fixed.</li>
+<li><b>Provenance on every chunk</b>: source type, title, gazette reference, version date, verification, OCR flag and notes. The notes carry caveats such as “later Rules prevail over these amounts”, and the prompt instructs the model to consider them.</li>
+</ul>
+
+<h3>8.3 Retrieval: hybrid search with reranking</h3>
+<figure>
+<svg viewBox="0 0 760 232" width="760" role="img" aria-label="Retrieval pipeline">
+<defs><marker id="ac" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#44506b"/></marker></defs>
+<g class="t-s t-c">
+<rect x="6" y="84" width="104" height="56" rx="7" fill="#fff" stroke="#17203a"/><text x="58" y="106" class="t-b">Query / queries</text><text x="58" y="120" class="t-g">question, or</text><text x="58" y="132" class="t-g">document slices</text>
+<rect x="150" y="22" width="170" height="64" rx="7" fill="#eaf6f0" stroke="#1f7a5a"/><text x="235" y="42" class="t-b">Dense (semantic)</text><text x="235" y="56" class="t-g">embed → pgvector HNSW</text><text x="235" y="68" class="t-g">cosine, top 20</text><text x="235" y="80" class="t-g">finds paraphrases</text>
+<rect x="150" y="138" width="170" height="64" rx="7" fill="#eaf6f0" stroke="#1f7a5a"/><text x="235" y="158" class="t-b">Sparse (keyword)</text><text x="235" y="172" class="t-g">Postgres full-text, IDF-</text><text x="235" y="184" class="t-g">weighted, top 20</text><text x="235" y="196" class="t-g">finds exact terms (“250”)</text>
+<rect x="362" y="84" width="136" height="56" rx="7" fill="#eef3fb" stroke="#2c5fa8"/><text x="430" y="104" class="t-b">Reciprocal Rank Fusion</text><text x="430" y="118" class="t-g">Σ 1 / (60 + rank)</text><text x="430" y="130" class="t-g">keep best 16</text>
+<rect x="540" y="84" width="120" height="56" rx="7" fill="#fdf1dd" stroke="#e8890c"/><text x="600" y="104" class="t-b">Cross-encoder</text><text x="600" y="118" class="t-g">jina-reranker-v2</text><text x="600" y="130" class="t-g">(lexical fallback)</text>
+<rect x="690" y="84" width="64" height="56" rx="7" fill="#fff" stroke="#17203a"/><text x="722" y="108" class="t-b">top k</text><text x="722" y="122" class="t-g">6 (chat 4)</text>
+</g>
+<line x1="110" y1="106" x2="148" y2="64" stroke="#44506b" stroke-width="1.4" marker-end="url(#ac)"/><line x1="110" y1="120" x2="148" y2="168" stroke="#44506b" stroke-width="1.4" marker-end="url(#ac)"/>
+<line x1="320" y1="58" x2="360" y2="102" stroke="#44506b" stroke-width="1.4" marker-end="url(#ac)"/><line x1="320" y1="170" x2="360" y2="124" stroke="#44506b" stroke-width="1.4" marker-end="url(#ac)"/>
+<line x1="498" y1="112" x2="538" y2="112" stroke="#44506b" stroke-width="1.4" marker-end="url(#ac)"/><line x1="660" y1="112" x2="688" y2="112" stroke="#44506b" stroke-width="1.4" marker-end="url(#ac)"/>
+</svg>
+<figcaption>Figure 8.2 — Both retrievers only see <code>in_force</code> chunks. With several queries, all ranked lists are fused together.</figcaption>
+</figure>
+<table>
+<thead><tr><th style="width:22%">Stage</th><th>What it contributes</th></tr></thead>
+<tbody>
+<tr><td>Dense retrieval</td><td>Understands meaning across wording and languages (“How long do I have to appeal?” ≈ “within thirty days … first appeal”). Weak on exact numbers and rare terms.</td></tr>
+<tr><td>Keyword retrieval</td><td>Exact terms: section numbers, amounts, names. Weak on paraphrase.</td></tr>
+<tr><td>RRF fusion</td><td>Combines two ranked lists without needing their scores to be comparable: a document ranked well in both rises to the top.</td></tr>
+<tr><td>Cross-encoder rerank</td><td>Reads query and passage <i>together</i> and judges relevance more precisely than a vector comparison. Costly, so only 16 candidates are reranked. If the model cannot load, a lexical reranker (term and bigram overlap) takes over.</td></tr>
+<tr><td>Status filter</td><td>Superseded/repealed law is excluded in SQL, so a fee that has since changed cannot be quoted as current.</td></tr>
+</tbody></table>
+
+<h3>8.4 The trust model in one paragraph</h3>
+<p>Three kinds of source, shown to the user as badges and to the model as labels: <b>official text</b> (from a gazette), <b>government reprint</b> (from an official handbook, possibly stale) and <b>unverified summary</b> (written for the project). The model is told to prefer official text and to treat a NOTE as binding context. The user sees the same distinctions, the date each text is current as of, and whether a human has verified it. Verification fields exist in the manifest but are still empty: this is a known gap (section 15).</p>
+
+<div class="qa"><div class="q">What is the difference between RAG and fine-tuning, and why RAG here?</div><div class="a"><p>Fine-tuning changes the model’s weights; RAG supplies knowledge at query time. Law changes (the Maharashtra fees changed twice in 2026), must be citable, and must show its source. RAG allows updating the knowledge base without retraining, makes each statement traceable to a provision, and lets superseded rules be switched off with a status flag.</p></div></div>
+<div class="qa"><div class="q">Why hybrid search rather than just embeddings?</div><div class="a"><p>Legal questions often hinge on exact tokens: “Section 8(1)(j)”, “₹250 per day”, “30 days”. Embeddings blur such details; keyword search finds them but misses paraphrases and cross-language matches. Fusing both and reranking was measurably better than either alone (section 13).</p></div></div>
+<div class="qa"><div class="q">How do you make sure an outdated rule is not quoted?</div><div class="a"><p>Every chunk has a <code>status</code>. Retrieval queries exclude superseded and repealed chunks. Fee questions are tested to return the 7 July 2026 Rules and never the 12 June 2026 ones, and the evaluation reports “superseded text returned: 0%”.</p></div></div>
+</section>
