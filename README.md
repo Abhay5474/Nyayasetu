@@ -195,3 +195,36 @@ AI service (AI service is not published to the host), CSP/security headers in ng
 - Chat replies are returned whole (no token streaming yet).
 - No refresh tokens (12 h access token); no OCR confidence display; PaddleOCR is wired but optional and untested here.
 - The seed knowledge base is tiny; retrieval quality depends on loading real, current legal texts.
+
+
+## postgres database commands
+- docker compose exec postgres psql -U nyayasetu -d nyayasetu
+- \dt                 list the app's tables
+- \dt kb.*            list the knowledge-base table (it is in a separate schema)
+- \d documents        show the columns of a table
+- \x                  switch to vertical output (easier for wide rows; type it again to turn off)
+- \q                  quit
+
+-- accounts (never select password_hash)
+SELECT id, email, full_name, preferred_language, created_at FROM users;
+
+-- uploaded documents
+SELECT original_filename, status, page_count, extraction_method, detected_language, length(extracted_text) AS chars, created_at
+FROM documents ORDER BY created_at DESC;
+
+-- results: which language, which model answered, and the summary text
+SELECT d.original_filename, r.language, r.status, r.model, r.result->'document'->>'summary' AS summary
+FROM processing_results r JOIN documents d ON d.id = r.document_id;
+
+-- deadlines
+SELECT description, due_date, period_text, status FROM deadlines ORDER BY due_date NULLS LAST;
+
+-- chat
+SELECT role, left(content, 80) AS text, created_at FROM chat_messages ORDER BY created_at DESC LIMIT 20;
+
+-- reminder log
+SELECT channel, success, detail, created_at FROM notification_log ORDER BY created_at DESC;
+
+-- knowledge base
+SELECT status, count(*) FROM kb.kb_chunks GROUP BY status;
+SELECT kb_id, status, meta->>'source_type' AS type, left(text, 70) FROM kb.kb_chunks LIMIT 15;
