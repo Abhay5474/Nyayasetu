@@ -1,0 +1,56 @@
+@page { size: A4; margin: 20mm 22mm 24mm 24mm; }
+* { box-sizing: border-box; }
+html { font-family: 'Liberation Serif', 'Times New Roman', Times, serif; font-size: 12pt; color: #000; }
+body { margin: 0; line-height: 1.5; text-align: justify; }
+p { margin: 0 0 7pt; }
+h1.ch { font-size: 20pt; text-align: center; margin: 14pt 0 4pt; font-weight: 700; page-break-before: always; break-before: page; }
+h1.ch + .rule { border-bottom: 1px dashed #444; margin: 0 0 14pt; }
+h1.plain { font-size: 20pt; text-align: center; margin: 4pt 0 22pt; font-weight: 700; }
+h2 { font-size: 12pt; margin: 12pt 0 6pt; font-weight: 700; break-after: avoid; }
+h3 { font-size: 12pt; margin: 8pt 0 4pt; font-weight: 700; break-after: avoid; }
+.pb { break-before: page; page-break-before: always; }
+.noj { text-align: left; }
+.ind { padding-left: 22pt; }
+ul, ol { margin: 0 0 7pt; padding-left: 36pt; }
+li { margin-bottom: 3pt; }
+
+/* ---- cover ---- */
+.cover { text-align: center; line-height: 1.35; }
+.cover p { margin: 0 0 19pt; }
+.cover .t { font-size: 15pt; font-weight: 700; margin: 14pt 30pt 24pt; line-height: 1.3; }
+.cover table { margin: 4pt auto 12pt; border-collapse: collapse; }
+.cover td, .cover th { padding: 3pt 14pt; font-size: 12pt; text-align: left; }
+.cover img { width: 92pt; margin: 8pt 0 18pt; }
+.cover .col { font-size: 22pt; font-weight: 700; margin: 6pt 0 2pt; line-height: 1.15; }
+.cover .sm { font-size: 10pt; margin-top: 0; }
+
+/* ---- tables ---- */
+table.grid { border-collapse: collapse; width: 100%; margin: 6pt 0 4pt; font-size: 11pt; text-align: left; line-height: 1.25; }
+table.grid th, table.grid td { border: 1px solid #000; padding: 3pt 5pt; vertical-align: top; }
+table.grid th { font-weight: 700; }
+table.grid td.n, table.grid th.n { text-align: right; }
+table.plain { border-collapse: collapse; width: 100%; font-size: 12pt; margin-top: 8pt; line-height: 1.25; text-align: left; }
+table.plain th { text-align: left; padding: 4pt 6pt 8pt; }
+table.plain td { padding: 3.2pt 6pt; vertical-align: top; }
+table.plain td.r, table.plain th.r { text-align: right; }
+table.toc td { padding: 5pt 6pt; }
+.cap { text-align: center; font-weight: 700; font-size: 10.5pt; margin: 4pt 0 10pt; line-height: 1.25; }
+figure { margin: 8pt 0 6pt; text-align: center; break-inside: avoid; page-break-inside: avoid; }
+figure img, figure svg { max-width: 100%; height: auto; }
+figure img.shot { border: 1px solid #9aa; }
+figure img.pdfpage { border: 1px solid #888; }
+figure.sm img { width: 78%; }
+figure.md img { width: 78%; }
+figure.tall img { max-height: 585pt; width: auto; }
+.keep { break-inside: avoid; page-break-inside: avoid; }
+code { font-family: 'Liberation Mono', 'DejaVu Sans Mono', monospace; font-size: 10.5pt; }
+.algo { margin: 0 0 6pt 0; }
+.algo .st { font-weight: 700; margin: 6pt 0 1pt; }
+.algo .bd { padding-left: 38pt; margin: 0 0 4pt; }
+.sig td { padding: 2pt 14pt 2pt 0; }
+
+/* ---- svg text classes for generated diagrams ---- */
+svg text { font-family: 'Liberation Sans', 'DejaVu Sans', Arial, sans-serif; }
+svg .t-s { font-size: 9px; } svg .t-m { font-size: 10.5px; } svg .t-b { font-weight: 700; }
+svg .t-c { text-anchor: middle; } svg .t-g { fill: #5b6682; } svg .t-w { fill: #fff; }
+svg .mono { font-family: 'DejaVu Sans Mono', monospace; font-size: 8.6px; }

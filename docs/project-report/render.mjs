@@ -1,0 +1,11 @@
+import { chromium } from 'playwright-core';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+const here = path.dirname(fileURLToPath(import.meta.url));
+const out = process.argv[2];
+const browser = await chromium.launch({ executablePath: process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ['--no-sandbox'] });
+const page = await browser.newPage();
+await page.goto('file://' + path.join(here, 'report.html'), { waitUntil: 'networkidle' });
+await page.emulateMedia({ media: 'print' });
+await page.pdf({ path: out, preferCSSPageSize: true, printBackground: true });
+await browser.close();
