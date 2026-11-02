@@ -1,0 +1,1 @@
+{ "name": "nyayasetu-report", "private": true, "type": "module", "dependencies": { "playwright-core": "1.56.1" } }

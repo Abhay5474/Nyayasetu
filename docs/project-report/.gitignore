@@ -5,3 +5,4 @@ _raw.pdf
 _pages.json
 node_modules
 __pycache__
+package-lock.json
