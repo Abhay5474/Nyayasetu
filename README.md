@@ -113,6 +113,18 @@ The text is deterministic templates, not LLM output, so a form says exactly what
 Nothing typed into the form is stored. Code: `ai-service/app/drafts/` (templates, schemas, PDF via PyMuPDF, Word via python-docx),
 `backend/.../draft/DraftController.java`, `frontend/src/pages/Drafts.jsx`. The Marathi wording should be read by a Marathi speaker before real use.
 
+## Hosting the frontend on Vercel
+Vercel serves the static React build only; the backend, AI service and database must run elsewhere with a **public HTTPS** address
+(a VM running `docker compose`, Render, Railway, Fly.io ... - the AI service needs a few GB of RAM for its models).
+1. In Vercel: *Add New > Project*, import the GitHub repo, set **Root Directory** to `frontend` (framework Vite; `frontend/vercel.json` supplies the build
+   settings, the SPA fallback and security headers).
+2. Add the environment variable **`VITE_API_URL`** = the backend's public address, e.g. `https://api.example.com` (no `/api`). It is read at build time,
+   so redeploy after changing it. It is public: never put secrets in a `VITE_` variable.
+3. On the backend set **`CORS_ALLOWED_ORIGINS`** to the Vercel address (`https://<project>.vercel.app`, comma-separated for several) and restart it.
+   Preview deployments have different addresses and need to be listed too.
+4. Open the Vercel address and sign in. If the page loads but calls fail, check the browser's Network tab: a CORS error means step 3, a
+   mixed-content error means the backend is not HTTPS.
+
 ## Disk space (Docker)
 A full set of images is roughly 8-10 GB (the AI service holds the language models), so every *extra* copy left behind by a rebuild adds that much.
 * Normal start: `docker compose up -d` (no `--build`). Rebuild only what changed: `docker compose up -d --build ai-service`.

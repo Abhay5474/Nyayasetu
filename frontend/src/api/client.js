@@ -24,7 +24,10 @@ export function writeSession(session) {
   } catch { /* storage unavailable: session lasts until reload */ }
 }
 
-const api = axios.create({ baseURL: '/api', timeout: 60_000 });
+// Same-origin '/api' by default (nginx / the Vite dev proxy forward it). For a static host such as Vercel, set VITE_API_URL at build
+// time to the public HTTPS address of the backend (no trailing slash needed) and the browser calls it directly.
+const API_ORIGIN = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
+const api = axios.create({ baseURL: `${API_ORIGIN}/api`, timeout: 60_000 });
 
 api.interceptors.request.use((config) => {
   const s = readSession();
