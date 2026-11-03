@@ -53,7 +53,7 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource(AppProperties props) {
         CorsConfiguration cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(props.cors().allowedOrigins());
+        cfg.setAllowedOriginPatterns(props.cors().allowedOrigins());   // exact origins, or patterns such as https://nyayasetu-frontend-*.vercel.app
         cfg.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE", "OPTIONS"));
         cfg.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
         cfg.setExposedHeaders(List.of("Content-Disposition"));
