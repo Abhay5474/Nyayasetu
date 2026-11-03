@@ -58,6 +58,8 @@ public class SecurityConfig {
         cfg.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
         cfg.setExposedHeaders(List.of("Content-Disposition"));
         cfg.setMaxAge(3600L);
+        // Demo setup: a page on a public host (Vercel) calling this backend on localhost. Chrome asks for this on the preflight.
+        cfg.setAllowPrivateNetwork(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", cfg);
         return source;
