@@ -42,7 +42,7 @@ def find_pages(doc):
         if doc[i].get_text().strip().startswith("References"):
             pages["refs"] = i - start + 1; break
     for fid, _ in C.FIGS: look(f"Figure {fid}:", "fig" + fid)
-    for tid, _ in C.TABS: look(f"Table {tid} :", "tab" + tid)
+    for tid, _ in C.TABS: look(f"Table {tid}:", "tab" + tid)
     return start, pages
 
 

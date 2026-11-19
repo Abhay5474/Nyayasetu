@@ -28,7 +28,7 @@ def img(name, kind="shot"):
 
 def tab(tid, title, inner):
     TABS.append((tid, title))
-    return f'<div class="keep">{inner}<div class="cap">Table {tid} :&nbsp; {title}</div></div>'
+    return f'<div class="keep"><div class="cap tcap">Table {tid}:&nbsp; {title}</div>{inner}</div>'
 
 
 def grid(head, rows, widths=None, numcols=()):
